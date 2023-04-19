@@ -1,4 +1,4 @@
-class MPLS_LabelGenerator:
+class MPLS_Label_Generator:
     def __init__(self, start_label=16):
         self.current_label = start_label
 
