@@ -11,6 +11,9 @@ class MPLS_Router:
         # Pop operation
         if outgoing_label is None:
             operation = 'pop'
+        # Push operation
+        elif incoming_label is None:
+            operation = 'push'
         # Swap operation
         else:
             operation = 'swap'

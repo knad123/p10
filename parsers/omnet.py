@@ -431,7 +431,7 @@ def to_omnetpp_lib_xml(router, interface_dict):
         ET.SubElement(entry_xml, "priority").text = str(0)
         ET.SubElement(entry_xml, "inLabel").text = str(label)
         ET.SubElement(entry_xml, "inInterface").text = "any"
-        if (entry["next_hop"] == None):
+        if (entry["next_hop"] == router.name):
             ET.SubElement(entry_xml, "outInterface").text = "mlo0"  # custom loopback interface
         else:
             ET.SubElement(entry_xml, "outInterface").text = "ppp" + str(interface_dict[router.name][entry["next_hop"]])

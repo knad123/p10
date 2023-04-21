@@ -30,7 +30,7 @@ class MLPS_Network:
                 self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label, next_hop=next_hop)
             # Last router, pop label
             elif router_index == len(path) - 1:
-                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None, next_hop=None)
+                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None, next_hop=next_hop)
             # Intermediate routers, swap label
             else:
                 next_hop = path[router_index + 1]
@@ -39,8 +39,8 @@ class MLPS_Network:
         # Add demand information for the LSP to the DataFrame
         load = self.demands[(path[0], path[-1])]
         new_row = {'source': path[0], 'target': path[-1], 'label': label, 'path': path, 'load': load}
-        self.demand_dataframe = self.demand_dataframe.append(new_row, ignore_index=True)
-
+        new_row = pd.DataFrame([new_row])
+        self.demand_dataframe = self.demand_dataframe = pd.concat([self.demand_dataframe, new_row], ignore_index=True)
 
     def create_MPLS_network_topology(self, topology_data):
 
