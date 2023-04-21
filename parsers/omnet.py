@@ -24,7 +24,7 @@ import xml.etree.ElementTree as ET
 
 
 def to_omnetpp(network, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
-               zero_latency=False, package_name="inet.zoo_topology", algorithm="none"):
+               zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0):
     """
     Generates all files for OMNeT++.
     """

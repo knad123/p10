@@ -1,5 +1,5 @@
 class MPLS_Label_Generator:
-    def __init__(self, start_label=16):
+    def __init__(self, start_label: int = 16):
         self.current_label = start_label
 
     def get_new_label(self):

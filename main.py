@@ -1,10 +1,13 @@
 import argparse
+import random
+
 import yaml
 import re
 import math
 import json
 
 import classes.network
+import parsers.communicator
 from classes.network import MLPS_Network
 from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
@@ -13,6 +16,11 @@ def main(conf):
     # Load topology
     with open(conf["topology"]) as f:
         topology_data = json.load(f)
+
+    # Add package.ned
+    if conf["generate_package"]:
+        with open(f"{conf['output_dir']}/package.ned", "w") as f:
+            f.write(f"package {conf['package_name']};")
 
     # Load demands
     with open(conf["demands"], "r") as file:
@@ -29,8 +37,18 @@ def main(conf):
     for path in paths.values():
         mpls_network.install_lsp(path)
 
-    to_omnetpp(mpls_network, name=mpls_network.name, algorithm="essence")
+    to_omnetpp(mpls_network, name=mpls_network.name, output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'], packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"], algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
 
+    while True:
+        file_path = f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}"
+        
+
+    '''
+    for i in range(1, 3):
+        file_path = f"demand{i}.json"
+        mpls_network = parsers.communicator.update_demands_and_paths(file_path, mpls_network)
+
+    '''
     print("done")
 
 
@@ -39,6 +57,15 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
+    p.add_argument("--algorithm", type=str, required=True)
+    p.add_argument("--scaler", type=float, default=1, help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
+    p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
+    p.add_argument("--zero_latency", action="store_true", help="Set latency to 0 for all links")
+    p.add_argument("--output_dir", default="./omnet_files")
+    p.add_argument("--package_name", default="inet.zoo_topology")
+    p.add_argument("--generate_package", action="store_true")
+    p.add_argument("--method_name", type=str, default="", help="Name of the algorithm that is used")
+    p.add_argument("--latency_scaler", type=float, default=1)
 
     conf = vars(p.parse_args())
 
