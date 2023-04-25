@@ -8,11 +8,11 @@ import classes.network
 from algorithms.essence import essence
 
 
-def update_demands_and_paths(file_path: str, network: classes.network.MLPS_Network):
-    with open(file_path, "r") as file:
+def update_demands_and_paths(demands_path: str, output_dir: str, network: classes.network.MLPS_Network):
+    with open(demands_path, "r") as file:
         demands_data = json.load(file)
 
-    demands = import_demands(demands_data)
+    demands: Dict[(str,str), float]  = import_demands(demands_data)
     network.demands.update(demands)
 
     # Update the demand dataframe
@@ -36,7 +36,7 @@ def update_demands_and_paths(file_path: str, network: classes.network.MLPS_Netwo
         src, tgt = path[0], path[-1]
         existing_row = network.demand_dataframe[(network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
 
-        if existing_row.empty or list(existing_row['path'].iloc[0]) != path:
+        if existing_row.empty or list(existing_row['path'].iloc[0]) != path or True:
             old_label = existing_row['label'].iloc[0] if not existing_row.empty else None
             network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
             network.install_lsp(path)
@@ -56,7 +56,20 @@ def update_demands_and_paths(file_path: str, network: classes.network.MLPS_Netwo
                 elem.append(create_xml_element("inLabel", str(in_label)))
                 elem.append(create_xml_element("inRouter", "any" if router_index == 0 else path[router_index - 1]))
 
-                if router_index != len(path) - 1:
+                if router_name == src:  # initial router of the path
+                    reclassify_element = ET.SubElement(root, "reclassify")
+                    reclassify_element.set("router", router_name)
+
+                    label_element = ET.SubElement(reclassify_element, "label")
+                    label_element.text = str(out_label)
+
+                    destination_element = ET.SubElement(reclassify_element, "destination")
+                    destination_element.text = network.external_connections[tgt]["target"]
+
+                    source_element = ET.SubElement(reclassify_element, "source")
+                    source_element.text = network.external_connections[src]["source"]
+
+                if router_index != len(path) - 1 and operation != "remove":
                     out_router_elem = create_xml_element("outRouter", path[router_index + 1])
                     elem.append(out_router_elem)
 
@@ -68,9 +81,9 @@ def update_demands_and_paths(file_path: str, network: classes.network.MLPS_Netwo
 
                 root.append(elem)
 
-    # Write XML to file
+    # Write to xml file
     tree = ET.ElementTree(root)
-    tree.write("2-phase-commit.xml")
+    tree.write(f'{output_dir}/2-phase-commit.xml')
 
     return network
 

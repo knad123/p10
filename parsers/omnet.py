@@ -1,26 +1,8 @@
-import sys
-
-import networkx as nx
-import matplotlib.pyplot as plt
-import random
-import time
 # import jsonschema
-import json
-import math
-import copy
-from pprint import pprint
-from itertools import chain, count, islice
-import numpy as np
-import yaml
-from networkx import Graph
 
 import os
-from os import path
-
-from networkx.algorithms.shortest_paths.weighted import _weight_function, _dijkstra_multisource
-
-from typing import *
 import xml.etree.ElementTree as ET
+from os import path
 
 
 def to_omnetpp(network, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
@@ -91,7 +73,8 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    file.write("import inet.p10.DynamicUpdater;\n")
+    file.write("import inet.p10.TwoPhaseCommit;\n")
+    file.write("import inet.p10.MeasureWriter;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
 
@@ -116,7 +99,8 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    file.write("        DynamicUpdater: DynamicUpdater;\n")
+    file.write("        twoPhaseCommit: TwoPhaseCommit;\n")
+    file.write("        measureWriter: MeasureWriter;\n")
     for router_name, router in network.routers.items():
 
         # calculate number of flows at this router
@@ -194,8 +178,11 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
 
     file.write("\tconnections:\n")
 
+    # Small hack :)
+    undirected_graph = network.topology.to_undirected()
+
     # Internal edges (router to router)
-    for edge in network.topology.edges():
+    for edge in undirected_graph.edges:
         # Either use default values for bandwidth and latency or use the edge values if present
         data = network.topology.get_edge_data(edge[0], edge[1])
         # We multiply bandwidth by 8 to convert to bits
@@ -366,6 +353,9 @@ def build_flows_for_export(network):
     """
     flows = {}
 
+    # Initialize external_connections dictionary in the network
+    network.external_connections = {}
+
     for index, row in network.demand_dataframe.iterrows():
         source = row['source']
         target = row['target']
@@ -404,6 +394,11 @@ def build_flows_for_export(network):
                         'target_host': f'target{target_nums[target]}',
                         'load': load,
                     })
+
+    # Add external_connections for the source and target
+    for router in network.routers:
+        network.external_connections[router] = {"source": f"host{source_nums[router]}", "target": f'target{target_nums[router]}'}
+
     return export_flows
 
 

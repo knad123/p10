@@ -1,5 +1,6 @@
 import argparse
 import random
+import time
 
 import yaml
 import re
@@ -40,17 +41,8 @@ def main(conf):
     to_omnetpp(mpls_network, name=mpls_network.name, output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'], packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"], algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
 
     while True:
-        file_path = f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}"
-        
-
-    '''
-    for i in range(1, 3):
-        file_path = f"demand{i}.json"
-        mpls_network = parsers.communicator.update_demands_and_paths(file_path, mpls_network)
-
-    '''
-    print("done")
-
+        mpls_network = parsers.communicator.update_demands_and_paths(conf['omnet_path'] + "/demands.json", conf['omnet_path'], mpls_network)
+        break
 
 if __name__ == "__main__":
     # Arguments for framework
@@ -61,11 +53,13 @@ if __name__ == "__main__":
     p.add_argument("--scaler", type=float, default=1, help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
     p.add_argument("--zero_latency", action="store_true", help="Set latency to 0 for all links")
-    p.add_argument("--output_dir", default="./omnet_files")
+    p.add_argument("--output_dir", default="../inet/zoo")
     p.add_argument("--package_name", default="inet.zoo_topology")
     p.add_argument("--generate_package", action="store_true")
     p.add_argument("--method_name", type=str, default="", help="Name of the algorithm that is used")
     p.add_argument("--latency_scaler", type=float, default=1)
+    p.add_argument("--omnet_path", type=str, default="../p10", help="Path to omnet++, used for the demands and 2-phase-commit files")
+    p.add_argument("--inet_path", type=str, default="", help="Path to inet")
 
     conf = vars(p.parse_args())
 

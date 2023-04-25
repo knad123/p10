@@ -13,6 +13,7 @@ class MLPS_Network:
         self.label_generator = MPLS_Label_Generator()
         self.demand_dataframe = pd.DataFrame()
         self.demands = demands
+        self.external_connections = {}
 
     def add_router(self, name: str):
         router = MPLS_Router(name=name)
