@@ -8,8 +8,8 @@ import classes.network
 from algorithms.essence import essence
 
 
-def update_demands_and_paths(demands_path: str, output_dir: str, network: classes.network.MLPS_Network):
-    with open(demands_path, "r") as file:
+def update_demands_and_paths(simulation_dir: str, network: classes.network.MLPS_Network):
+    with open("demands.json", "r") as file:
         demands_data = json.load(file)
 
     demands: Dict[(str,str), float]  = import_demands(demands_data)
@@ -83,7 +83,7 @@ def update_demands_and_paths(demands_path: str, output_dir: str, network: classe
 
     # Write to xml file
     tree = ET.ElementTree(root)
-    tree.write(f'{output_dir}/2-phase-commit.xml')
+    tree.write('2-phase-commit.xml')
 
     return network
 
@@ -99,8 +99,9 @@ def create_xml_element(name, text=None, attrib=None):
 def import_demands(demands: Dict[str, Dict[str, float]]):
     new_demands = {}
     for src in demands.keys():
-        for tgt in demands[src]:
-            new_demands[src,tgt] = sendinterval_to_load(demands[src][tgt])
+        if src != "timestamp":
+            for tgt in demands[src]:
+                new_demands[src,tgt] = sendinterval_to_load(demands[src][tgt])
 
     return new_demands
 

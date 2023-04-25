@@ -49,7 +49,7 @@ def essence(network: MLPS_Network):
     return genetic_paths
 
 
-def genetic_algorithm(viable_paths, loads, capacities, generations=100, population_size=100, crossover_rate=0.9,
+def genetic_algorithm(viable_paths, loads, capacities, generations=100, population_size=50, crossover_rate=0.9,
                       mutation_rate=0.7, elite_percent=0.2):
     # Initialize the population
     population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
@@ -58,7 +58,7 @@ def genetic_algorithm(viable_paths, loads, capacities, generations=100, populati
     for generation in range(generations):
         # Select parents
         a_class, b_class, c_class = class_selection(population, capacities, loads)
-        print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
+        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions

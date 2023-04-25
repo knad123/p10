@@ -1,6 +1,10 @@
 import argparse
+import os
 import random
+import subprocess
 import time
+import threading
+
 
 import yaml
 import re
@@ -25,11 +29,12 @@ def main(conf):
 
     # Load demands
     with open(conf["demands"], "r") as file:
-        demands_list = yaml.load(file, Loader=yaml.BaseLoader)
-        # Source, Target : Load
-        demands = {tuple(demand[:2]): int(demand[2]) for demand in demands_list}
+        demand_data = yaml.load(file, Loader=yaml.BaseLoader)
+        temporal_demands = {(src, tgt): loads for src, tgt, loads in demand_data}
+        # int(demand[2][0][0]) is just load for first timeslot
+        initial_demands = {tuple(demand[:2]): int(demand[2][0][0]) for demand in demand_data}
 
-    mpls_network = MLPS_Network(name=topology_data["network"]["name"], demands=demands)
+    mpls_network = MLPS_Network(name=topology_data["network"]["name"], demands=initial_demands)
     # Create the network graph
     mpls_network.create_MPLS_network_topology(topology_data)
 
@@ -38,11 +43,30 @@ def main(conf):
     for path in paths.values():
         mpls_network.install_lsp(path)
 
-    to_omnetpp(mpls_network, name=mpls_network.name, output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'], packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"], algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
+    to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'], packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"], algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
 
-    while True:
-        mpls_network = parsers.communicator.update_demands_and_paths(conf['omnet_path'] + "/demands.json", conf['omnet_path'], mpls_network)
-        break
+    simulation_directory = f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}"
+
+    inet_stopped_event = threading.Event()
+
+    inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
+    inet_simulation_thread.start()
+
+    monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, inet_stopped_event,))
+    monitor_output_thread.start()
+
+def monitor_omnet(simulation_dir: str, mpls_network: classes.network.MLPS_Network, inet_stopped_event: threading.Event):
+    while not inet_stopped_event.is_set():
+        if os.path.exists("demands.json"):
+            print("--------------------- Updating ---------------------")
+            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network)
+            os.remove("demands.json")
+        time.sleep(1)
+
+def run_inet_simulation(simulation_directory, inet_stopped_event: threading.Event):
+    os.chdir(simulation_directory)
+    subprocess.run(['inet', '-u', 'Cmdenv'])
+    inet_stopped_event.set()
 
 if __name__ == "__main__":
     # Arguments for framework

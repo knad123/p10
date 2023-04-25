@@ -1,11 +1,15 @@
 # import jsonschema
-
+import datetime
 import os
 import xml.etree.ElementTree as ET
+import time
 from os import path
+from typing import Dict, List, Tuple
+
+import classes.network
 
 
-def to_omnetpp(network, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
+def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
                zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0):
     """
     Generates all files for OMNeT++.
@@ -44,7 +48,7 @@ def to_omnetpp(network, name='default', output_dir='./omnet_files/default', scal
     """
 
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
-        to_omnetpp_ini(network=network, export_flows=export_flows,name=name, file=f,
+        to_omnetpp_ini(network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
                                packet_size=packet_size, send_interval_multiplier=scaler, zero_latency=zero_latency,
                                algorithm=algorithm)
 
@@ -230,7 +234,7 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     return link_to_ppp
 
 
-def to_omnetpp_ini(network, export_flows, name, file, failure_scenarios_enum=0, packet_size=64,
+def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, failure_scenarios_enum=0, packet_size=64,
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
 
@@ -262,25 +266,38 @@ def to_omnetpp_ini(network, export_flows, name, file, failure_scenarios_enum=0, 
             (f"**.{router_name}.classifier.config = xmldoc(\"classification_files/{router_name}_classification.xml\")\n")
 
     # file.write("\n[Config UDP]\n")
-
     # Create a dictionary to keep track of the app entries for each source host.
     source_apps = {}
+    source_hosts = {}
+    target_apps = {}
     flow_idx = 0
-    longest_send_interval = 0  # Used to find the simulation time limit
+    longest_send_interval = 0 # Used to find the simulation time limit
+
+    i = 1
     for flow in export_flows:
-        flow_idx += 1
-        ingress = flow['ingress']
-        send_interval = (send_interval_multiplier * (1 / (flow['load'] / packet_size)))
-        longest_send_interval = send_interval if send_interval > longest_send_interval else longest_send_interval
-        entry = {'typename': 'UdpBasicApp', 'localPort': flow_idx, 'destPort': flow_idx,
-                 'messageLength': f"{packet_size} bytes",
-                 'sendInterval': f"{send_interval}s",
-                 'destAddresses': flow['target_host'], 'source_host': flow['source_host']}
-        if ingress not in source_apps:
-            source_apps[ingress] = [entry]
-        else:
-            app_num = len(source_apps[ingress]) + 1
-            source_apps[ingress].append(entry)
+        target_apps[flow['egress']] = {'destAddresses': flow['target_host'], 'destPort': i}
+        i += 1
+
+    for flow in export_flows:
+        for load, starttime, stoptime in temporal_demands[flow['ingress'],flow['egress']]:
+            flow_idx += 1
+            ingress = flow['ingress']
+            egress = flow['egress']
+            send_interval = (send_interval_multiplier * (1 / (flow['load'] / packet_size)))
+            longest_send_interval = send_interval if send_interval > longest_send_interval else longest_send_interval
+            entry = {'typename': 'UdpBasicApp', 'localPort': flow_idx, 'destPort': target_apps[egress]['destPort'],
+                                         'messageLength': f"{packet_size} bytes",
+                                         'destAddresses': target_apps[egress]['destAddresses'], 'source_host': flow['source_host']}
+
+            if ingress not in source_apps:
+                source_apps[ingress] = entry
+                source_hosts[ingress] = [(starttime, stoptime, send_interval, flow)]
+            else:
+                source_hosts[ingress].append((starttime, stoptime, send_interval, flow))
+
+        #else:
+            #app_num = len(source_apps[ingress]) + 1
+            #source_apps[ingress].append(entry)
 
     if zero_latency:
         warmup_time = 0
@@ -293,35 +310,45 @@ def to_omnetpp_ini(network, export_flows, name, file, failure_scenarios_enum=0, 
     file.write(f"sim-time-limit = {sim_time}s\n")
     file.write(f"real-time-limit = 7200s\n")
 
+    host_port = 1
     for ingress, apps in source_apps.items():
-        file.write(f'''**.{apps[0]['source_host']}.numApps = {len(apps)}\n''')
-        for i, app in enumerate(apps):
-            file.write(f'''**.{app['source_host']}.app[{i}].typename = "{app['typename']}"\n''')
-            file.write(f'''**.{app['source_host']}.app[{i}].localPort = {app['localPort']}\n''')
-            file.write(f'''**.{app['source_host']}.app[{i}].destPort = {app['destPort']}\n''')
-            file.write(f'''**.{app['source_host']}.app[{i}].messageLength = {app['messageLength']}\n''')
-            file.write(f'''**.{app['source_host']}.app[{i}].sendInterval = {app['sendInterval']}\n''')
-            file.write(f'''**.{app['source_host']}.app[{i}].destAddresses = "{app['destAddresses']}"\n''')
+        file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
+        for (i, (starttime, stoptime, send_interval, flow)) in enumerate(source_hosts[ingress]):
+            x = time.strptime(starttime, '%H:%M')
+            starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds())
+            stoptime = starttime + 3600 # Hack to just set starttime an hour later
+            '''            
+            if source_hosts[ingress][i] != source_hosts[ingress][len(source_hosts[ingress])-1]:
+                y = time.strptime(source_hosts[ingress][i+1][0], '%H:%M')
+                stoptime = int(datetime.timedelta(hours=y.tm_hour, minutes=y.tm_min).total_seconds())
+            else:
+                stoptime = starttime + 3600
+            '''
+            file.write(f'''**.{apps['source_host']}.app[{i}].typename = "{apps['typename']}"\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].localPort = {host_port}\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].destPort = {target_apps[flow['egress']]['destPort']}\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].messageLength = {apps['messageLength']}\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {send_interval}s\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].destAddresses = "{flow['target_host']}"\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].startTime = {starttime}s\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].stopTime = {stoptime}s\n''')
+            host_port += 1
         file.write("\n")
 
-    # Add applications at target nodes.
-    targets = set(map(lambda entry: entry['target_host'], export_flows))
-    targets = sorted(list(targets))
     # Group export flows by egress/target host
     flows_by_target = {}
-    for source, apps in source_apps.items():
-        for app in apps:
-            target = app['destAddresses']
-            if target not in flows_by_target:
-                flows_by_target[target] = []
-            flows_by_target[target].append(app)
+    for source, apps in target_apps.items():
+        target = apps['destAddresses']
+        if target not in flows_by_target:
+            flows_by_target[target] = []
+        flows_by_target[target].append(apps)
 
     # Add applications at target nodes
-    for target, apps in flows_by_target.items():
-        file.write(f'''**.{target}.numApps = {len(apps)}\n''')
-        for i, app in enumerate(apps):
-            file.write(f'''**.{target}.app[{i}].typename = "UdpSinkApp"\n''')
-            file.write(f'''**.{target}.app[{i}].io.localPort = {app['destPort']}\n''')
+    target_port = 1
+    for target, items in target_apps.items():
+        file.write(f'''**.{items['destAddresses']}.numApps = 1\n''')
+        file.write(f'''**.{items['destAddresses']}.app[0].typename = "UdpSinkApp"\n''')
+        file.write(f'''**.{items['destAddresses']}.app[0].io.localPort = {items['destPort']}\n''')
         file.write("\n")
 
     for scenario in range(failure_scenarios_enum):
