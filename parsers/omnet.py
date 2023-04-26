@@ -295,16 +295,13 @@ def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str]
             else:
                 source_hosts[ingress].append((starttime, stoptime, send_interval, flow))
 
-        #else:
-            #app_num = len(source_apps[ingress]) + 1
-            #source_apps[ingress].append(entry)
 
     if zero_latency:
         warmup_time = 0
         sim_time = 8
     else:
         warmup_time = 20
-        sim_time = 60
+        sim_time = 86400
 
     file.write(f"warmup-period = {warmup_time}s\n")
     file.write(f"sim-time-limit = {sim_time}s\n")
