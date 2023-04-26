@@ -314,7 +314,6 @@ def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str]
     for ingress, apps in source_apps.items():
         file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
         for (i, (starttime, stoptime, send_interval, flow)) in enumerate(source_hosts[ingress]):
-            tttt = send_interval
             x = time.strptime(starttime, '%H:%M')
             starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds())
             stoptime = starttime + 3600 # Hack to just set starttime an hour later
