@@ -58,7 +58,6 @@ def main(conf):
 def monitor_omnet(simulation_dir: str, mpls_network: classes.network.MLPS_Network, inet_stopped_event: threading.Event):
     while not inet_stopped_event.is_set():
         if os.path.exists("demands.json"):
-            print("--------------------- Updating ---------------------")
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network)
             os.remove("demands.json")
         time.sleep(1)

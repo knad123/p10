@@ -283,7 +283,10 @@ def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str]
             flow_idx += 1
             ingress = flow['ingress']
             egress = flow['egress']
-            send_interval = (send_interval_multiplier * (1 / (flow['load'] / packet_size)))
+            if int(load) != 0:
+                send_interval = (send_interval_multiplier * (1 / (int(load) / packet_size)))
+            else:
+                send_interval = 3600
             longest_send_interval = send_interval if send_interval > longest_send_interval else longest_send_interval
             entry = {'typename': 'UdpBasicApp', 'localPort': flow_idx, 'destPort': target_apps[egress]['destPort'],
                                          'messageLength': f"{packet_size} bytes",
@@ -311,6 +314,7 @@ def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str]
     for ingress, apps in source_apps.items():
         file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
         for (i, (starttime, stoptime, send_interval, flow)) in enumerate(source_hosts[ingress]):
+            tttt = send_interval
             x = time.strptime(starttime, '%H:%M')
             starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds())
             stoptime = starttime + 3600 # Hack to just set starttime an hour later

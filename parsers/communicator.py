@@ -36,7 +36,8 @@ def update_demands_and_paths(simulation_dir: str, network: classes.network.MLPS_
         src, tgt = path[0], path[-1]
         existing_row = network.demand_dataframe[(network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
 
-        if existing_row.empty or list(existing_row['path'].iloc[0]) != path or True:
+        if existing_row.empty or list(existing_row['path'].iloc[0]) != path:
+            print("--------------------- Updating ---------------------")
             old_label = existing_row['label'].iloc[0] if not existing_row.empty else None
             network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
             network.install_lsp(path)
