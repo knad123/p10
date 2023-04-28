@@ -1,3 +1,4 @@
+import concurrent.futures
 import itertools
 import math
 
@@ -14,48 +15,28 @@ from typing import Dict, Tuple, List, Callable
 
 import time
 from classes.network import MLPS_Network
+from classes.essence_state import EssenceState
 
-
-def essence(network: MLPS_Network):
-    G = network.topology
-    flow_to_graph = {f: network.topology for f in network.demands}
-    for graph in flow_to_graph.values():
-        for src, tgt in graph.edges:
-            graph[src][tgt]["weight"] = 0
-
-    pathdict = dict()
-
-    for src, tgt in network.demands:
-        pathdict[(src, tgt)] = []
-
-    for src, tgt in network.demands:
-        unique_paths = []
-        while True:
-            path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
-            for v1, v2 in zip(path[:-1], path[1:]):
-                w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
-                w = w * 2 + 1
-                flow_to_graph[(src, tgt)][v1][v2]["weight"] = w
-            pathdict[(src, tgt)].append(path)
-            if path not in unique_paths:
-                unique_paths.append(path)
-            if pathdict[(src, tgt)].count(path) == 3:
-                pathdict[(src, tgt)] = unique_paths
-                break
-
-    genetic_paths = genetic_algorithm(viable_paths=pathdict, loads=network.demands,
-                                      capacities=nx.get_edge_attributes(network.topology, 'capacity'))
-
+def essence(network: MLPS_Network, essence_state: EssenceState):
+    genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
+                                      capacities=nx.get_edge_attributes(network.topology, 'capacity'), essence_state=essence_state)
     return genetic_paths
 
+def genetic_algorithm(viable_paths, loads, capacities, essence_state, generations=1000, population_size=100, crossover_rate=0.9,
+                      mutation_rate=0.7, elite_percent=0.2, time_limit=5):
 
-def genetic_algorithm(viable_paths, loads, capacities, generations=100, population_size=50, crossover_rate=0.9,
-                      mutation_rate=0.7, elite_percent=0.2):
-    # Initialize the population
-    population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
+    if not essence_state.current_population:
+        population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
+    else:
+        new_population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in
+                          range(int(population_size * 0.8))]
+        population = essence_state.current_population + new_population
 
     # Run the genetic algorithm
-    for generation in range(generations):
+    #for generation in range(generations):
+    start_time = time.time()
+    elapsed_time = 0
+    while elapsed_time < time_limit:
         # Select parents
         a_class, b_class, c_class = class_selection(population, capacities, loads)
         #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
@@ -72,13 +53,23 @@ def genetic_algorithm(viable_paths, loads, capacities, generations=100, populati
 
         # Replace the population with the children
         population = children
+        end_time = time.time()
+        elapsed_time = end_time - start_time
 
     # Sort the population by fitness
     population.sort(key=lambda x: calculate_fitness(x, capacities, loads))
 
+    essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
     return population[0]
 
+def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, viable_paths):
+    parent1 = random.choice(a_class)
+    parent2 = random.choice(b_class + c_class)
+    child1, child2 = two_point_crossover(parent1, parent2, crossover_rate)
+    child1 = mutate(child1, mutation_rate, viable_paths)
+    child2 = mutate(child2, mutation_rate, viable_paths)
+    return child1, child2
 
 def class_selection(population, capacities, loads):
     # Sort the population by fitness

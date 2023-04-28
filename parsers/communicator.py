@@ -1,18 +1,21 @@
 import json
 from typing import Dict, List
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as md
 
 import pandas as pd
 
-import classes.network
+from classes.network import MLPS_Network
 from algorithms.essence import essence
+from classes.essence_state import EssenceState
 
 
-def update_demands_and_paths(simulation_dir: str, network: classes.network.MLPS_Network):
+def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState):
     with open("demands.json", "r") as file:
         demands_data = json.load(file)
-
-    demands: Dict[(str,str), float]  = import_demands(demands_data)
+    with open("utilization.json", "r") as file:
+        utilizations_data = json.load(file)
+    demands: Dict[(str,str), float] = import_demands(demands_data)
     network.demands.update(demands)
 
     # Update the demand dataframe
@@ -27,17 +30,19 @@ def update_demands_and_paths(simulation_dir: str, network: classes.network.MLPS_
             network.demand_dataframe = pd.concat([network.demand_dataframe, new_row], ignore_index=True)
 
     # Calculate new paths
-    paths = essence(network)
+    paths = essence(network, essence_state)
 
     # Create XML root element
     root = ET.Element('twoPhaseCommit')
+
+    changes = []
 
     for path in paths.values():
         src, tgt = path[0], path[-1]
         existing_row = network.demand_dataframe[(network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
 
         if existing_row.empty or list(existing_row['path'].iloc[0]) != path:
-            print("--------------------- Updating ---------------------")
+            changes.append(str(existing_row['source'].iloc[0]) + " -> " + str(existing_row['target'].iloc[0]))
             old_label = existing_row['label'].iloc[0] if not existing_row.empty else None
             network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
             network.install_lsp(path)
@@ -85,6 +90,17 @@ def update_demands_and_paths(simulation_dir: str, network: classes.network.MLPS_
     # Write to xml file
     tree = ET.ElementTree(root)
     tree.write('2-phase-commit.xml')
+
+    # Print 2 phase commit file
+    '''
+    xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')
+    doc = md.parseString(xml_string)
+    pretty_xml = doc.toprettyxml(indent='  ')
+    print(pretty_xml)
+    '''
+
+    # Print demands that have been changed
+    #print("changes:" + str(changes))
 
     return network
 
