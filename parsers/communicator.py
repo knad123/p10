@@ -84,7 +84,9 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
                 if router_index != (len(path) - 1):
                     out_router_elem = create_xml_element("outRouter", path[router_index + 1])
                     elem.append(out_router_elem)
-
+                else:
+                    out_router_elem = create_xml_element("outRouter", router_name)
+                    elem.append(out_router_elem)
 
                 out_label_elem = ET.Element("outLabel")
                 out_label_elem.append(create_xml_element("op", attrib={"code": "pop"}))
