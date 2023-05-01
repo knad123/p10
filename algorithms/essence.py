@@ -23,7 +23,7 @@ def essence(network: MLPS_Network, essence_state: EssenceState):
     return genetic_paths
 
 def genetic_algorithm(viable_paths, loads, capacities, essence_state, generations=1000, population_size=100, crossover_rate=0.9,
-                      mutation_rate=0.7, elite_percent=0.2, time_limit=5):
+                      mutation_rate=0.7, time_limit=120):
 
     if not essence_state.current_population:
         population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
@@ -38,7 +38,7 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, generation
     elapsed_time = 0
     while elapsed_time < time_limit:
         # Select parents
-        a_class, b_class, c_class = class_selection(population, capacities, loads)
+        a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict, essence_state.congestion_weight)
         #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
@@ -57,12 +57,13 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, generation
         elapsed_time = end_time - start_time
 
     # Sort the population by fitness
-    population.sort(key=lambda x: calculate_fitness(x, capacities, loads))
+    population.sort(key=lambda x: calculate_fitness(x, capacities, loads, essence_state.stretchdict))
 
     essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
     return population[0]
 
+# For parallelization
 def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, viable_paths):
     parent1 = random.choice(a_class)
     parent2 = random.choice(b_class + c_class)
@@ -71,17 +72,34 @@ def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, via
     child2 = mutate(child2, mutation_rate, viable_paths)
     return child1, child2
 
-def class_selection(population, capacities, loads):
-    # Sort the population by fitness
-    population.sort(key=lambda x: calculate_fitness(x, capacities, loads))
+def selection(population, capacities, loads, stretch_dict, congestion_weight):
+    congestion, stretch = zip(*[calculate_fitness(individual, capacities, loads, stretch_dict) for individual in
+          population])
+
+    normalized_congestion, normalized_stretch = normalize_values(congestion, stretch)
+
+    stretch_weight = 1 - congestion_weight
+
+    fitness_values = [normalized_congestion[i] * congestion_weight + normalized_stretch[i] * stretch_weight for i in range(len(population))]
+
+    # Zip the fitness values and the population together
+    fitness_population = zip(fitness_values, population)
+
+    # Sort the list of tuples by the fitness values
+    sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
+
+    # Extract the individuals from the sorted list of tuples
+    population = [individual for fitness, individual in sorted_fitness_population]
 
     # Select the top 50% of the population as parents
+    #num_parents = int(len(population) * 0.5)
+    #parents = population[:num_parents]
+
     a_class = population[:int(len(population) * 0.2)]
     b_class = population[int(len(population) * 0.2):int(len(population) * 0.9)]
     c_class = population[int(len(population) * 0.9):]
 
     return a_class, b_class, c_class
-
 
 def two_point_crossover(individual1, individual2, crossover_probability):
     # Check if crossover should happen
@@ -110,10 +128,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
 
     return offspring1, offspring2
 
-
-def calculate_fitness(individual, capacities, loads):
-    fitness = 0
-
+def calculate_fitness(individual, capacities, loads, stretch_dict):
     # Initialize the utilization of each link to 0
     utilization = {link: 0 for link in capacities.keys()}
 
@@ -124,13 +139,18 @@ def calculate_fitness(individual, capacities, loads):
             link = (path[i], path[i + 1])
             utilization[link] += load
 
-    # Calculate the fitness using the fortz_func
+    # Calculate the congestion component of the fitness
+    congestion = 0
     for link, capacity in capacities.items():
         u = utilization[link] / capacity
-        fitness += fortz_func(u)
+        congestion += fortz_func(u)
 
-    return fitness
+    # Calculate the stretch component of the fitness
+    stretch = 0
+    for (source, destination), paths in individual.items():
+        stretch += stretch_dict[tuple(paths)]
 
+    return congestion, stretch
 
 def mutate(individual, mutation_rate, viable_paths):
     # Determine if the individual should be mutated
@@ -148,6 +168,19 @@ def mutate(individual, mutation_rate, viable_paths):
 
     return individual
 
+def normalize(value):
+    min_value = min(value)
+    range_value = max(value) - min_value
+    if range_value == 0:
+        return value
+    else:
+        normalized_values = [(x - min_value) / range_value for x in value]
+        return normalized_values
+
+def normalize_values(congestion, stretch):
+    normalized_congestion = normalize(congestion)
+    normalized_stretch = normalize(stretch)
+    return normalized_congestion, normalized_stretch
 
 def fortz_func(u):
     if u <= 1 / 20:

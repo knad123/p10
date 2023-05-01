@@ -13,8 +13,18 @@ from classes.essence_state import EssenceState
 def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState):
     with open("demands.json", "r") as file:
         demands_data = json.load(file)
+
+    # Used to set the weight of congestion and stretch
     with open("utilization.json", "r") as file:
         utilizations_data = json.load(file)
+        max_utilization = 0
+        for key, value in utilizations_data.items():
+            if key != 'timestamp':
+                for inner_key, inner_value in value.items():
+                    if inner_value > max_utilization:
+                        max_utilization = inner_value
+    essence_state.congestion_weight = max_utilization
+
     demands: Dict[(str,str), float] = import_demands(demands_data)
     network.demands.update(demands)
 

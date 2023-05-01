@@ -73,6 +73,8 @@ if __name__ == "__main__":
     mpls_network.create_MPLS_network_topology(topology_data)
 
     essence_state = EssenceState(mpls_network)
+    essence_state.create_pathdict(mpls_network)
+    essence_state.create_stretchdict(mpls_network)
 
     paths = essence(mpls_network, essence_state)
 
