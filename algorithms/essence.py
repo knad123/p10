@@ -27,7 +27,7 @@ def essence(network: MLPS_Network, essence_state: EssenceState):
 
 def genetic_algorithm(viable_paths, loads, capacities, essence_state, generations=1000, population_size=100,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=120):
+                      mutation_rate=0.7, time_limit=118):
     if not essence_state.current_population:
         population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
     else:
@@ -61,11 +61,12 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, generation
         elapsed_time = end_time - start_time
 
     # Sort the population by fitness
-    population.sort(key=lambda x: calculate_fitness(x, capacities, loads, essence_state.stretchdict))
+    a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
+                                          essence_state.congestion_weight)
 
     essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
-    return population[0]
+    return a_class[0]
 
 
 # For parallelization

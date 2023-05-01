@@ -54,30 +54,26 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
         if existing_row.empty or list(existing_row['path'].iloc[0]) != path:
             changes.append(str(existing_row['source'].iloc[0]) + " -> " + str(existing_row['target'].iloc[0]))
             old_label = existing_row['label'].iloc[0] if not existing_row.empty else None
-            network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
-            network.install_lsp(path)
+            new_label = network.label_generator.get_new_label()
 
+            # Add new path
             for router_index, router_name in enumerate(path):
-                if router_index == 0:
-                    operation = "add"
-                    in_label = old_label
-                    out_label = network.label_generator.get_new_label()
-                else:
-                    operation = "remove"
-                    in_label = old_label
+                operation = "add"
+                in_label = new_label
+                out_label = new_label
 
                 # Create XML elements
                 elem = create_xml_element(operation, attrib={"router": router_name})
                 elem.append(create_xml_element("priority", str(0)))
                 elem.append(create_xml_element("inLabel", str(in_label)))
-                elem.append(create_xml_element("inRouter", "any" if router_index == 0 else path[router_index - 1]))
+                elem.append(create_xml_element("inRouter", "any"))
 
                 if router_name == src:  # initial router of the path
                     reclassify_element = ET.SubElement(root, "reclassify")
                     reclassify_element.set("router", router_name)
 
                     label_element = ET.SubElement(reclassify_element, "label")
-                    label_element.text = str(out_label)
+                    label_element.text = str(new_label)
 
                     destination_element = ET.SubElement(reclassify_element, "destination")
                     destination_element.text = network.external_connections[tgt]["target"]
@@ -85,32 +81,45 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
                     source_element = ET.SubElement(reclassify_element, "source")
                     source_element.text = network.external_connections[src]["source"]
 
-                if router_index != len(path) - 1 and operation != "remove":
+                if router_index != (len(path) - 1):
                     out_router_elem = create_xml_element("outRouter", path[router_index + 1])
                     elem.append(out_router_elem)
 
-                if operation == "add":
-                    out_label_elem = ET.Element("outLabel")
-                    out_label_elem.append(create_xml_element("op", attrib={"code": "pop"}))
-                    out_label_elem.append(create_xml_element("op", attrib={"code": "swap", "value": str(out_label)}))
-                    elem.append(out_label_elem)
+
+                out_label_elem = ET.Element("outLabel")
+                out_label_elem.append(create_xml_element("op", attrib={"code": "pop"}))
+                out_label_elem.append(create_xml_element("op", attrib={"code": "swap", "value": str(out_label)}))
+                elem.append(out_label_elem)
 
                 root.append(elem)
+
+            # Remove old path
+            for router_index, router_name in enumerate(list(existing_row['path'].iloc[0])):
+                operation = "remove"
+
+                # Create XML elements
+                elem = create_xml_element(operation, attrib={"router": router_name})
+                elem.append(create_xml_element("priority", str(0)))
+                elem.append(create_xml_element("inLabel", str(old_label)))
+                elem.append(create_xml_element("inRouter", "any"))
+
+                root.append(elem)
+
+            network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
+            network.install_lsp(path)
 
     # Write to xml file
     tree = ET.ElementTree(root)
     tree.write('2-phase-commit.xml')
 
     # Print 2 phase commit file
-    '''
     xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')
     doc = md.parseString(xml_string)
     pretty_xml = doc.toprettyxml(indent='  ')
     print(pretty_xml)
-    '''
 
     # Print demands that have been changed
-    #print("changes:" + str(changes))
+    print("changes:" + str(changes))
 
     return network
 
