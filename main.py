@@ -18,7 +18,7 @@ from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
 
 
-def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event):
+def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event):
     while not inet_stopped_event.is_set():
         if os.path.exists("demands.json") and os.path.exists("utilization.json"):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state)
@@ -26,7 +26,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
             os.remove("utilization.json")
         time.sleep(1)
 
-def run_inet_simulation(simulation_directory, inet_stopped_event: threading.Event):
+def run_inet_simulation(simulation_directory, inet_stopped_event):
     os.chdir(simulation_directory)
     subprocess.run(['inet', '-u', 'Cmdenv'])
     inet_stopped_event.set()
@@ -49,6 +49,7 @@ if __name__ == "__main__":
     p.add_argument("--omnet_path", type=str, default="../p10",
                    help="Path to omnet++, used for the demands and 2-phase-commit files")
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
+    p.add_argument("--multi_process", action="store_true", help="use multiprocess instead of multithreading")
 
     conf = vars(p.parse_args())
 
@@ -86,10 +87,10 @@ if __name__ == "__main__":
 
     simulation_directory = f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}"
 
-    inet_stopped_event = threading.Event()
+    inet_stopped_event = multiprocessing.Event()
 
-    inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
-    inet_simulation_thread.start()
+    inet_simulation_process = multiprocessing.Process(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
+    inet_simulation_process.start()
 
-    monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,))
-    monitor_output_thread.start()
+    monitor_output_process = multiprocessing.Process(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,))
+    monitor_output_process.start()

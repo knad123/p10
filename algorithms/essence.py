@@ -12,104 +12,89 @@ import random
 from itertools import islice, cycle
 import itertools
 from typing import Dict, Tuple, List, Callable
+from scoop import futures
 
 import time
+
+import random
+from deap import base, creator, tools
 from classes.network import MLPS_Network
 from classes.essence_state import EssenceState
 
-def essence(network: MLPS_Network, essence_state: EssenceState):
-    genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
-                                      capacities=nx.get_edge_attributes(network.topology, 'capacity'), essence_state=essence_state)
-    return genetic_paths
 
-def genetic_algorithm(viable_paths, loads, capacities, essence_state, generations=1000, population_size=100, crossover_rate=0.9,
-                      mutation_rate=0.7, elite_percent=0.2, time_limit=5):
+def essence(network, essence_state):
+    # Define DEAP toolbox
+    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+    creator.create("Individual", list, fitness=creator.FitnessMin)
+    toolbox = base.Toolbox()
+    toolbox.register("attr_path", lambda x: [random.choice(paths) for paths in x], list(essence_state.pathdict.values()))
+    toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.attr_path)
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
-    if not essence_state.current_population:
-        population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
+    def evaluate(individual):
+        return calculate_fitness(individual, nx.get_edge_attributes(network.topology, 'capacity'), network.demands),
+
+    toolbox.register("evaluate", calculate_fitness, capacities=nx.get_edge_attributes(network.topology, 'capacity'), loads=network.demands)
+    toolbox.register("mate", tools.cxTwoPoint)
+    toolbox.register("mutate", tools.mutShuffleIndexes, indpb=0.05)
+    toolbox.register("select", tools.selTournament, tournsize=3)
+
+    # Define the genetic algorithm parameters
+    population_size = 1000
+    generations = 1000
+    cxpb = 0.9
+    mutpb = 0.7
+    elite_percent = 0.2
+    time_limit = 120  # in seconds
+
+    # Initialize population
+    if essence_state.current_population:
+        population = [creator.Individual(ind) for ind in essence_state.current_population]
+        population += toolbox.population(n=int(population_size * 0.8) - len(population))
     else:
-        new_population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in
-                          range(int(population_size * 0.8))]
-        population = essence_state.current_population + new_population
+        population = toolbox.population(n=population_size)
 
     # Run the genetic algorithm
-    #for generation in range(generations):
-    start_time = time.time()
+    start_time = time.monotonic()
     elapsed_time = 0
-    while elapsed_time < time_limit:
-        # Select parents
-        a_class, b_class, c_class = class_selection(population, capacities, loads)
-        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
-        # Generate the children
-        # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
-        children = a_class  # + random_solutions
-        while len(children) < population_size:
-            parent1 = random.choice(a_class)
-            parent2 = random.choice(b_class + c_class)
-            child1, child2 = two_point_crossover(parent1, parent2, crossover_rate)
-            child1 = mutate(child1, mutation_rate, viable_paths)
-            child2 = mutate(child2, mutation_rate, viable_paths)
-            children.extend([child1, child2])
+    for generation in range(generations):
+        # Select the parents
+        parents = toolbox.select(population, len(population))
 
-        # Replace the population with the children
-        population = children
-        end_time = time.time()
+        # Clone the selected parents
+        offspring = [toolbox.clone(ind) for ind in parents]
+
+        # Apply crossover to the offspring
+        for child1, child2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() < cxpb:
+                toolbox.mate(child1, child2)
+
+        # Apply mutation to the offspring
+        for mutant in offspring:
+            if random.random() < mutpb:
+                toolbox.mutate(mutant)
+
+        # Evaluate the fitness of the offspring
+        fitnesses = toolbox.map(toolbox.evaluate, offspring)
+        for ind, fit in zip(offspring, fitnesses):
+            ind.fitness.values = fit
+
+        # Combine the offspring and the parents
+        population = parents + offspring
+
+        # Select the next generation
+        elite_size = int(population_size * elite_percent)
+        population = tools.selBest(population, k=elite_size) + tools.selTournament(population, k=population_size - elite_size, tournsize=3)
+
+        # Update the elapsed time
+        end_time = time.monotonic()
         elapsed_time = end_time - start_time
+        if elapsed_time > time_limit:
+            break
 
-    # Sort the population by fitness
-    population.sort(key=lambda x: calculate_fitness(x, capacities, loads))
-
-    essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
-    return population[0]
-
-def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, viable_paths):
-    parent1 = random.choice(a_class)
-    parent2 = random.choice(b_class + c_class)
-    child1, child2 = two_point_crossover(parent1, parent2, crossover_rate)
-    child1 = mutate(child1, mutation_rate, viable_paths)
-    child2 = mutate(child2, mutation_rate, viable_paths)
-    return child1, child2
-
-def class_selection(population, capacities, loads):
-    # Sort the population by fitness
-    population.sort(key=lambda x: calculate_fitness(x, capacities, loads))
-
-    # Select the top 50% of the population as parents
-    a_class = population[:int(len(population) * 0.2)]
-    b_class = population[int(len(population) * 0.2):int(len(population) * 0.9)]
-    c_class = population[int(len(population) * 0.9):]
-
-    return a_class, b_class, c_class
-
-
-def two_point_crossover(individual1, individual2, crossover_probability):
-    # Check if crossover should happen
-    if random.random() > crossover_probability:
-        return individual1, individual2
-
-    # Select two random points in the individuals
-    point1 = random.randint(1, len(individual1) - 1)
-    point2 = random.randint(point1 + 1, len(individual1))
-
-    # Create the offspring by exchanging the elements between the two points
-    offspring1 = {}
-    offspring2 = {}
-    i = 0
-    for (src, tgt), path in individual1.items():
-        if i < point1:
-            offspring1[(src, tgt)] = path
-            offspring2[(src, tgt)] = individual2[(src, tgt)]
-        elif i < point2:
-            offspring1[(src, tgt)] = individual2[(src, tgt)]
-            offspring2[(src, tgt)] = path
-        else:
-            offspring1[(src, tgt)] = path
-            offspring2[(src, tgt)] = individual2[(src, tgt)]
-        i += 1
-
-    return offspring1, offspring2
-
+    best_individual = tools.selBest(population, k=1)[0]
+    return {edge: best_individual[i] for i, edge in enumerate(network.topology.edges())}
 
 def calculate_fitness(individual, capacities, loads):
     fitness = 0
@@ -118,8 +103,8 @@ def calculate_fitness(individual, capacities, loads):
     utilization = {link: 0 for link in capacities.keys()}
 
     # Calculate the utilization of each link
-    for (source, destination), path in individual.items():
-        load = loads[source, destination]
+    for path in individual:
+        load = loads[path[0], path[-1]]
         for i in range(len(path) - 1):
             link = (path[i], path[i + 1])
             utilization[link] += load
@@ -130,23 +115,6 @@ def calculate_fitness(individual, capacities, loads):
         fitness += fortz_func(u)
 
     return fitness
-
-
-def mutate(individual, mutation_rate, viable_paths):
-    # Determine if the individual should be mutated
-    if random.random() > mutation_rate:
-        return individual
-
-    # Choose a random source-destination pair to mutate
-    source, destination = random.choice(list(individual.keys()))
-
-    # Choose a new path for the pair from the viable paths
-    new_path = random.choice(viable_paths[(source, destination)])
-
-    # Mutate the individual
-    individual[(source, destination)] = new_path
-
-    return individual
 
 
 def fortz_func(u):
