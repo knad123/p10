@@ -406,21 +406,20 @@ def build_flows_for_export(network):
         for in_label, tup in lbl_items.items():
             good_sources, good_targets, load = tup
             # TODO: Ask whether to add new clients for every good_targets entry
-            if load > 0:
-                for target in good_targets:
-                    if target not in target_nums:
-                        i = i + 1
-                        target_nums[target] = i
-                    export_flows.append({
-                        'in_label': in_label,
-                        'ingress': router_name,
-                        'egress': target,
-                        'in_interface': None,
-                        'out_interface': None,
-                        'source_host': f"host{source_nums[router_name]}",
-                        'target_host': f'target{target_nums[target]}',
-                        'load': load,
-                    })
+            for target in good_targets:
+                if target not in target_nums:
+                    i = i + 1
+                    target_nums[target] = i
+                export_flows.append({
+                    'in_label': in_label,
+                    'ingress': router_name,
+                    'egress': target,
+                    'in_interface': None,
+                    'out_interface': None,
+                    'source_host': f"host{source_nums[router_name]}",
+                    'target_host': f'target{target_nums[target]}',
+                    'load': load,
+                })
 
     # Add external_connections for the source and target
     for router in network.routers:
