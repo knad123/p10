@@ -89,8 +89,10 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
                     elem.append(out_router_elem)
 
                 out_label_elem = ET.Element("outLabel")
-                out_label_elem.append(create_xml_element("op", attrib={"code": "pop"}))
-                out_label_elem.append(create_xml_element("op", attrib={"code": "swap", "value": str(out_label)}))
+                if router_index != (len(path) - 1):
+                    out_label_elem.append(create_xml_element("op", attrib={"code": "swap", "value": str(out_label)}))
+                else:
+                    out_label_elem.append(create_xml_element("op", attrib={"code": "pop"}))
                 elem.append(out_label_elem)
 
                 root.append(elem)
@@ -113,7 +115,8 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
     # Write to xml file
     tree = ET.ElementTree(root)
     tree.write('2-phase-commit.xml')
-
+    
+    '''
     # Print 2 phase commit file
     xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')
     doc = md.parseString(xml_string)
@@ -122,6 +125,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
     # Print demands that have been changed
     print("changes:" + str(changes))
+    '''
 
     return network
 
