@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple
 import classes.network
 
 
-def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
+def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], conf, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
                zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0):
     """
     Generates all files for OMNeT++.
@@ -31,7 +31,7 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
             interface_idx += 1
 
     with open(f'{output_dir}/{name}.ned', mode='w') as f:
-        link_to_ppp_dict = to_omnetpp_ned(network, export_flows, interface_dict=interface_dict, name=name, file=f, bandwidth_divisor=scaler,
+        link_to_ppp_dict = to_omnetpp_ned(network, export_flows, conf=conf, interface_dict=interface_dict, name=name, file=f, bandwidth_divisor=scaler,
                                           zero_latency=zero_latency, package_name=package_name, algorithm=algorithm)
 
     """
@@ -61,7 +61,7 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
     to_omnetpp_classification(network, export_flows, output_dir + "/classification_files")
 
 
-def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_divisor=1, zero_latency=False,
+def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, bandwidth_divisor=1, zero_latency=False,
                    package_name="inet.zoo_topology", algorithm="none"):
     # Values between the routers, if not included in the edge data
     DEFAULT_BANDWIDTH = 1048576  # kbps = 1 Gbps
@@ -77,7 +77,7 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    file.write("import inet.p10.TwoPhaseCommit;\n")
+    file.write(f"import inet.p10.TwoPhaseCommit;\n")
     file.write("import inet.p10.MeasureWriter;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
@@ -103,7 +103,7 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    file.write("        twoPhaseCommit: TwoPhaseCommit;\n")
+    file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
     file.write("        measureWriter: MeasureWriter;\n")
     for router_name, router in network.routers.items():
 

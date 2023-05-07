@@ -12,7 +12,6 @@ temp.py
 __pycache__/
 *.py[cod]
 *$py.class
-
 # C extensions
 *.so
 
@@ -163,3 +162,4 @@ cython_debug/
 /overleaf/
 /overleaf/
 *.pyc
+.idea*

@@ -28,7 +28,8 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
 
 def run_inet_simulation(simulation_directory, inet_stopped_event: threading.Event):
     os.chdir(simulation_directory)
-    subprocess.run(['inet', '-u', 'Cmdenv'])
+    #subprocess.run(['inet', '-u', 'Cmdenv'])
+    subprocess.run(['inet'])
     inet_stopped_event.set()
 
 if __name__ == "__main__":
@@ -49,6 +50,7 @@ if __name__ == "__main__":
     p.add_argument("--omnet_path", type=str, default="../p10",
                    help="Path to omnet++, used for the demands and 2-phase-commit files")
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
+    p.add_argument("--update_interval", type=int, default=120, help="How often the routing is updated in seconds")
 
     conf = vars(p.parse_args())
 
@@ -76,12 +78,12 @@ if __name__ == "__main__":
     essence_state.create_pathdict(mpls_network)
     essence_state.create_stretchdict(mpls_network)
 
-    paths = essence(mpls_network, essence_state)
+    paths = essence(mpls_network, essence_state, conf)
 
     for path in paths.values():
         mpls_network.install_lsp(path)
 
-    to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name,
+    to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])

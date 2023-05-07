@@ -18,10 +18,10 @@ from classes.network import MLPS_Network
 from classes.essence_state import EssenceState
 
 
-def essence(network: MLPS_Network, essence_state: EssenceState):
+def essence(network: MLPS_Network, essence_state: EssenceState, conf):
     genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state)
+                                      essence_state=essence_state, time_limit=conf["update_interval"])
     return genetic_paths
 
 
