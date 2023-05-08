@@ -18,8 +18,7 @@ from classes.recorder import Recorder
 from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
 
-
-def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, conf, inet_stopped_event):
+def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, conf):
     recorder = Recorder()
     while not inet_stopped_event.is_set():
         if os.path.exists("demands.json") and os.path.exists("utilization.json"):
@@ -36,6 +35,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
 def run_inet_simulation(simulation_directory, inet_stopped_event):
     os.chdir(simulation_directory)
     subprocess.run(['inet', '-u', 'Cmdenv'])
+    #subprocess.run(['inet'])
     inet_stopped_event.set()
 
 if __name__ == "__main__":
@@ -58,6 +58,8 @@ if __name__ == "__main__":
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
     p.add_argument("--no_omnet", action="store_true")
     p.add_argument("--results_folder", type=str, default="results", help="folder for results")
+    p.add_argument("--time_scale", type=float, default=1, help="the time scale of the experiments. Start and stop times of demands are multiplied by this value. ")
+    p.add_argument("--update_interval", type=int, default=120, help="How often the routing is updated in seconds")
 
     conf = vars(p.parse_args())
 
@@ -90,7 +92,7 @@ if __name__ == "__main__":
     for path in paths.values():
         mpls_network.install_lsp(path)
 
-    to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name,
+    to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
@@ -103,5 +105,5 @@ if __name__ == "__main__":
         inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
         inet_simulation_thread.start()
 
-        monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, conf, inet_stopped_event,))
+        monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event, conf))
         monitor_output_thread.start()

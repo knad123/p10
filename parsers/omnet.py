@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple
 import classes.network
 
 
-def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
+def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], conf, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
                zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0):
     """
     Generates all files for OMNeT++.
@@ -31,7 +31,7 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
             interface_idx += 1
 
     with open(f'{output_dir}/{name}.ned', mode='w') as f:
-        link_to_ppp_dict = to_omnetpp_ned(network, export_flows, interface_dict=interface_dict, name=name, file=f, bandwidth_divisor=scaler,
+        link_to_ppp_dict = to_omnetpp_ned(network, export_flows, conf=conf, interface_dict=interface_dict, name=name, file=f, bandwidth_divisor=scaler,
                                           zero_latency=zero_latency, package_name=package_name, algorithm=algorithm)
 
     """
@@ -48,7 +48,7 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
     """
 
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
-        to_omnetpp_ini(network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
+        to_omnetpp_ini(conf=conf, network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
                                packet_size=packet_size, send_interval_multiplier=scaler, zero_latency=zero_latency,
                                algorithm=algorithm)
 
@@ -61,7 +61,7 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
     to_omnetpp_classification(network, export_flows, output_dir + "/classification_files")
 
 
-def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_divisor=1, zero_latency=False,
+def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, bandwidth_divisor=1, zero_latency=False,
                    package_name="inet.zoo_topology", algorithm="none"):
     # Values between the routers, if not included in the edge data
     DEFAULT_BANDWIDTH = 1048576  # kbps = 1 Gbps
@@ -77,7 +77,7 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    file.write("import inet.p10.TwoPhaseCommit;\n")
+    file.write(f"import inet.p10.TwoPhaseCommit;\n")
     file.write("import inet.p10.MeasureWriter;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
@@ -103,7 +103,7 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    file.write("        twoPhaseCommit: TwoPhaseCommit;\n")
+    file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
     file.write("        measureWriter: MeasureWriter;\n")
     for router_name, router in network.routers.items():
 
@@ -234,7 +234,7 @@ def to_omnetpp_ned(network, export_flows, name, interface_dict, file, bandwidth_
     return link_to_ppp
 
 
-def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, failure_scenarios_enum=0, packet_size=64,
+def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, failure_scenarios_enum=0, packet_size=64,
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
 
@@ -299,24 +299,20 @@ def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str]
                 source_hosts[ingress].append((starttime, stoptime, send_interval, flow))
 
 
-    if zero_latency:
-        warmup_time = 0
-        sim_time = 8
-    else:
-        warmup_time = 20
-        sim_time = 86400
+
+    warmup_time = 0
+    sim_time = 86400 * conf["time_scale"]
 
     file.write(f"warmup-period = {warmup_time}s\n")
     file.write(f"sim-time-limit = {sim_time}s\n")
-    file.write(f"real-time-limit = 7200s\n")
 
     host_port = 1
     for ingress, apps in source_apps.items():
         file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
         for (i, (starttime, stoptime, send_interval, flow)) in enumerate(source_hosts[ingress]):
             x = time.strptime(starttime, '%H:%M')
-            starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds())
-            stoptime = starttime + 3600 # Hack to just set starttime an hour later
+            starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
+            stoptime = starttime + 3600 * conf["time_scale"] # Hack to just set starttime an hour later
             '''            
             if source_hosts[ingress][i] != source_hosts[ingress][len(source_hosts[ingress])-1]:
                 y = time.strptime(source_hosts[ingress][i+1][0], '%H:%M')

@@ -21,7 +21,7 @@ from classes.essence_state import EssenceState
 def essence(network: MLPS_Network, essence_state: EssenceState, conf):
     genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state, conf=conf)
+                                      essence_state=essence_state, conf=conf, time_limit=conf["update_interval"])
     return genetic_paths
 
 
