@@ -21,8 +21,7 @@ from parsers.omnet import to_omnetpp
 
 def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, conf, inet_stopped_event):
     recorder = Recorder()
-    #while not inet_stopped_event.is_set():
-    for i in range(1,5):
+    while not inet_stopped_event.is_set():
         if os.path.exists("demands.json") and os.path.exists("utilization.json"):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
             os.remove("demands.json")
