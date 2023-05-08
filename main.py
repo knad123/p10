@@ -20,7 +20,7 @@ from parsers.omnet import to_omnetpp
 import os
 
 # Constants
-ROOT = __file__
+ROOT = os.path.dirname(__file__)
 
 def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, conf):
     recorder = Recorder()
