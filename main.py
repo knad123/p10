@@ -18,18 +18,18 @@ from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
 
 
-def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event):
+def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, conf):
     while not inet_stopped_event.is_set():
         if os.path.exists("demands.json") and os.path.exists("utilization.json"):
-            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state)
+            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state, conf)
             os.remove("demands.json")
             os.remove("utilization.json")
         time.sleep(1)
 
 def run_inet_simulation(simulation_directory, inet_stopped_event: threading.Event):
     os.chdir(simulation_directory)
-    #subprocess.run(['inet', '-u', 'Cmdenv'])
-    subprocess.run(['inet'])
+    subprocess.run(['inet', '-u', 'Cmdenv'])
+    #subprocess.run(['inet'])
     inet_stopped_event.set()
 
 if __name__ == "__main__":
@@ -95,5 +95,5 @@ if __name__ == "__main__":
     inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
     inet_simulation_thread.start()
 
-    monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,))
+    monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,conf))
     monitor_output_thread.start()
