@@ -50,6 +50,7 @@ if __name__ == "__main__":
     p.add_argument("--omnet_path", type=str, default="../p10",
                    help="Path to omnet++, used for the demands and 2-phase-commit files")
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
+    p.add_argument("--time_scale", type=float, default=1, help="the time scale of the experiments. Start and stop times of demands are multiplied by this value. ")
     p.add_argument("--update_interval", type=int, default=120, help="How often the routing is updated in seconds")
 
     conf = vars(p.parse_args())

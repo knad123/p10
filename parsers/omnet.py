@@ -48,7 +48,7 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
     """
 
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
-        to_omnetpp_ini(network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
+        to_omnetpp_ini(conf=conf, network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
                                packet_size=packet_size, send_interval_multiplier=scaler, zero_latency=zero_latency,
                                algorithm=algorithm)
 
@@ -234,7 +234,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     return link_to_ppp
 
 
-def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, failure_scenarios_enum=0, packet_size=64,
+def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, failure_scenarios_enum=0, packet_size=64,
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
 
@@ -299,24 +299,20 @@ def to_omnetpp_ini(network, export_flows, temporal_demands: Dict[Tuple[str, str]
                 source_hosts[ingress].append((starttime, stoptime, send_interval, flow))
 
 
-    if zero_latency:
-        warmup_time = 0
-        sim_time = 8
-    else:
-        warmup_time = 20
-        sim_time = 86400
+
+    warmup_time = 0
+    sim_time = 86400 * conf["time_scale"]
 
     file.write(f"warmup-period = {warmup_time}s\n")
     file.write(f"sim-time-limit = {sim_time}s\n")
-    file.write(f"real-time-limit = 7200s\n")
 
     host_port = 1
     for ingress, apps in source_apps.items():
         file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
         for (i, (starttime, stoptime, send_interval, flow)) in enumerate(source_hosts[ingress]):
             x = time.strptime(starttime, '%H:%M')
-            starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds())
-            stoptime = starttime + 3600 # Hack to just set starttime an hour later
+            starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
+            stoptime = starttime + 3600 * conf["time_scale"] # Hack to just set starttime an hour later
             '''            
             if source_hosts[ingress][i] != source_hosts[ingress][len(source_hosts[ingress])-1]:
                 y = time.strptime(source_hosts[ingress][i+1][0], '%H:%M')
