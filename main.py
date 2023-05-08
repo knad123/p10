@@ -49,6 +49,7 @@ if __name__ == "__main__":
     p.add_argument("--omnet_path", type=str, default="../p10",
                    help="Path to omnet++, used for the demands and 2-phase-commit files")
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
+    p.add_argument("--no_omnet", action="store_true")
 
     conf = vars(p.parse_args())
 
@@ -88,10 +89,11 @@ if __name__ == "__main__":
 
     simulation_directory = f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}"
 
-    inet_stopped_event = threading.Event()
+    if not conf['no_omnet']:
+        inet_stopped_event = threading.Event()
 
-    inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
-    inet_simulation_thread.start()
+        inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
+        inet_simulation_thread.start()
 
-    monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,))
-    monitor_output_thread.start()
+        monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,))
+        monitor_output_thread.start()
