@@ -17,6 +17,10 @@ from classes.essence_state import EssenceState
 from classes.recorder import Recorder
 from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
+import os
+
+# Constants
+ROOT = __file__
 
 def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, conf):
     recorder = Recorder()
@@ -26,7 +30,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
             os.remove("demands.json")
             os.remove("utilization.json")
         time.sleep(1)
-    os.chdir("../../../../p10")
+    os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
         os.mkdir(conf["results_folder"])
     with open(conf["results_folder"] + "/" + conf['algorithm'] + "_" + mpls_network.name + "_changes" + ".txt", "w") as results:
