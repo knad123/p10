@@ -10,7 +10,7 @@ from algorithms.essence import essence
 from classes.essence_state import EssenceState
 
 
-def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState):
+def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState, recorder, conf):
     with open("demands.json", "r") as file:
         demands_data = json.load(file)
 
@@ -40,7 +40,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
             network.demand_dataframe = pd.concat([network.demand_dataframe, new_row], ignore_index=True)
 
     # Calculate new paths
-    paths = essence(network, essence_state)
+    paths = essence(network, essence_state, conf)
 
     # Create XML root element
     root = ET.Element('twoPhaseCommit')
@@ -122,10 +122,9 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
     doc = md.parseString(xml_string)
     pretty_xml = doc.toprettyxml(indent='  ')
     print(pretty_xml)
-
-    # Print demands that have been changed
-    print("changes:" + str(changes))
     '''
+    # Add the number of changes to the recorder
+    recorder.changes.append((len(changes)))
 
     return network
 

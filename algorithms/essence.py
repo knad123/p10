@@ -18,14 +18,14 @@ from classes.network import MLPS_Network
 from classes.essence_state import EssenceState
 
 
-def essence(network: MLPS_Network, essence_state: EssenceState):
+def essence(network: MLPS_Network, essence_state: EssenceState, conf):
     genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state)
+                                      essence_state=essence_state, conf=conf)
     return genetic_paths
 
 
-def genetic_algorithm(viable_paths, loads, capacities, essence_state, generations=1000, population_size=100,
+def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, generations=1000, population_size=100,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
     if not essence_state.current_population:

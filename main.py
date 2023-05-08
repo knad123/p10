@@ -14,19 +14,27 @@ import json
 import parsers.communicator
 from classes.network import MLPS_Network
 from classes.essence_state import EssenceState
+from classes.recorder import Recorder
 from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
 
 
-def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event):
-    while not inet_stopped_event.is_set():
+def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, conf, inet_stopped_event):
+    recorder = Recorder()
+    #while not inet_stopped_event.is_set():
+    for i in range(1,5):
         if os.path.exists("demands.json") and os.path.exists("utilization.json"):
-            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state)
+            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
             os.remove("demands.json")
             os.remove("utilization.json")
         time.sleep(1)
+    os.chdir("../../../../p10")
+    if not os.path.exists(conf["results_folder"]):
+        os.mkdir(conf["results_folder"])
+    with open(conf["results_folder"] + "/" + conf['algorithm'] + "_" + mpls_network.name + "_changes" + ".txt", "w") as results:
+        results.write(str(recorder.changes))
 
-def run_inet_simulation(simulation_directory, inet_stopped_event: threading.Event):
+def run_inet_simulation(simulation_directory, inet_stopped_event):
     os.chdir(simulation_directory)
     subprocess.run(['inet', '-u', 'Cmdenv'])
     inet_stopped_event.set()
@@ -50,6 +58,7 @@ if __name__ == "__main__":
                    help="Path to omnet++, used for the demands and 2-phase-commit files")
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
     p.add_argument("--no_omnet", action="store_true")
+    p.add_argument("--results_folder", type=str, default="results", help="folder for results")
 
     conf = vars(p.parse_args())
 
@@ -77,7 +86,7 @@ if __name__ == "__main__":
     essence_state.create_pathdict(mpls_network)
     essence_state.create_stretchdict(mpls_network)
 
-    paths = essence(mpls_network, essence_state)
+    paths = essence(mpls_network, essence_state, conf)
 
     for path in paths.values():
         mpls_network.install_lsp(path)
@@ -95,5 +104,5 @@ if __name__ == "__main__":
         inet_simulation_thread = threading.Thread(target=run_inet_simulation, args=(simulation_directory, inet_stopped_event,))
         inet_simulation_thread.start()
 
-        monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, inet_stopped_event,))
+        monitor_output_thread = threading.Thread(target=monitor_omnet, args=(simulation_directory, mpls_network, essence_state, conf, inet_stopped_event,))
         monitor_output_thread.start()
