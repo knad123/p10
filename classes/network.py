@@ -77,7 +77,7 @@ class MLPS_Network:
             capacity = link_data["bandwidth"]
 
             # Add edges to the graph with capacity attribute
-            self.topology.add_edge(source_router, target_router, cost=latency, capacity=capacity)
+            self.topology.add_edge(source_router, target_router, latency=latency, capacity=capacity)
 
             # Assume all links are bidirectional
-            self.topology.add_edge(target_router, source_router, cost=latency, capacity=capacity)
+            self.topology.add_edge(target_router, source_router, latency=latency, capacity=capacity)

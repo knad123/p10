@@ -1,31 +1,51 @@
 import networkx as nx
+from networkx import shortest_path
 
 from classes.network import MLPS_Network
-import concurrent.futures
-import os
 
 
 class EssenceState:
     def __init__(self, network: MLPS_Network):
-        self.pathdict = create_pathdict(self, network)
+        self.pathdict = dict()
+        self.stretchdict = dict()
         self.current_population = []
+        self.congestion_weight = 1
+
+        self.create_pathdict(network)
+        self.create_stretchdict(network)
 
 
-def create_pathdict(self, network: MLPS_Network):
-    flow_to_graph = {f: network.topology for f in network.demands}
-    for graph in flow_to_graph.values():
-        for src, tgt in graph.edges:
-            graph[src][tgt]["weight"] = 0
+    def create_stretchdict(self, network: MLPS_Network):
+        shortest_paths_len = dict()
+        stretch_dict = {}
 
-    input_data = [(src, tgt, flow_to_graph) for src, tgt in network.demands]
-    with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
-        results = list(executor.map(find_paths_for_demand, input_data))
+        for src, tgt in network.demands.keys():
+            shortest_paths_len[(src, tgt)] = len(shortest_path(network.topology, src, tgt))
 
-    pathdict = dict()
-    for result, (src, tgt) in zip(results, network.demands):
-        pathdict[(src, tgt)] = result
+        # Create stretch dictionary, so it does not have to be recomputed in the genetic algorithm
+        for src, tgt in network.demands.keys():
+            # Calculate the stretch value for each path between the source and destination
+            for path in self.pathdict[src, tgt]:
+                path_tuple = tuple(path)
+                path_len = len(path)
+                stretch_dict[path_tuple] = (path_len / shortest_paths_len[src, tgt])
 
-    return pathdict
+        self.stretchdict = stretch_dict
+
+    def create_pathdict(self, network: MLPS_Network):
+        flow_to_graph = {f: network.topology for f in network.demands}
+        for graph in flow_to_graph.values():
+            for src, tgt in graph.edges:
+                graph[src][tgt]["weight"] = 0
+
+        input_data = [(src, tgt, flow_to_graph) for src, tgt in network.demands]
+        results = list(map(find_paths_for_demand, input_data))
+
+        pathdict = dict()
+        for result, (src, tgt) in zip(results, network.demands):
+            pathdict[(src, tgt)] = result
+
+        self.pathdict = pathdict
 
 
 def find_paths_for_demand(args):
