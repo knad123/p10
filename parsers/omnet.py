@@ -77,8 +77,9 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    file.write(f"import inet.p10.TwoPhaseCommit;\n")
-    file.write("import inet.p10.MeasureWriter;\n")
+    if conf["algorithm"] in ['essence', 'essence_stateless']:
+        file.write(f"import inet.p10.TwoPhaseCommit;\n")
+        file.write("import inet.p10.MeasureWriter;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
 
@@ -103,8 +104,9 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
-    file.write("        measureWriter: MeasureWriter;\n")
+    if conf["algorithm"] in ['essence', 'essence_stateless']:
+        file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
+        file.write("        measureWriter: MeasureWriter;\n")
     for router_name, router in network.routers.items():
 
         # calculate number of flows at this router

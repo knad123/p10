@@ -8,9 +8,12 @@ import pandas as pd
 from classes.network import MLPS_Network
 from algorithms.essence import essence
 from classes.essence_state import EssenceState
-
+import os
 
 def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState, recorder, conf):
+    if conf["algorithm"] == "essence_stateless":
+        essence_state = EssenceState(network)
+
     with open("demands.json", "r") as file:
         demands_data = json.load(file)
 
@@ -114,8 +117,8 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
     # Write to xml file
     tree = ET.ElementTree(root)
+    #tree.write(os.path.join(simulation_dir,'2-phase-commit.xml'))
     tree.write('2-phase-commit.xml')
-    
     '''
     # Print 2 phase commit file
     xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')

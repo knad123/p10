@@ -24,7 +24,6 @@ def essence(network: MLPS_Network, essence_state: EssenceState, conf):
                                       essence_state=essence_state, conf=conf, time_limit=conf["update_interval"])
     return genetic_paths
 
-
 def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, generations=1000, population_size=100,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
