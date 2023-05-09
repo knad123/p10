@@ -2,8 +2,6 @@ import networkx as nx
 from networkx import shortest_path
 
 from classes.network import MLPS_Network
-import concurrent.futures
-import os
 
 
 class EssenceState:
@@ -12,6 +10,10 @@ class EssenceState:
         self.stretchdict = dict()
         self.current_population = []
         self.congestion_weight = 1
+
+        self.create_pathdict(network)
+        self.create_stretchdict(network)
+
 
     def create_stretchdict(self, network: MLPS_Network):
         shortest_paths_len = dict()
@@ -37,8 +39,7 @@ class EssenceState:
                 graph[src][tgt]["weight"] = 0
 
         input_data = [(src, tgt, flow_to_graph) for src, tgt in network.demands]
-        with concurrent.futures.ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
-            results = list(executor.map(find_paths_for_demand, input_data))
+        results = list(map(find_paths_for_demand, input_data))
 
         pathdict = dict()
         for result, (src, tgt) in zip(results, network.demands):
