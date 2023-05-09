@@ -18,6 +18,7 @@ from classes.recorder import Recorder
 from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
 import os
+import shutil
 
 # Constants
 ROOT = os.path.dirname(__file__)
@@ -63,6 +64,9 @@ def main(confs):
     # Create the network graph
     mpls_network.create_MPLS_network_topology(topology_data)
 
+    simulation_directory = os.path.join(conf['output_dir'], mpls_network.name, conf['algorithm'])
+    if os.path.isdir(simulation_directory):
+        shutil.rmtree(simulation_directory)
     # Create initial routing
 
     paths = {}
@@ -79,8 +83,6 @@ def main(confs):
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
 
-    simulation_directory = os.path.join(conf['output_dir'], mpls_network.name, conf['algorithm'])
-    print(simulation_directory)
     if conf['no_omnet']:
         return
 
