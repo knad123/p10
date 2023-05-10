@@ -123,6 +123,8 @@ if __name__ == "__main__":
     p.add_argument("--update_interval", type=int, default=120, help="How often the routing is updated in seconds")
     p.add_argument("--utilization_recording_interval", type=int, default=2000, help="time in MS")
     p.add_argument("--recording_sample_duration", type=int, default=10000, help="How long to sample when calculating utilization. Time in MS")
+    p.add_argument("--demand_scaler", type=float, default=1, help="Scale demands by this value")
+
     conf = vars(p.parse_args())
     
     main(conf)

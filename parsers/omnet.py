@@ -326,7 +326,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
             file.write(f'''**.{apps['source_host']}.app[{i}].localPort = {host_port}\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].destPort = {target_apps[flow['egress']]['destPort']}\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].messageLength = {apps['messageLength']}\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {send_interval}s\n''')
+            file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {(1 / conf["demand_scaler"]) * send_interval}s\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].destAddresses = "{flow['target_host']}"\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].startTime = {starttime}s\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].stopTime = {stoptime}s\n''')
