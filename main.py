@@ -124,6 +124,7 @@ if __name__ == "__main__":
     p.add_argument("--utilization_recording_interval", type=int, default=2000, help="time in MS")
     p.add_argument("--recording_sample_duration", type=int, default=10000, help="How long to sample when calculating utilization. Time in MS")
     p.add_argument("--demand_scaler", type=float, default=1, help="Scale demands by this value")
+    p.add_argument("--write_interval", type=int, default=5, help="Number of seconds between every time utilization and demands are written. Should be less than update_interval")
 
     conf = vars(p.parse_args())
     

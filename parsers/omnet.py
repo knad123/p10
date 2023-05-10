@@ -106,7 +106,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
     if conf["algorithm"] in ['essence', 'essence_stateless']:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
-        file.write("        measureWriter: MeasureWriter;\n")
+        file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
     for router_name, router in network.routers.items():
 
         # calculate number of flows at this router
