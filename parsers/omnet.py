@@ -85,8 +85,8 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
 
     # Global statistic
     file.write("    parameters:\n")
-    file.write("        int timeBetweenRecordings = 100;\n")
-    file.write('        int recordingSampleDuration = 5000;\n')
+    file.write(f"        int timeBetweenRecordings = {conf['utilization_recording_interval']};\n")
+    file.write(f'        int recordingSampleDuration = {conf["recording_sample_duration"]};\n')
     file.write \
         ('        @statistic[packetsCreatedVector](source="emitsPerDuration(packetSentUDP)"; record=vector; interpolationmode="none");\n')
     file.write \

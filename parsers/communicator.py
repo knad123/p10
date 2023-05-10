@@ -17,7 +17,6 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
     with open("demands.json", "r") as file:
         content = file.read()
-        print(content)
         demands_data = json.loads(content)
 
     # Used to set the weight of congestion and stretch

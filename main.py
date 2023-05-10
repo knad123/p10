@@ -121,7 +121,8 @@ if __name__ == "__main__":
     p.add_argument("--results_folder", type=str, default="results", help="folder for results")
     p.add_argument("--time_scale", type=float, default=1, help="the time scale of the experiments. Start and stop times of demands are multiplied by this value. ")
     p.add_argument("--update_interval", type=int, default=120, help="How often the routing is updated in seconds")
-
+    p.add_argument("--utilization_recording_interval", type=int, default=2000, help="time in MS")
+    p.add_argument("--recording_sample_duration", type=int, default=10000, help="How long to sample when calculating utilization. Time in MS")
     conf = vars(p.parse_args())
     
     main(conf)
