@@ -17,7 +17,9 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
         
     if os.path.exists("demands.json"):
         with open("demands.json", "r") as file:
-            demands_data = json.loads(file.read())
+            content = file.read()
+            print(content)
+            demands_data = json.loads(content)
 
     # Used to set the weight of congestion and stretch
     with open("utilization.json", "r") as file:
