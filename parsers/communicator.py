@@ -13,9 +13,10 @@ import os
 def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState, recorder, conf):
     if conf["algorithm"] == "essence_stateless":
         essence_state.current_population = []
-
-    with open("demands.json", "r") as file:
-        demands_data = json.load(file)
+        
+    if os.path.exists("demands.json"):
+        with open("demands.json", "r") as file:
+            demands_data = json.loads(file.read())
 
     # Used to set the weight of congestion and stretch
     with open("utilization.json", "r") as file:
