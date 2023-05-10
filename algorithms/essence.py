@@ -41,7 +41,7 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, gene
     while elapsed_time < time_limit:
         # Select parents
         a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                              essence_state.congestion_weight)
+                                              essence_state.congestion_weight, essence_state.current_paths)
         # print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
@@ -61,9 +61,10 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, gene
 
     # Sort the population by fitness
     a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                          essence_state.congestion_weight)
+                                          essence_state.congestion_weight, essence_state.current_paths)
 
     essence_state.current_population = population[:int(len(population) * 0.2)]
+    essence_state.current_paths = a_class[0]
     # Return the fittest individual
     return a_class[0]
 
@@ -78,15 +79,15 @@ def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, via
     return child1, child2
 
 
-def selection(population, capacities, loads, stretch_dict, congestion_weight):
-    congestion, stretch = zip(*[calculate_fitness(individual, capacities, loads, stretch_dict) for individual in
+def selection(population, capacities, loads, stretch_dict, congestion_weight, current_paths):
+    congestion, stretch, num_changes = zip(*[calculate_fitness(individual, capacities, loads, stretch_dict, current_paths) for individual in
                                 population])
 
-    normalized_congestion, normalized_stretch = normalize_values(congestion, stretch)
+    normalized_congestion, normalized_stretch, normalized_num_changes = normalize_values(congestion, stretch, num_changes)
 
     stretch_weight = 1 - congestion_weight
 
-    fitness_values = [normalized_congestion[i] * congestion_weight + normalized_stretch[i] * stretch_weight for i in
+    fitness_values = [normalized_congestion[i] * congestion_weight + normalized_stretch[i] * stretch_weight - normalized_num_changes[i] for i in
                       range(len(population))]
 
     # Zip the fitness values and the population together
@@ -137,7 +138,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
     return offspring1, offspring2
 
 
-def calculate_fitness(individual, capacities, loads, stretch_dict):
+def calculate_fitness(individual, capacities, loads, stretch_dict, current_paths):
     # Initialize the utilization of each link to 0
     utilization = {link: 0 for link in capacities.keys()}
 
@@ -148,7 +149,7 @@ def calculate_fitness(individual, capacities, loads, stretch_dict):
             link = (path[i], path[i + 1])
             utilization[link] += load
 
-    # Calculate the congestion component of the fitness
+    # Calculate the congestion         x = individual[source,destination]component of the fitness
     congestion = 0
     for link, capacity in capacities.items():
         u = utilization[link] / capacity
@@ -159,7 +160,9 @@ def calculate_fitness(individual, capacities, loads, stretch_dict):
     for (source, destination), paths in individual.items():
         stretch += stretch_dict[tuple(paths)]
 
-    return congestion, stretch
+    num_changes = sum([path != individual[source, destination] for (source, destination), path in current_paths.items()])
+
+    return congestion, stretch, num_changes
 
 
 def mutate(individual, mutation_rate, viable_paths):
@@ -189,10 +192,13 @@ def normalize(value):
         return normalized_values
 
 
-def normalize_values(congestion, stretch):
-    normalized_congestion = normalize(congestion)
-    normalized_stretch = normalize(stretch)
-    return normalized_congestion, normalized_stretch
+def normalize_values(*args):
+    normalized_values = []
+    for values in args:
+        normalized_value = normalize(values)
+        normalized_values.append(normalized_value)
+    return tuple(normalized_values)
+
 
 
 def fortz_func(u):

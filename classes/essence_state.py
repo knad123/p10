@@ -10,6 +10,7 @@ class EssenceState:
         self.stretchdict = dict()
         self.current_population = []
         self.congestion_weight = 1
+        self.current_paths = dict()
 
         self.create_pathdict(network)
         self.create_stretchdict(network)
