@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Dict, List
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as md
@@ -119,7 +120,9 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
     # Write to xml file
     tree = ET.ElementTree(root)
     #tree.write(os.path.join(simulation_dir,'2-phase-commit.xml'))
-    tree.write('2-phase-commit.xml')
+    tree.write('2pc.xml')
+    os.rename('2pc.xml', '2-phase-commit.xml')
+
     '''
     # Print 2 phase commit file
     xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')
