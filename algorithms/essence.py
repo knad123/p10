@@ -87,7 +87,7 @@ def selection(population, capacities, loads, stretch_dict, congestion_weight, cu
 
     stretch_weight = 1 - congestion_weight
 
-    fitness_values = [normalized_congestion[i] * congestion_weight + normalized_stretch[i] * stretch_weight - normalized_num_changes[i] for i in
+    fitness_values = [normalized_congestion[i] * congestion_weight + normalized_stretch[i] * stretch_weight + normalized_num_changes[i] for i in
                       range(len(population))]
 
     # Zip the fitness values and the population together
