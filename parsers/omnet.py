@@ -311,7 +311,12 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     host_port = 1
     for ingress, apps in source_apps.items():
         file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
-        for (i, (starttime, stoptime, send_interval, flow)) in enumerate(source_hosts[ingress]):
+        # Sort source_hosts by start time ascending
+        source_hosts_sorted = source_hosts[ingress]
+        num_apps = len(source_hosts[ingress])
+        file.write(f'''**.{apps['source_host']}.numApps = {num_apps}\n''')
+        for i in range(num_apps):
+            starttime, stoptime, send_interval, flow = source_hosts_sorted[i]
             x = time.strptime(starttime, '%H:%M')
             starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
             stoptime = starttime + 3600 * conf["time_scale"] # Hack to just set starttime an hour later
@@ -326,7 +331,29 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
             file.write(f'''**.{apps['source_host']}.app[{i}].localPort = {host_port}\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].destPort = {target_apps[flow['egress']]['destPort']}\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].messageLength = {apps['messageLength']}\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {(1 / conf["demand_scaler"]) * send_interval}s\n''')
+            basic_send_interval = (1 / conf["demand_scaler"]) * send_interval
+            if conf["disable_dynamic_demands"]:
+                if conf["jitter"] > 0:
+                    file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s + uniform({basic_send_interval}s * (-{conf["jitter"] / 2}), {basic_send_interval}s * {conf["jitter"] / 2})\n''')
+                else:
+                    file.write(
+                        f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s\n''')
+            else:
+                if i < num_apps - 1:
+                    next_basic_send_interval = (1 / conf["demand_scaler"]) * source_hosts_sorted[i+1][2]
+
+                else:
+                    next_basic_send_interval = basic_send_interval
+
+                # get the a value of the function f(x) = ax + b. We do this by getting the difference in this sendinterval compared to the next one and dividing it by stoptime - starttime
+                a = (next_basic_send_interval - basic_send_interval) / (stoptime - starttime)
+                b = basic_send_interval
+                if conf["jitter"] > 0:
+                    file.write(
+                        f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s) + uniform(linear({a}s, {b}s) * (-{conf["jitter"]}), linear({a}s, {b}s) * {conf["jitter"]}\n''')
+                else:
+                    file.write(
+                        f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s)\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].destAddresses = "{flow['target_host']}"\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].startTime = {starttime}s\n''')
             file.write(f'''**.{apps['source_host']}.app[{i}].stopTime = {stoptime}s\n''')
