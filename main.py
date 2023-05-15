@@ -6,6 +6,7 @@ import time
 import threading
 import multiprocessing
 
+import networkx as nx
 import yaml
 import re
 import math
@@ -76,6 +77,9 @@ def main(confs):
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
         essence_state = EssenceState(mpls_network)
         paths = essence(mpls_network, essence_state, conf)
+    elif conf["algorithm"] == "shortest_path":
+        for src, tgt in temporal_demands.keys():
+            paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
 
     for path in paths.values():
         mpls_network.install_lsp(path)
@@ -104,7 +108,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
