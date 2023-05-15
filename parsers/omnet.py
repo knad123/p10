@@ -350,7 +350,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
                 b = basic_send_interval
                 if conf["jitter"] > 0:
                     file.write(
-                        f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s) + uniform(linear({a}s, {b}s) * (-{conf["jitter"]}), linear({a}s, {b}s) * {conf["jitter"]}\n''')
+                        f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s) + uniform(linear({a}s, {b}s) * (-{conf["jitter"]}), linear({a}s, {b}s) * {conf["jitter"]})\n''')
                 else:
                     file.write(
                         f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s)\n''')
