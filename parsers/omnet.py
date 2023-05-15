@@ -262,6 +262,8 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     file.write("**.ppp[*].queue.packetCapacity = 10\n")  # This value is taken from example files in INET.
     # file.write("**.scenarioManager.script = xmldoc(\"scenario.xml\")\n")
     file.write("\n")
+    file.write(f"warmup-period = 0s\n")
+    file.write(f"sim-time-limit = {86400 * conf['time_scale']}s\n")
     # Add classification files
     for router_name, router in network.routers.items():
         file.write \
@@ -269,111 +271,98 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
 
     # file.write("\n[Config UDP]\n")
     # Create a dictionary to keep track of the app entries for each source host.
+
+    # basic_send_interval = (1 / conf["demand_scaler"]) * send_interval
+    # if conf["disable_dynamic_demands"]:
+    # if conf["jitter"] > 0:
+    #    file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s + uniform({basic_send_interval}s * (-{conf["jitter"] / 2}), {basic_send_interval}s * {conf["jitter"] / 2})\n''')
+    # else:
+    #    file.write(
+    #             f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s\n''')
+    #   else:
+    #     if i < num_apps - 1:
+    #         next_basic_send_interval = (1 / conf["demand_scaler"]) * source_hosts_sorted[i+1][2]
+
+    #  else:
+    #      next_basic_send_interval = basic_send_interval
+
+    # get the a value of the function f(x) = ax + b. We do this by getting the difference in this sendinterval compared to the next one and dividing it by stoptime - starttime
+    #  a = (next_basic_send_interval - basic_send_interval) / (stoptime - starttime)
+    #   b = basic_send_interval
+    #    if conf["jitter"] > 0:
+    #       file.write(
+    #         f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s) + uniform(linear({a}s, {b}s) * (-{conf["jitter"]}), linear({a}s, {b}s) * {conf["jitter"]})\n''')
+    #   else:
+    #      file.write(
+    #     f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s)\n''')
+
+        # Create a dictionary to keep track of the app entries for each source host.
+
+    send_intervals = {}
+    send_interval_start_times = {}
+
+    for (src, tgt), demands in temporal_demands.items():
+        for d in demands:
+            send_interval = 86400
+            if int(d[0]) > 0:
+                send_interval = (send_interval_multiplier * (1 / (int(d[0]) / packet_size)))
+            start_time_unformatted = d[1]
+            x = time.strptime(start_time_unformatted, '%H:%M')
+            send_interval_start_time = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
+            if (src, tgt) not in send_intervals:
+                send_intervals[(src, tgt)] = f"{send_interval}"
+                send_interval_start_times[(src, tgt)] = f"{send_interval_start_time}"
+            else:
+                send_intervals[(src, tgt)] += f" {send_interval}"
+                send_interval_start_times[(src, tgt)] += f" {send_interval_start_time}"
+
     source_apps = {}
-    source_hosts = {}
-    target_apps = {}
-    flow_idx = 0
-    longest_send_interval = 0 # Used to find the simulation time limit
-
-    i = 1
+    flow_idx = 0  # Used to find the simulation time limit
     for flow in export_flows:
-        target_apps[flow['egress']] = {'destAddresses': flow['target_host'], 'destPort': i}
-        i += 1
+        flow_idx += 1
+        ingress = flow['ingress']
+        egress = flow['egress']
+        entry = {'typename': 'UdpBasicApp', 'localPort': flow_idx, 'destPort': flow_idx,
+                 'messageLength': f"{packet_size} bytes",
+                 'sendInterval': "1s",
+                 'destAddresses': flow['target_host'],
+                 'source_host': flow['source_host'],
+                 'send_intervals': send_intervals[(ingress, egress)],
+                 'send_interval_start_times': send_interval_start_times[(ingress, egress)]}
+        if ingress not in source_apps:
+            source_apps[ingress] = [entry]
+        else:
+            source_apps[ingress].append(entry)
 
-    for flow in export_flows:
-        for load, starttime, stoptime in temporal_demands[flow['ingress'],flow['egress']]:
-            flow_idx += 1
-            ingress = flow['ingress']
-            egress = flow['egress']
-            if int(load) != 0:
-                send_interval = (send_interval_multiplier * (1 / (int(load) / packet_size)))
-            else:
-                send_interval = 3600
-            longest_send_interval = send_interval if send_interval > longest_send_interval else longest_send_interval
-            entry = {'typename': 'UdpBasicApp', 'localPort': flow_idx, 'destPort': target_apps[egress]['destPort'],
-                                         'messageLength': f"{packet_size} bytes",
-                                         'destAddresses': target_apps[egress]['destAddresses'], 'source_host': flow['source_host']}
-
-            if ingress not in source_apps:
-                source_apps[ingress] = entry
-                source_hosts[ingress] = [(starttime, stoptime, send_interval, flow)]
-            else:
-                source_hosts[ingress].append((starttime, stoptime, send_interval, flow))
-
-
-
-    warmup_time = 0
-    sim_time = 86400 * conf["time_scale"]
-
-    file.write(f"warmup-period = {warmup_time}s\n")
-    file.write(f"sim-time-limit = {sim_time}s\n")
-
-    host_port = 1
     for ingress, apps in source_apps.items():
-        file.write(f'''**.{apps['source_host']}.numApps = {len(source_hosts[ingress])}\n''')
-        # Sort source_hosts by start time ascending
-        source_hosts_sorted = source_hosts[ingress]
-        num_apps = len(source_hosts[ingress])
-        file.write(f'''**.{apps['source_host']}.numApps = {num_apps}\n''')
-        for i in range(num_apps):
-            starttime, stoptime, send_interval, flow = source_hosts_sorted[i]
-            x = time.strptime(starttime, '%H:%M')
-            starttime = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
-            stoptime = starttime + 3600 * conf["time_scale"] # Hack to just set starttime an hour later
-            '''            
-            if source_hosts[ingress][i] != source_hosts[ingress][len(source_hosts[ingress])-1]:
-                y = time.strptime(source_hosts[ingress][i+1][0], '%H:%M')
-                stoptime = int(datetime.timedelta(hours=y.tm_hour, minutes=y.tm_min).total_seconds())
-            else:
-                stoptime = starttime + 3600
-            '''
-            file.write(f'''**.{apps['source_host']}.app[{i}].typename = "{apps['typename']}"\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].localPort = {host_port}\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].destPort = {target_apps[flow['egress']]['destPort']}\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].messageLength = {apps['messageLength']}\n''')
-            basic_send_interval = (1 / conf["demand_scaler"]) * send_interval
-            if conf["disable_dynamic_demands"]:
-                if conf["jitter"] > 0:
-                    file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s + uniform({basic_send_interval}s * (-{conf["jitter"] / 2}), {basic_send_interval}s * {conf["jitter"] / 2})\n''')
-                else:
-                    file.write(
-                        f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s\n''')
-            else:
-                if i < num_apps - 1:
-                    next_basic_send_interval = (1 / conf["demand_scaler"]) * source_hosts_sorted[i+1][2]
-
-                else:
-                    next_basic_send_interval = basic_send_interval
-
-                # get the a value of the function f(x) = ax + b. We do this by getting the difference in this sendinterval compared to the next one and dividing it by stoptime - starttime
-                a = (next_basic_send_interval - basic_send_interval) / (stoptime - starttime)
-                b = basic_send_interval
-                if conf["jitter"] > 0:
-                    file.write(
-                        f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s) + uniform(linear({a}s, {b}s) * (-{conf["jitter"]}), linear({a}s, {b}s) * {conf["jitter"]})\n''')
-                else:
-                    file.write(
-                        f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s)\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].destAddresses = "{flow['target_host']}"\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].startTime = {starttime}s\n''')
-            file.write(f'''**.{apps['source_host']}.app[{i}].stopTime = {stoptime}s\n''')
-            host_port += 1
+        file.write(f'''**.{apps[0]['source_host']}.numApps = {len(apps)}\n''')
+        for i, app in enumerate(apps):
+            file.write(f'''**.{app['source_host']}.app[{i}].typename = "{app['typename']}"\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].localPort = {app['localPort']}\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].destPort = {app['destPort']}\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].messageLength = {app['messageLength']}\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].sendInterval = {app['sendInterval']}\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].destAddresses = "{app['destAddresses']}"\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].sendIntervals = "{app['send_intervals']}"\n''')
+            file.write(f'''**.{app['source_host']}.app[{i}].sendIntervalStartTimes = "{app['send_interval_start_times']}"\n''')
         file.write("\n")
 
+    # Add applications at target nodes.
     # Group export flows by egress/target host
     flows_by_target = {}
-    for source, apps in target_apps.items():
-        target = apps['destAddresses']
-        if target not in flows_by_target:
-            flows_by_target[target] = []
-        flows_by_target[target].append(apps)
+    for source, apps in source_apps.items():
+        for app in apps:
+            target = app['destAddresses']
+            if target not in flows_by_target:
+                flows_by_target[target] = []
+            flows_by_target[target].append(app)
 
     # Add applications at target nodes
-    target_port = 1
-    for target, items in target_apps.items():
-        file.write(f'''**.{items['destAddresses']}.numApps = 1\n''')
-        file.write(f'''**.{items['destAddresses']}.app[0].typename = "UdpSinkApp"\n''')
-        file.write(f'''**.{items['destAddresses']}.app[0].io.localPort = {items['destPort']}\n''')
+    for target, apps in flows_by_target.items():
+        file.write(f'''**.{target}.numApps = {len(apps)}\n''')
+        for i, app in enumerate(apps):
+            file.write(f'''**.{target}.app[{i}].typename = "UdpSinkApp"\n''')
+            file.write(f'''**.{target}.app[{i}].io.localPort = {app['destPort']}\n''')
         file.write("\n")
 
     for scenario in range(failure_scenarios_enum):
