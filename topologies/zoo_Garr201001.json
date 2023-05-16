@@ -423,7 +423,7 @@
       },
       {
         "bandwidth": 4000000,
-        "from_router": "a22_MIX____",
+        "from_router": "a22_MIX_",
         "to_router": "a30_MI_2",
         "latency": 241,
         "weight": 32,
@@ -1058,7 +1058,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a22_MIX____"
+        "name": "a22_MIX_"
       },
       {
         "interfaces": [

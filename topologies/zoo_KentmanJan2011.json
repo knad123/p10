@@ -13,7 +13,7 @@
       },
       {
         "bandwidth": 500000,
-        "from_router": "a1_K_College__Ashford",
+        "from_router": "a1_K_College_Ashford",
         "to_router": "a5_UoK_C",
         "latency": 42,
         "weight": 200,
@@ -134,7 +134,7 @@
       {
         "bandwidth": 500000,
         "from_router": "a5_UoK_C",
-        "to_router": "a26_UCA___Canterbury",
+        "to_router": "a26_UCA_Canterbury",
         "latency": 10,
         "weight": 200,
         "from_interface": "i10",
@@ -144,7 +144,7 @@
       {
         "bandwidth": 500000,
         "from_router": "a5_UoK_C",
-        "to_router": "a27_SOAS___Wye",
+        "to_router": "a27_SOAS_Wye",
         "latency": 19,
         "weight": 200,
         "from_interface": "i11",
@@ -163,7 +163,7 @@
       },
       {
         "bandwidth": 500000,
-        "from_router": "a6_UCA___Rochester",
+        "from_router": "a6_UCA_Rochester",
         "to_router": "a18_Chatham",
         "latency": 6,
         "weight": 200,
@@ -224,7 +224,7 @@
       {
         "bandwidth": 500000,
         "from_router": "a12_KPSN",
-        "to_router": "a20_Pilgrim___Ashford",
+        "to_router": "a20_Pilgrim_Ashford",
         "latency": 19,
         "weight": 200,
         "from_interface": "i3",
@@ -284,7 +284,7 @@
       {
         "bandwidth": 500000,
         "from_router": "a18_Chatham",
-        "to_router": "a19_UCA___Chatham",
+        "to_router": "a19_UCA_Chatham",
         "latency": 19,
         "weight": 200,
         "from_interface": "i5",
@@ -333,7 +333,7 @@
       },
       {
         "bandwidth": 500000,
-        "from_router": "a24_UCA___Maidstone",
+        "from_router": "a24_UCA_Maidstone",
         "to_router": "a33_EIS_Maidstone",
         "latency": 11,
         "weight": 200,
@@ -343,7 +343,7 @@
       },
       {
         "bandwidth": 500000,
-        "from_router": "a25_UoK___Tonbridge",
+        "from_router": "a25_UoK_Tonbridge",
         "to_router": "a34_CCCU_S",
         "latency": 13,
         "weight": 200,
@@ -353,7 +353,7 @@
       },
       {
         "bandwidth": 500000,
-        "from_router": "a25_UoK___Tonbridge",
+        "from_router": "a25_UoK_Tonbridge",
         "to_router": "a34_CCCU_S",
         "latency": 13,
         "weight": 200,
@@ -364,7 +364,7 @@
       {
         "bandwidth": 500000,
         "from_router": "a30_UoG_AH",
-        "to_router": "a37_NW_Kent_College___Dartford",
+        "to_router": "a37_NW_Kent_College_Dartford",
         "latency": 21,
         "weight": 200,
         "from_interface": "i3",
@@ -422,7 +422,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a1_K_College__Ashford"
+        "name": "a1_K_College_Ashford"
       },
       {
         "interfaces": [
@@ -509,7 +509,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a6_UCA___Rochester"
+        "name": "a6_UCA_Rochester"
       },
       {
         "interfaces": [
@@ -715,7 +715,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a19_UCA___Chatham"
+        "name": "a19_UCA_Chatham"
       },
       {
         "interfaces": [
@@ -730,7 +730,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a20_Pilgrim___Ashford"
+        "name": "a20_Pilgrim_Ashford"
       },
       {
         "interfaces": [
@@ -790,7 +790,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a24_UCA___Maidstone"
+        "name": "a24_UCA_Maidstone"
       },
       {
         "interfaces": [
@@ -806,7 +806,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a25_UoK___Tonbridge"
+        "name": "a25_UoK_Tonbridge"
       },
       {
         "interfaces": [
@@ -821,7 +821,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a26_UCA___Canterbury"
+        "name": "a26_UCA_Canterbury"
       },
       {
         "interfaces": [
@@ -836,7 +836,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a27_SOAS___Wye"
+        "name": "a27_SOAS_Wye"
       },
       {
         "interfaces": [
@@ -1002,7 +1002,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a37_NW_Kent_College___Dartford"
+        "name": "a37_NW_Kent_College_Dartford"
       }
     ]
   }

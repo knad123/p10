@@ -43,7 +43,7 @@
       },
       {
         "bandwidth": 100000,
-        "from_router": "a4_South_Kent_College___Ashford",
+        "from_router": "a4_South_Kent_College_Ashford",
         "to_router": "a18_IC_Wye",
         "latency": 16,
         "weight": 200,
@@ -173,7 +173,7 @@
       },
       {
         "bandwidth": 100000,
-        "from_router": "a13_NW_Kent_College___Dartford",
+        "from_router": "a13_NW_Kent_College_Dartford",
         "to_router": "a15_UoG_AH",
         "latency": 21,
         "weight": 200,
@@ -317,7 +317,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a4_South_Kent_College___Ashford"
+        "name": "a4_South_Kent_College_Ashford"
       },
       {
         "interfaces": [
@@ -459,7 +459,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a13_NW_Kent_College___Dartford"
+        "name": "a13_NW_Kent_College_Dartford"
       },
       {
         "interfaces": [

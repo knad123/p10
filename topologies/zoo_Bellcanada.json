@@ -153,7 +153,7 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a10_Sept__Iles",
+        "from_router": "a10_Sept_Iles",
         "to_router": "a19_Baie_Comeau",
         "latency": 284,
         "weight": 10,
@@ -832,7 +832,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a10_Sept__Iles"
+        "name": "a10_Sept_Iles"
       },
       {
         "interfaces": [
