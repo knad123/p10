@@ -18,15 +18,16 @@ from classes.network import MLPS_Network
 from classes.essence_state import EssenceState
 
 
-def essence(network: MLPS_Network, essence_state: EssenceState, conf):
+def essence(network: MLPS_Network, essence_state: EssenceState, conf, start_time):
     genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state, conf=conf, time_limit=conf["update_interval"])
+                                      essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
     return genetic_paths
 
-def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, generations=1000, population_size=100,
+def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=100,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
+    end_time = start_time + time_limit
     if not essence_state.current_population:
         population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in range(population_size)]
     else:
@@ -36,9 +37,8 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, gene
 
     # Run the genetic algorithm
     # for generation in range(generations):
-    start_time = time.time()
-    elapsed_time = 0
-    while elapsed_time < time_limit:
+
+    while time.time() < end_time:
         # Select parents
         a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
                                               essence_state.congestion_weight)
@@ -56,8 +56,6 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, gene
 
         # Replace the population with the children
         population = children
-        end_time = time.time()
-        elapsed_time = end_time - start_time
 
     # Sort the population by fitness
     a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,

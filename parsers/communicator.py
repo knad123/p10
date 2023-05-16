@@ -10,6 +10,7 @@ from classes.network import MLPS_Network
 from algorithms.essence import essence
 from classes.essence_state import EssenceState
 import os
+import time
 
 def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState, recorder, conf):
     if conf["algorithm"] == "essence_stateless":
@@ -42,7 +43,8 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
         except:
             print("Failed to load utilization, retrying..")
             time.sleep(30)
-
+    # Start timer
+    start_time = time.time()
     demands: Dict[(str,str), float] = import_demands(demands_data)
     network.demands.update(demands)
 
@@ -58,7 +60,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
             network.demand_dataframe = pd.concat([network.demand_dataframe, new_row], ignore_index=True)
 
     # Calculate new paths
-    paths = essence(network, essence_state, conf)
+    paths = essence(network, essence_state, conf, start_time)
 
     # Create XML root element
     root = ET.Element('twoPhaseCommit')

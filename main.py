@@ -76,7 +76,7 @@ def main(confs):
 
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
         essence_state = EssenceState(mpls_network)
-        paths = essence(mpls_network, essence_state, conf)
+        paths = essence(mpls_network, essence_state, conf, time.time())
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -133,5 +133,7 @@ if __name__ == "__main__":
     p.add_argument("--jitter", type=float, default=0.02, help="Demand jitter as a percentage")
 
     conf = vars(p.parse_args())
+
+    assert conf["write_interval"] < conf["update_interval"]
     
     main(conf)
