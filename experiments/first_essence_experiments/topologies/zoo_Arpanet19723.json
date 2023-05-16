@@ -2,293 +2,294 @@
   "network": {
     "links": [
       {
-        "bandwidth": 100000,
-        "from_router": "a0_UCCA_C",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a1_Canterbury_College",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a2_Medway_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 60,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a3_Mid_Kent_College",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 59,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a4_South_Kent_College_Ashford",
-        "to_router": "a21_IC_Wye",
-        "latency": 16,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a5_KIAD_O",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 11,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a6_Thanet_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 8,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a7_Hilderstone_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 7,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a8_Kent_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 65,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a9_Hadlow_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 20,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a10_University_College_Folkestone",
-        "to_router": "a21_IC_Wye",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a12_UoK_C",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a0_ILLINOIS",
+        "to_router": "a24_MIT",
+        "latency": 2632,
         "weight": 10,
         "from_interface": "i0",
-        "to_interface": "i2",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a0_ILLINOIS",
+        "to_router": "a22_UTAH",
+        "latency": 3144,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a1_MITRE",
+        "to_router": "a2_CARNEGIE",
+        "latency": 1282,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a1_MITRE",
+        "to_router": "a4_ETAC",
+        "latency": 1005,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a2_CARNEGIE",
+        "to_router": "a3_CASE",
+        "latency": 308,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a3_CASE",
+        "to_router": "a10_RADC",
+        "latency": 902,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a3_CASE",
+        "to_router": "a5_AFGWC",
+        "latency": 1296,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a4_ETAC",
+        "to_router": "a7_NBS",
+        "latency": 56,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a6_BBN",
+        "to_router": "a24_MIT",
+        "latency": 8,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a6_BBN",
+        "to_router": "a15_BBN",
+        "latency": 5,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a7_NBS",
+        "to_router": "a16_HARVARD",
+        "latency": 1047,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a8_Tinker",
+        "to_router": "a21_USC",
+        "latency": 3183,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a8_Tinker",
+        "to_router": "a15_BBN",
+        "latency": 3987,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a15_IFS_School_of_Finance",
-        "latency": 9,
-        "weight": 200,
-        "from_interface": "i3",
+        "bandwidth": 1000000,
+        "from_router": "a9_AMES",
+        "to_router": "a17_SRI",
+        "latency": 24,
+        "weight": 10,
+        "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 122,
+        "bandwidth": 1000000,
+        "from_router": "a9_AMES",
+        "to_router": "a13_AMES",
+        "latency": 5,
         "weight": 10,
-        "from_interface": "i4",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a20_CCCU_C",
-        "latency": 9,
-        "weight": 200,
-        "from_interface": "i5",
+        "from_interface": "i1",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a21_IC_Wye",
-        "latency": 30,
+        "bandwidth": 1000000,
+        "from_router": "a10_RADC",
+        "to_router": "a23_Lincoln",
+        "latency": 596,
         "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
+        "from_interface": "i1",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 594629,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 33,
-        "from_interface": "i7",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 155000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 129,
-        "from_interface": "i8",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a13_West_Kent_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 12,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a11_McClellan",
+        "to_router": "a17_SRI",
+        "latency": 261,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a14_Hadlow_College_Mottingham",
-        "to_router": "a18_UoG_AH",
-        "latency": 10,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a11_McClellan",
+        "to_router": "a22_UTAH",
+        "latency": 1408,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a12_RAND",
+        "to_router": "a19_UCLA",
+        "latency": 43,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a16_NW_Kent_College_Dartford",
-        "to_router": "a18_UoG_AH",
-        "latency": 21,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
+        "bandwidth": 1000000,
+        "from_router": "a12_RAND",
+        "to_router": "a20_Stanford",
+        "latency": 843,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a17_KIAD_R",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 56,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i4",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a18_UoG_AH",
-        "to_router": "a19_University_of_Greenwich",
+        "bandwidth": 1000000,
+        "from_router": "a12_RAND",
+        "to_router": "a14_SDC",
         "latency": 5,
         "weight": 10,
         "from_interface": "i2",
-        "to_interface": "i5",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 69,
-        "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a25_Dorton_College",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i7",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a21_IC_Wye",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 51,
+        "bandwidth": 1000000,
+        "from_router": "a13_AMES",
+        "to_router": "a20_Stanford",
+        "latency": 18,
         "weight": 10,
-        "from_interface": "i3",
-        "to_interface": "i3",
+        "from_interface": "i1",
+        "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a22_EIS_Maidstone",
-        "to_router": "a23_CCCU_S",
-        "latency": 45,
-        "weight": 200,
-        "from_interface": "i4",
+        "bandwidth": 1000000,
+        "from_router": "a14_SDC",
+        "to_router": "a21_USC",
+        "latency": 43,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a15_BBN",
+        "to_router": "a16_HARVARD",
+        "latency": 6,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a17_SRI",
+        "to_router": "a18_UCSB",
+        "latency": 678,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a18_UCSB",
+        "to_router": "a19_UCLA",
+        "latency": 237,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a21_USC",
+        "to_router": "a22_UTAH",
+        "latency": 1558,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a23_Lincoln",
+        "to_router": "a24_MIT",
+        "latency": 29,
+        "weight": 10,
+        "from_interface": "i1",
         "to_interface": "i2",
         "bidirectional": true
       }
     ],
-    "name": "KentmanFeb2008",
+    "name": "Arpanet19723",
     "routers": [
       {
         "interfaces": [
           {
             "names": [
-              "i0"
+              "i0",
+              "i1"
             ],
             "routing_table": {}
           }
@@ -297,157 +298,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a0_UCCA_C"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a1_Canterbury_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a2_Medway_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a3_Mid_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a4_South_Kent_College_Ashford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a5_KIAD_O"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a6_Thanet_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a7_Hilderstone_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a8_Kent_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a9_Hadlow_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a10_University_College_Folkestone"
+        "name": "a0_ILLINOIS"
       },
       {
         "interfaces": [
@@ -463,21 +314,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a11_Kent_Community_Network_Schools_etc"
+        "name": "a1_MITRE"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4",
-              "i5",
-              "i6",
-              "i7",
-              "i8"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -486,82 +330,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a12_UoK_C"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a13_West_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a14_Hadlow_College_Mottingham"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a15_IFS_School_of_Finance"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a16_NW_Kent_College_Dartford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a17_KIAD_R"
+        "name": "a2_CARNEGIE"
       },
       {
         "interfaces": [
@@ -578,20 +347,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a18_UoG_AH"
+        "name": "a3_CASE"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4",
-              "i5",
-              "i6",
-              "i7"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -600,7 +363,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a19_University_of_Greenwich"
+        "name": "a4_ETAC"
       },
       {
         "interfaces": [
@@ -615,16 +378,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a20_CCCU_C"
+        "name": "a5_AFGWC"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -633,17 +394,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a21_IC_Wye"
+        "name": "a6_BBN"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -652,7 +410,71 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a22_EIS_Maidstone"
+        "name": "a7_NBS"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a8_Tinker"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a9_AMES"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a10_RADC"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a11_McClellan"
       },
       {
         "interfaces": [
@@ -669,7 +491,39 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a23_CCCU_S"
+        "name": "a12_RAND"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a13_AMES"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a14_SDC"
       },
       {
         "interfaces": [
@@ -677,8 +531,7 @@
             "names": [
               "i0",
               "i1",
-              "i2",
-              "i3"
+              "i2"
             ],
             "routing_table": {}
           }
@@ -687,13 +540,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a24_CCCU_T"
+        "name": "a15_BBN"
       },
       {
         "interfaces": [
           {
             "names": [
-              "i0"
+              "i0",
+              "i1"
             ],
             "routing_table": {}
           }
@@ -702,7 +556,139 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a25_Dorton_College"
+        "name": "a16_HARVARD"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a17_SRI"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a18_UCSB"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a19_UCLA"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a20_Stanford"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a21_USC"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a22_UTAH"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a23_Lincoln"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a24_MIT"
       }
     ]
   }
