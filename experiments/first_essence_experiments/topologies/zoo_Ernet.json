@@ -2,293 +2,335 @@
   "network": {
     "links": [
       {
-        "bandwidth": 100000,
-        "from_router": "a0_UCCA_C",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a1_Canterbury_College",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a2_Medway_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 60,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a3_Mid_Kent_College",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 59,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a4_South_Kent_College_Ashford",
-        "to_router": "a21_IC_Wye",
-        "latency": 16,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a5_KIAD_O",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 11,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a6_Thanet_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 8,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a7_Hilderstone_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 7,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a8_Kent_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 65,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a9_Hadlow_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 20,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a10_University_College_Folkestone",
-        "to_router": "a21_IC_Wye",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a12_UoK_C",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a0_Pune",
+        "to_router": "a3_Mumbai",
+        "latency": 203,
         "weight": 10,
         "from_interface": "i0",
-        "to_interface": "i2",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a0_Pune",
+        "to_router": "a13_None",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a0_Pune",
+        "to_router": "a21_Bengaluru",
+        "latency": 1229,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a1_Indore",
+        "to_router": "a3_Mumbai",
+        "latency": 863,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a2_Trivandrum",
+        "to_router": "a18_None",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a2_Trivandrum",
+        "to_router": "a21_Bengaluru",
+        "latency": 846,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a15_IFS_School_of_Finance",
-        "latency": 9,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a3_Mumbai",
+        "to_router": "a4_None",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a3_Mumbai",
+        "to_router": "a22_Delhi",
+        "latency": 1934,
+        "weight": 10,
         "from_interface": "i3",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 122,
+        "bandwidth": 1000000,
+        "from_router": "a3_Mumbai",
+        "to_router": "a14_None",
+        "latency": 1080,
         "weight": 10,
         "from_interface": "i4",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a20_CCCU_C",
-        "latency": 9,
-        "weight": 200,
-        "from_interface": "i5",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a21_IC_Wye",
-        "latency": 30,
+        "bandwidth": 1000000,
+        "from_router": "a5_None",
+        "to_router": "a21_Bengaluru",
+        "latency": 1080,
         "weight": 10,
-        "from_interface": "i6",
+        "from_interface": "i0",
         "to_interface": "i2",
         "bidirectional": true
       },
       {
-        "bandwidth": 594629,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 33,
-        "from_interface": "i7",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 155000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 129,
-        "from_interface": "i8",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a13_West_Kent_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 12,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a6_Ahmedabad",
+        "to_router": "a22_Delhi",
+        "latency": 1295,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a14_Hadlow_College_Mottingham",
-        "to_router": "a18_UoG_AH",
-        "latency": 10,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a7_Jaipur",
+        "to_router": "a22_Delhi",
+        "latency": 398,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a8_None",
+        "to_router": "a25_Kanpur",
+        "latency": 1080,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a16_NW_Kent_College_Dartford",
-        "to_router": "a18_UoG_AH",
-        "latency": 21,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a9_None",
+        "to_router": "a22_Delhi",
+        "latency": 1080,
+        "weight": 10,
         "from_interface": "i0",
-        "to_interface": "i1",
+        "to_interface": "i3",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a17_KIAD_R",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 56,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a10_None",
+        "to_router": "a27_Kalkota",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a11_None",
+        "to_router": "a28_Bhubaneswar",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a12_None",
+        "to_router": "a21_Bengaluru",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i3",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a15_None",
+        "to_router": "a22_Delhi",
+        "latency": 1080,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i4",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a18_UoG_AH",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 5,
+        "bandwidth": 1000000,
+        "from_router": "a16_None",
+        "to_router": "a20_Chennai",
+        "latency": 1080,
         "weight": 10,
-        "from_interface": "i2",
-        "to_interface": "i5",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 69,
-        "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a25_Dorton_College",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i7",
+        "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a21_IC_Wye",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 51,
+        "bandwidth": 1000000,
+        "from_router": "a17_None",
+        "to_router": "a29_Hyderabad",
+        "latency": 1080,
         "weight": 10,
-        "from_interface": "i3",
-        "to_interface": "i3",
+        "from_interface": "i0",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a22_EIS_Maidstone",
-        "to_router": "a23_CCCU_S",
-        "latency": 45,
-        "weight": 200,
-        "from_interface": "i4",
+        "bandwidth": 1000000,
+        "from_router": "a19_None",
+        "to_router": "a21_Bengaluru",
+        "latency": 1080,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i4",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Chennai",
+        "to_router": "a21_Bengaluru",
+        "latency": 488,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i5",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Chennai",
+        "to_router": "a29_Hyderabad",
+        "latency": 861,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a21_Bengaluru",
+        "to_router": "a22_Delhi",
+        "latency": 2905,
+        "weight": 10,
+        "from_interface": "i6",
+        "to_interface": "i5",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a21_Bengaluru",
+        "to_router": "a29_Hyderabad",
+        "latency": 834,
+        "weight": 10,
+        "from_interface": "i7",
         "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a22_Delhi",
+        "to_router": "a25_Kanpur",
+        "latency": 656,
+        "weight": 10,
+        "from_interface": "i6",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a22_Delhi",
+        "to_router": "a27_Kalkota",
+        "latency": 2177,
+        "weight": 10,
+        "from_interface": "i7",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a23_Guwahati",
+        "to_router": "a27_Kalkota",
+        "latency": 884,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a24_Gorakhpur",
+        "to_router": "a25_Kanpur",
+        "latency": 947,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a25_Kanpur",
+        "to_router": "a26_Allahabad",
+        "latency": 317,
+        "weight": 10,
+        "from_interface": "i3",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a27_Kalkota",
+        "to_router": "a28_Bhubaneswar",
+        "latency": 620,
+        "weight": 10,
+        "from_interface": "i3",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a27_Kalkota",
+        "to_router": "a29_Hyderabad",
+        "latency": 1976,
+        "weight": 10,
+        "from_interface": "i4",
+        "to_interface": "i3",
         "bidirectional": true
       }
     ],
-    "name": "KentmanFeb2008",
+    "name": "Ernet",
     "routers": [
       {
         "interfaces": [
           {
             "names": [
-              "i0"
+              "i0",
+              "i1",
+              "i2"
             ],
             "routing_table": {}
           }
@@ -297,7 +339,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a0_UCCA_C"
+        "name": "a0_Pune"
       },
       {
         "interfaces": [
@@ -312,142 +354,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a1_Canterbury_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a2_Medway_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a3_Mid_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a4_South_Kent_College_Ashford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a5_KIAD_O"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a6_Thanet_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a7_Hilderstone_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a8_Kent_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a9_Hadlow_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a10_University_College_Folkestone"
+        "name": "a1_Indore"
       },
       {
         "interfaces": [
@@ -463,7 +370,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a11_Kent_Community_Network_Schools_etc"
+        "name": "a2_Trivandrum"
       },
       {
         "interfaces": [
@@ -473,11 +380,7 @@
               "i1",
               "i2",
               "i3",
-              "i4",
-              "i5",
-              "i6",
-              "i7",
-              "i8"
+              "i4"
             ],
             "routing_table": {}
           }
@@ -486,7 +389,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a12_UoK_C"
+        "name": "a3_Mumbai"
       },
       {
         "interfaces": [
@@ -501,7 +404,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a13_West_Kent_College"
+        "name": "a4_None"
       },
       {
         "interfaces": [
@@ -516,7 +419,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a14_Hadlow_College_Mottingham"
+        "name": "a5_None"
       },
       {
         "interfaces": [
@@ -531,7 +434,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a15_IFS_School_of_Finance"
+        "name": "a6_Ahmedabad"
       },
       {
         "interfaces": [
@@ -546,7 +449,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a16_NW_Kent_College_Dartford"
+        "name": "a7_Jaipur"
       },
       {
         "interfaces": [
@@ -561,7 +464,172 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a17_KIAD_R"
+        "name": "a8_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a9_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a10_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a11_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a12_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a13_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a14_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a15_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a16_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a17_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a18_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a19_None"
       },
       {
         "interfaces": [
@@ -578,7 +646,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a18_UoG_AH"
+        "name": "a20_Chennai"
       },
       {
         "interfaces": [
@@ -600,7 +668,29 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a19_University_of_Greenwich"
+        "name": "a21_Bengaluru"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2",
+              "i3",
+              "i4",
+              "i5",
+              "i6",
+              "i7"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a22_Delhi"
       },
       {
         "interfaces": [
@@ -615,7 +705,22 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a20_CCCU_C"
+        "name": "a23_Guwahati"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a24_Gorakhpur"
       },
       {
         "interfaces": [
@@ -633,7 +738,22 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a21_IC_Wye"
+        "name": "a25_Kanpur"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a26_Allahabad"
       },
       {
         "interfaces": [
@@ -652,15 +772,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a22_EIS_Maidstone"
+        "name": "a27_Kalkota"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -669,7 +788,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a23_CCCU_S"
+        "name": "a28_Bhubaneswar"
       },
       {
         "interfaces": [
@@ -687,22 +806,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a24_CCCU_T"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a25_Dorton_College"
+        "name": "a29_Hyderabad"
       }
     ]
   }

@@ -3,9 +3,9 @@
     "links": [
       {
         "bandwidth": 1000000,
-        "from_router": "a0_Cisco_3640_Samtredia",
-        "to_router": "a4_Cisco_3640_Poti",
-        "latency": 96,
+        "from_router": "a0_Craiova",
+        "to_router": "a11_Timisoara",
+        "latency": 433,
         "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
@@ -13,9 +13,9 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a0_Cisco_3640_Samtredia",
-        "to_router": "a15_Cisco_3640_Kutaisi_C07",
-        "latency": 58,
+        "from_router": "a0_Craiova",
+        "to_router": "a5_Bucarest",
+        "latency": 311,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i0",
@@ -23,9 +23,9 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a1_Cisco_2621_Batumi",
-        "to_router": "a4_Cisco_3640_Poti",
-        "latency": 98,
+        "from_router": "a1_Plaiesti",
+        "to_router": "a5_Bucarest",
+        "latency": 101,
         "weight": 10,
         "from_interface": "i0",
         "to_interface": "i1",
@@ -33,9 +33,9 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a2_Cisco_2511_Kutaisi",
-        "to_router": "a3_Cisco_3640_Kutaisi_C04",
-        "latency": 5,
+        "from_router": "a2_Brasov",
+        "to_router": "a17_Cluj",
+        "latency": 335,
         "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
@@ -43,49 +43,9 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a3_Cisco_3640_Kutaisi_C04",
-        "to_router": "a15_Cisco_3640_Kutaisi_C07",
-        "latency": 5,
-        "weight": 10,
-        "from_interface": "i1",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 1000000,
-        "from_router": "a3_Cisco_3640_Kutaisi_C04",
-        "to_router": "a7_Corecess_DX6524",
-        "latency": 68,
-        "weight": 10,
-        "from_interface": "i2",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 1000000,
-        "from_router": "a4_Cisco_3640_Poti",
-        "to_router": "a5_Cisco_3640_Zugididi",
-        "latency": 77,
-        "weight": 10,
-        "from_interface": "i2",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 1000000,
-        "from_router": "a6_Cisco_3640_Khashuri",
-        "to_router": "a14_Cisco_3640_Gori",
-        "latency": 76,
-        "weight": 10,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 1000000,
-        "from_router": "a6_Cisco_3640_Khashuri",
-        "to_router": "a15_Cisco_3640_Kutaisi_C07",
-        "latency": 137,
+        "from_router": "a2_Brasov",
+        "to_router": "a5_Bucarest",
+        "latency": 239,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i2",
@@ -93,19 +53,89 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a8_Tbilisi_GRENA_Network",
-        "to_router": "a11_Cisco_3640_Telavi",
-        "latency": 102,
+        "from_router": "a3_Targoviste",
+        "to_router": "a5_Bucarest",
+        "latency": 131,
         "weight": 10,
         "from_interface": "i0",
+        "to_interface": "i3",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a4_Constanta",
+        "to_router": "a5_Bucarest",
+        "latency": 345,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i4",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Bucarest",
+        "to_router": "a6_Galati",
+        "latency": 321,
+        "weight": 10,
+        "from_interface": "i5",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a8_Tbilisi_GRENA_Network",
-        "to_router": "a13_Rustavi_CO15",
-        "latency": 39,
+        "from_router": "a5_Bucarest",
+        "to_router": "a7_Focsani",
+        "latency": 278,
+        "weight": 10,
+        "from_interface": "i6",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Bucarest",
+        "to_router": "a10_Targu_Mures",
+        "latency": 444,
+        "weight": 10,
+        "from_interface": "i7",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Bucarest",
+        "to_router": "a13_Iasi",
+        "latency": 546,
+        "weight": 10,
+        "from_interface": "i8",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Bucarest",
+        "to_router": "a15_Bacau",
+        "latency": 413,
+        "weight": 10,
+        "from_interface": "i9",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Bucarest",
+        "to_router": "a18_Oradea",
+        "latency": 731,
+        "weight": 10,
+        "from_interface": "i10",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a7_Focsani",
+        "to_router": "a14_Piatra_Neamt",
+        "latency": 255,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i0",
@@ -113,9 +143,39 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a8_Tbilisi_GRENA_Network",
-        "to_router": "a14_Cisco_3640_Gori",
-        "latency": 117,
+        "from_router": "a8_Budapest",
+        "to_router": "a19_Bors",
+        "latency": 334,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a9_Budapest",
+        "to_router": "a20_Arad",
+        "latency": 334,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a11_Timisoara",
+        "to_router": "a16_Deva",
+        "latency": 222,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a11_Timisoara",
+        "to_router": "a20_Arad",
+        "latency": 86,
         "weight": 10,
         "from_interface": "i2",
         "to_interface": "i1",
@@ -123,36 +183,66 @@
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a9_Corecess_DX6524",
-        "to_router": "a10_Rustavi_CO14",
-        "latency": 68,
+        "from_router": "a12_Sibiu",
+        "to_router": "a18_Oradea",
+        "latency": 372,
         "weight": 10,
         "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 1000000,
-        "from_router": "a10_Rustavi_CO14",
-        "to_router": "a13_Rustavi_CO15",
-        "latency": 5,
-        "weight": 10,
-        "from_interface": "i1",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
         "bandwidth": 1000000,
-        "from_router": "a12_Corecess_DX6524",
-        "to_router": "a13_Rustavi_CO15",
-        "latency": 68,
+        "from_router": "a13_Iasi",
+        "to_router": "a18_Oradea",
+        "latency": 719,
         "weight": 10,
-        "from_interface": "i0",
+        "from_interface": "i1",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a15_Bacau",
+        "to_router": "a18_Oradea",
+        "latency": 641,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i3",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a17_Cluj",
+        "to_router": "a18_Oradea",
+        "latency": 223,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i4",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a18_Oradea",
+        "to_router": "a19_Bors",
+        "latency": 22,
+        "weight": 10,
+        "from_interface": "i5",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a18_Oradea",
+        "to_router": "a20_Arad",
+        "latency": 186,
+        "weight": 10,
+        "from_interface": "i6",
         "to_interface": "i2",
         "bidirectional": true
       }
     ],
-    "name": "Grena",
+    "name": "GtsRomania",
     "routers": [
       {
         "interfaces": [
@@ -168,7 +258,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a0_Cisco_3640_Samtredia"
+        "name": "a0_Craiova"
       },
       {
         "interfaces": [
@@ -183,71 +273,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a1_Cisco_2621_Batumi"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a2_Cisco_2511_Kutaisi"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0",
-              "i1",
-              "i2"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a3_Cisco_3640_Kutaisi_C04"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0",
-              "i1",
-              "i2"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a4_Cisco_3640_Poti"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a5_Cisco_3640_Zugididi"
+        "name": "a1_Plaiesti"
       },
       {
         "interfaces": [
@@ -263,7 +289,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a6_Cisco_3640_Khashuri"
+        "name": "a2_Brasov"
       },
       {
         "interfaces": [
@@ -278,7 +304,22 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a7_Corecess_DX6524"
+        "name": "a3_Targoviste"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a4_Constanta"
       },
       {
         "interfaces": [
@@ -286,7 +327,15 @@
             "names": [
               "i0",
               "i1",
-              "i2"
+              "i2",
+              "i3",
+              "i4",
+              "i5",
+              "i6",
+              "i7",
+              "i8",
+              "i9",
+              "i10"
             ],
             "routing_table": {}
           }
@@ -295,7 +344,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a8_Tbilisi_GRENA_Network"
+        "name": "a5_Bucarest"
       },
       {
         "interfaces": [
@@ -310,7 +359,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a9_Corecess_DX6524"
+        "name": "a6_Galati"
       },
       {
         "interfaces": [
@@ -326,7 +375,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a10_Rustavi_CO14"
+        "name": "a7_Focsani"
       },
       {
         "interfaces": [
@@ -341,7 +390,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a11_Cisco_3640_Telavi"
+        "name": "a8_Budapest"
       },
       {
         "interfaces": [
@@ -356,7 +405,22 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a12_Corecess_DX6524"
+        "name": "a9_Budapest"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a10_Targu_Mures"
       },
       {
         "interfaces": [
@@ -373,7 +437,22 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a13_Rustavi_CO15"
+        "name": "a11_Timisoara"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a12_Sibiu"
       },
       {
         "interfaces": [
@@ -389,7 +468,106 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a14_Cisco_3640_Gori"
+        "name": "a13_Iasi"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a14_Piatra_Neamt"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a15_Bacau"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a16_Deva"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a17_Cluj"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2",
+              "i3",
+              "i4",
+              "i5",
+              "i6"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a18_Oradea"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a19_Bors"
       },
       {
         "interfaces": [
@@ -406,7 +584,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a15_Cisco_3640_Kutaisi_C07"
+        "name": "a20_Arad"
       }
     ]
   }

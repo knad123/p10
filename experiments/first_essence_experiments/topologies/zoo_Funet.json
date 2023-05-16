@@ -2,293 +2,326 @@
   "network": {
     "links": [
       {
-        "bandwidth": 100000,
-        "from_router": "a0_UCCA_C",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a1_Canterbury_College",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a2_Medway_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 60,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a3_Mid_Kent_College",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 59,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a4_South_Kent_College_Ashford",
-        "to_router": "a21_IC_Wye",
-        "latency": 16,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a5_KIAD_O",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 11,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a6_Thanet_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 8,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a7_Hilderstone_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 7,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a8_Kent_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 65,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a9_Hadlow_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 20,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a10_University_College_Folkestone",
-        "to_router": "a21_IC_Wye",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a12_UoK_C",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a0_Kouvola",
+        "to_router": "a1_Lahti",
+        "latency": 100,
         "weight": 10,
         "from_interface": "i0",
-        "to_interface": "i2",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a0_Kouvola",
+        "to_router": "a10_Kotka",
+        "latency": 81,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a0_Kouvola",
+        "to_router": "a2_Mikkeli",
+        "latency": 165,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a0_Kouvola",
+        "to_router": "a17_Lappeenranta",
+        "latency": 143,
+        "weight": 10,
+        "from_interface": "i3",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a1_Lahti",
+        "to_router": "a11_Helsinki",
+        "latency": 169,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a2_Mikkeli",
+        "to_router": "a25_Koupio",
+        "latency": 230,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a2_Mikkeli",
+        "to_router": "a3_Jyvaskyla",
+        "latency": 172,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a3_Jyvaskyla",
+        "to_router": "a6_Tampere",
+        "latency": 222,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a4_Seinajoki",
+        "to_router": "a24_Vaasa",
+        "latency": 121,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a4_Seinajoki",
+        "to_router": "a5_Pori",
+        "latency": 265,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Pori",
+        "to_router": "a8_Rauma",
+        "latency": 75,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a6_Tampere",
+        "to_router": "a7_Hameenlinna",
+        "latency": 115,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a7_Hameenlinna",
+        "to_router": "a12_Espoo",
+        "latency": 152,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a8_Rauma",
+        "to_router": "a9_Turku",
+        "latency": 147,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a9_Turku",
+        "to_router": "a13_Salo",
+        "latency": 85,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a11_Helsinki",
+        "to_router": "a12_Espoo",
+        "latency": 31,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a15_IFS_School_of_Finance",
-        "latency": 9,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a11_Helsinki",
+        "to_router": "a12_Espoo",
+        "latency": 31,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a11_Helsinki",
+        "to_router": "a15_NORDU",
+        "latency": 175,
+        "weight": 10,
         "from_interface": "i3",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 122,
+        "bandwidth": 1000000,
+        "from_router": "a12_Espoo",
+        "to_router": "a15_NORDU",
+        "latency": 175,
         "weight": 10,
-        "from_interface": "i4",
-        "to_interface": "i3",
+        "from_interface": "i3",
+        "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a20_CCCU_C",
-        "latency": 9,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a12_Espoo",
+        "to_router": "a13_Salo",
+        "latency": 148,
+        "weight": 10,
+        "from_interface": "i4",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a12_Espoo",
+        "to_router": "a14_NORDU",
+        "latency": 175,
+        "weight": 10,
         "from_interface": "i5",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a21_IC_Wye",
-        "latency": 30,
+        "bandwidth": 1000000,
+        "from_router": "a16_Joensuu",
+        "to_router": "a17_Lappeenranta",
+        "latency": 321,
         "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 594629,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 33,
-        "from_interface": "i7",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 155000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 129,
-        "from_interface": "i8",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a13_West_Kent_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 12,
-        "weight": 200,
         "from_interface": "i0",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a14_Hadlow_College_Mottingham",
-        "to_router": "a18_UoG_AH",
-        "latency": 10,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a16_Joensuu",
+        "to_router": "a25_Koupio",
+        "latency": 190,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a18_Oulu",
+        "to_router": "a19_Haukipudas",
+        "latency": 36,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a16_NW_Kent_College_Dartford",
-        "to_router": "a18_UoG_AH",
-        "latency": 21,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
+        "bandwidth": 1000000,
+        "from_router": "a18_Oulu",
+        "to_router": "a22_Ristijavi",
+        "latency": 241,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a17_KIAD_R",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 56,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i4",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a18_UoG_AH",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 5,
+        "bandwidth": 1000000,
+        "from_router": "a18_Oulu",
+        "to_router": "a23_Kokkola",
+        "latency": 291,
         "weight": 10,
         "from_interface": "i2",
-        "to_interface": "i5",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 69,
-        "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a25_Dorton_College",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i7",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a21_IC_Wye",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 51,
+        "bandwidth": 1000000,
+        "from_router": "a19_Haukipudas",
+        "to_router": "a20_Rovaniemi",
+        "latency": 251,
         "weight": 10,
-        "from_interface": "i3",
-        "to_interface": "i3",
+        "from_interface": "i1",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a22_EIS_Maidstone",
-        "to_router": "a23_CCCU_S",
-        "latency": 45,
-        "weight": 200,
-        "from_interface": "i4",
+        "bandwidth": 1000000,
+        "from_router": "a20_Rovaniemi",
+        "to_router": "a21_Sodankyla",
+        "latency": 186,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Rovaniemi",
+        "to_router": "a22_Ristijavi",
+        "latency": 422,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a22_Ristijavi",
+        "to_router": "a25_Koupio",
+        "latency": 305,
+        "weight": 10,
+        "from_interface": "i2",
         "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a23_Kokkola",
+        "to_router": "a24_Vaasa",
+        "latency": 191,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i1",
         "bidirectional": true
       }
     ],
-    "name": "KentmanFeb2008",
+    "name": "Funet",
     "routers": [
       {
         "interfaces": [
           {
             "names": [
-              "i0"
+              "i0",
+              "i1",
+              "i2",
+              "i3"
             ],
             "routing_table": {}
           }
@@ -297,157 +330,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a0_UCCA_C"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a1_Canterbury_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a2_Medway_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a3_Mid_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a4_South_Kent_College_Ashford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a5_KIAD_O"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a6_Thanet_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a7_Hilderstone_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a8_Kent_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a9_Hadlow_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a10_University_College_Folkestone"
+        "name": "a0_Kouvola"
       },
       {
         "interfaces": [
@@ -463,105 +346,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a11_Kent_Community_Network_Schools_etc"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4",
-              "i5",
-              "i6",
-              "i7",
-              "i8"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a12_UoK_C"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a13_West_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a14_Hadlow_College_Mottingham"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a15_IFS_School_of_Finance"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a16_NW_Kent_College_Dartford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a17_KIAD_R"
+        "name": "a1_Lahti"
       },
       {
         "interfaces": [
@@ -578,20 +363,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a18_UoG_AH"
+        "name": "a2_Mikkeli"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4",
-              "i5",
-              "i6",
-              "i7"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -600,7 +379,103 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a19_University_of_Greenwich"
+        "name": "a3_Jyvaskyla"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a4_Seinajoki"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a5_Pori"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a6_Tampere"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a7_Hameenlinna"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a8_Rauma"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a9_Turku"
       },
       {
         "interfaces": [
@@ -615,7 +490,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a20_CCCU_C"
+        "name": "a10_Kotka"
       },
       {
         "interfaces": [
@@ -633,7 +508,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a21_IC_Wye"
+        "name": "a11_Helsinki"
       },
       {
         "interfaces": [
@@ -643,7 +518,8 @@
               "i1",
               "i2",
               "i3",
-              "i4"
+              "i4",
+              "i5"
             ],
             "routing_table": {}
           }
@@ -652,7 +528,86 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a22_EIS_Maidstone"
+        "name": "a12_Espoo"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a13_Salo"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a14_NORDU"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a15_NORDU"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a16_Joensuu"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a17_Lappeenranta"
       },
       {
         "interfaces": [
@@ -669,16 +624,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a23_CCCU_S"
+        "name": "a18_Oulu"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -687,7 +640,24 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a24_CCCU_T"
+        "name": "a19_Haukipudas"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a20_Rovaniemi"
       },
       {
         "interfaces": [
@@ -702,7 +672,73 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a25_Dorton_College"
+        "name": "a21_Sodankyla"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a22_Ristijavi"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a23_Kokkola"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a24_Vaasa"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a25_Koupio"
       }
     ]
   }

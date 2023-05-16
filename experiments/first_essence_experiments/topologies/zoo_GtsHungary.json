@@ -2,287 +2,317 @@
   "network": {
     "links": [
       {
-        "bandwidth": 100000,
-        "from_router": "a0_UCCA_C",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a0_None",
+        "to_router": "a20_Budapest",
+        "latency": 167,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a1_Canterbury_College",
-        "to_router": "a12_UoK_C",
-        "latency": 10,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a1_Miskolc",
+        "to_router": "a20_Budapest",
+        "latency": 248,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a2_Medway_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 60,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a3_Mid_Kent_College",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 59,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a4_South_Kent_College_Ashford",
-        "to_router": "a21_IC_Wye",
-        "latency": 16,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a5_KIAD_O",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 11,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a6_Thanet_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 8,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a7_Hilderstone_College",
-        "to_router": "a24_CCCU_T",
-        "latency": 7,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a8_Kent_ACL",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 65,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a9_Hadlow_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 20,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a10_University_College_Folkestone",
-        "to_router": "a21_IC_Wye",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i1",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a12_UoK_C",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a2_Salgotarjan",
+        "to_router": "a20_Budapest",
+        "latency": 151,
         "weight": 10,
         "from_interface": "i0",
         "to_interface": "i2",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a11_Kent_Community_Network_Schools_etc",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 34,
+        "bandwidth": 1000000,
+        "from_router": "a3_Godollo",
+        "to_router": "a20_Budapest",
+        "latency": 49,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i3",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a4_Szolnok",
+        "to_router": "a20_Budapest",
+        "latency": 161,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i4",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a4_Szolnok",
+        "to_router": "a7_Debrecen",
+        "latency": 196,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Dunaujvaros",
+        "to_router": "a8_Kecskemet",
+        "latency": 101,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a5_Dunaujvaros",
+        "to_router": "a20_Budapest",
+        "latency": 101,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i5",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a6_Nyiregyhaza",
+        "to_router": "a20_Budapest",
+        "latency": 349,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i6",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a7_Debrecen",
+        "to_router": "a12_Szeged",
+        "latency": 307,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a8_Kecskemet",
+        "to_router": "a12_Szeged",
+        "latency": 139,
         "weight": 10,
         "from_interface": "i1",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a15_IFS_School_of_Finance",
-        "latency": 9,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a9_Baja",
+        "to_router": "a20_Budapest",
+        "latency": 248,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i7",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a10_Pecs",
+        "to_router": "a20_Budapest",
+        "latency": 286,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i8",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a11_None",
+        "to_router": "a12_Szeged",
+        "latency": 167,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i2",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a12_Szeged",
+        "to_router": "a19_Bekescsaba",
+        "latency": 150,
+        "weight": 10,
         "from_interface": "i3",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 122,
+        "bandwidth": 1000000,
+        "from_router": "a13_Siofok",
+        "to_router": "a20_Budapest",
+        "latency": 171,
         "weight": 10,
-        "from_interface": "i4",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a20_CCCU_C",
-        "latency": 9,
-        "weight": 200,
-        "from_interface": "i5",
-        "to_interface": "i0",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a21_IC_Wye",
-        "latency": 30,
-        "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 594629,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 33,
-        "from_interface": "i7",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 155000,
-        "from_router": "a12_UoK_C",
-        "to_router": "a24_CCCU_T",
-        "latency": 46,
-        "weight": 129,
-        "from_interface": "i8",
-        "to_interface": "i3",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a13_West_Kent_College",
-        "to_router": "a23_CCCU_S",
-        "latency": 12,
-        "weight": 200,
         "from_interface": "i0",
-        "to_interface": "i1",
+        "to_interface": "i9",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a14_Hadlow_College_Mottingham",
-        "to_router": "a18_UoG_AH",
-        "latency": 10,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a14_Kaposvar",
+        "to_router": "a20_Budapest",
+        "latency": 266,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i10",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a15_Szekszard",
+        "to_router": "a20_Budapest",
+        "latency": 221,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i11",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a16_None",
+        "to_router": "a20_Budapest",
+        "latency": 167,
+        "weight": 10,
+        "from_interface": "i0",
+        "to_interface": "i12",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a17_Vienna",
+        "to_router": "a22_Sopron",
+        "latency": 167,
+        "weight": 10,
         "from_interface": "i0",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a16_NW_Kent_College_Dartford",
-        "to_router": "a18_UoG_AH",
-        "latency": 21,
-        "weight": 200,
+        "bandwidth": 1000000,
+        "from_router": "a18_Bratislava",
+        "to_router": "a28_Gyor",
+        "latency": 167,
+        "weight": 10,
         "from_interface": "i0",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Budapest",
+        "to_router": "a21_Vac",
+        "latency": 59,
+        "weight": 10,
+        "from_interface": "i13",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Budapest",
+        "to_router": "a25_Nagykanizsa",
+        "latency": 328,
+        "weight": 10,
+        "from_interface": "i14",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Budapest",
+        "to_router": "a26_Szekesfehervar",
+        "latency": 102,
+        "weight": 10,
+        "from_interface": "i15",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a20_Budapest",
+        "to_router": "a29_Tatabanya",
+        "latency": 83,
+        "weight": 10,
+        "from_interface": "i16",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a22_Sopron",
+        "to_router": "a28_Gyor",
+        "latency": 134,
+        "weight": 10,
+        "from_interface": "i1",
         "to_interface": "i1",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a17_KIAD_R",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 56,
-        "weight": 200,
-        "from_interface": "i0",
-        "to_interface": "i4",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a18_UoG_AH",
-        "to_router": "a19_University_of_Greenwich",
-        "latency": 5,
+        "bandwidth": 1000000,
+        "from_router": "a22_Sopron",
+        "to_router": "a23_Szombathely",
+        "latency": 88,
         "weight": 10,
         "from_interface": "i2",
-        "to_interface": "i5",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 2000000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 69,
-        "weight": 10,
-        "from_interface": "i6",
-        "to_interface": "i2",
-        "bidirectional": true
-      },
-      {
-        "bandwidth": 100000,
-        "from_router": "a19_University_of_Greenwich",
-        "to_router": "a25_Dorton_College",
-        "latency": 39,
-        "weight": 200,
-        "from_interface": "i7",
         "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 2000000,
-        "from_router": "a21_IC_Wye",
-        "to_router": "a22_EIS_Maidstone",
-        "latency": 51,
+        "bandwidth": 1000000,
+        "from_router": "a23_Szombathely",
+        "to_router": "a24_Zalaegerszeg",
+        "latency": 82,
         "weight": 10,
-        "from_interface": "i3",
-        "to_interface": "i3",
+        "from_interface": "i1",
+        "to_interface": "i0",
         "bidirectional": true
       },
       {
-        "bandwidth": 100000,
-        "from_router": "a22_EIS_Maidstone",
-        "to_router": "a23_CCCU_S",
-        "latency": 45,
-        "weight": 200,
-        "from_interface": "i4",
-        "to_interface": "i2",
+        "bandwidth": 1000000,
+        "from_router": "a24_Zalaegerszeg",
+        "to_router": "a27_Veszprem",
+        "latency": 147,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i0",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a26_Szekesfehervar",
+        "to_router": "a27_Veszprem",
+        "latency": 70,
+        "weight": 10,
+        "from_interface": "i1",
+        "to_interface": "i1",
+        "bidirectional": true
+      },
+      {
+        "bandwidth": 1000000,
+        "from_router": "a28_Gyor",
+        "to_router": "a29_Tatabanya",
+        "latency": 104,
+        "weight": 10,
+        "from_interface": "i2",
+        "to_interface": "i1",
         "bidirectional": true
       }
     ],
-    "name": "KentmanFeb2008",
+    "name": "GtsHungary",
     "routers": [
       {
         "interfaces": [
@@ -297,7 +327,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a0_UCCA_C"
+        "name": "a0_None"
       },
       {
         "interfaces": [
@@ -312,7 +342,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a1_Canterbury_College"
+        "name": "a1_Miskolc"
       },
       {
         "interfaces": [
@@ -327,7 +357,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a2_Medway_ACL"
+        "name": "a2_Salgotarjan"
       },
       {
         "interfaces": [
@@ -342,112 +372,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a3_Mid_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a4_South_Kent_College_Ashford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a5_KIAD_O"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a6_Thanet_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a7_Hilderstone_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a8_Kent_ACL"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a9_Hadlow_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a10_University_College_Folkestone"
+        "name": "a3_Godollo"
       },
       {
         "interfaces": [
@@ -463,7 +388,238 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a11_Kent_Community_Network_Schools_etc"
+        "name": "a4_Szolnok"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a5_Dunaujvaros"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a6_Nyiregyhaza"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a7_Debrecen"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a8_Kecskemet"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a9_Baja"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a10_Pecs"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a11_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1",
+              "i2",
+              "i3"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a12_Szeged"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a13_Siofok"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a14_Kaposvar"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a15_Szekszard"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a16_None"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a17_Vienna"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a18_Bratislava"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a19_Bekescsaba"
       },
       {
         "interfaces": [
@@ -477,7 +633,15 @@
               "i5",
               "i6",
               "i7",
-              "i8"
+              "i8",
+              "i9",
+              "i10",
+              "i11",
+              "i12",
+              "i13",
+              "i14",
+              "i15",
+              "i16"
             ],
             "routing_table": {}
           }
@@ -486,7 +650,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a12_UoK_C"
+        "name": "a20_Budapest"
       },
       {
         "interfaces": [
@@ -501,67 +665,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a13_West_Kent_College"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a14_Hadlow_College_Mottingham"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a15_IFS_School_of_Finance"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a16_NW_Kent_College_Dartford"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a17_KIAD_R"
+        "name": "a21_Vac"
       },
       {
         "interfaces": [
@@ -578,20 +682,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a18_UoG_AH"
+        "name": "a22_Sopron"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4",
-              "i5",
-              "i6",
-              "i7"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -600,7 +698,23 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a19_University_of_Greenwich"
+        "name": "a23_Szombathely"
+      },
+      {
+        "interfaces": [
+          {
+            "names": [
+              "i0",
+              "i1"
+            ],
+            "routing_table": {}
+          }
+        ],
+        "location": {
+          "latitude": 0.0,
+          "longitude": 0.0
+        },
+        "name": "a24_Zalaegerszeg"
       },
       {
         "interfaces": [
@@ -615,16 +729,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a20_CCCU_C"
+        "name": "a25_Nagykanizsa"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -633,17 +745,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a21_IC_Wye"
+        "name": "a26_Szekesfehervar"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3",
-              "i4"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -652,7 +761,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a22_EIS_Maidstone"
+        "name": "a27_Veszprem"
       },
       {
         "interfaces": [
@@ -669,16 +778,14 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a23_CCCU_S"
+        "name": "a28_Gyor"
       },
       {
         "interfaces": [
           {
             "names": [
               "i0",
-              "i1",
-              "i2",
-              "i3"
+              "i1"
             ],
             "routing_table": {}
           }
@@ -687,22 +794,7 @@
           "latitude": 0.0,
           "longitude": 0.0
         },
-        "name": "a24_CCCU_T"
-      },
-      {
-        "interfaces": [
-          {
-            "names": [
-              "i0"
-            ],
-            "routing_table": {}
-          }
-        ],
-        "location": {
-          "latitude": 0.0,
-          "longitude": 0.0
-        },
-        "name": "a25_Dorton_College"
+        "name": "a29_Tatabanya"
       }
     ]
   }
