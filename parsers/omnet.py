@@ -438,7 +438,19 @@ def build_flows_for_export(network):
 
     # Add external_connections for the source and target
     for router in network.routers:
-        network.external_connections[router] = {"source": f"host{source_nums[router]}", "target": f'target{target_nums[router]}'}
+        if router in source_nums and router in target_nums:
+            network.external_connections[router] = {
+                "source": f"host{source_nums[router]}",
+                "target": f"target{target_nums[router]}"
+            }
+        elif router in source_nums:
+            network.external_connections[router] = {
+                "source": f"host{source_nums[router]}"
+            }
+        elif router in target_nums:
+            network.external_connections[router] = {
+                "target": f"target{target_nums[router]}"
+            }
 
     return export_flows
 
