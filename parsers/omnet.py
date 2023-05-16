@@ -303,9 +303,10 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
 
     for (src, tgt), demands in temporal_demands.items():
         for d in demands:
+            load = int(d[0]) * conf["demand_scaler"]
             send_interval = 86400
-            if int(d[0]) > 0:
-                send_interval = (send_interval_multiplier * (1 / (int(d[0]) / packet_size)))
+            if load > 0:
+                send_interval = (send_interval_multiplier * (1 / (load / packet_size)))
             start_time_unformatted = d[1]
             x = time.strptime(start_time_unformatted, '%H:%M')
             send_interval_start_time = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
