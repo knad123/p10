@@ -5,6 +5,7 @@ import subprocess
 import time
 import threading
 import multiprocessing
+from copy import deepcopy
 
 import networkx as nx
 import yaml
@@ -28,7 +29,11 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
     recorder = Recorder()
     while not inet_stopped_event.is_set():
         if os.path.exists("demands_done.json") and os.path.exists("utilization_done.json"):
-            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
+            if conf["frr"]:
+                mpls_network = parsers.communicator.fbr_update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
+            else:
+                mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
+                                                                                 essence_state, recorder, conf)
             os.remove("demands.json")
             os.remove("utilization.json")
             os.remove("demands_done.json")
@@ -45,7 +50,13 @@ def run_inet_simulation(simulation_directory, inet_stopped_event):
     subprocess.run(['inet', '-u', 'Cmdenv'])
     #subprocess.run(['inet'])
     inet_stopped_event.set()
-    
+
+# removes element from list
+def filter_list(elem, list):
+    new_list = deepcopy(list)
+    new_list.remove(elem)
+    return new_list
+
 def main(confs):
     # Load topology
     with open(conf["topology"]) as f:
@@ -81,8 +92,17 @@ def main(confs):
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
 
-    for path in paths.values():
-        mpls_network.install_lsp(path)
+    if conf["frr"]:
+        paths_and_backup_paths = {}
+        for (src, tgt), path_list in essence_state.pathdict.items():
+            filtered_paths = filter_list(paths[src, tgt], path_list)
+            paths_and_backup_paths[src, tgt] = [paths[src, tgt]] + filtered_paths
+
+        for fbr_paths in paths_and_backup_paths.values():
+            mpls_network.install_fbr(fbr_paths)
+    else:
+        for path in paths.values():
+            mpls_network.install_lsp(path, 0)
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
@@ -131,6 +151,7 @@ if __name__ == "__main__":
     p.add_argument("--write_interval", type=int, default=5, help="Number of seconds between every time utilization and demands are written. Should be less than update_interval")
     p.add_argument("--disable_dynamic_demands", action="store_true", help="Use dynamically changing send intervals")
     p.add_argument("--jitter", type=float, default=0.02, help="Demand jitter as a percentage")
+    p.add_argument("--frr", action="store_true")
 
     conf = vars(p.parse_args())
 

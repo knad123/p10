@@ -476,7 +476,7 @@ def to_omnetpp_lib_xml(router, interface_dict):
     table_xml = ET.Element("libtable")
     for label, entry in router.forwarding_table.items():
         entry_xml = ET.SubElement(table_xml, "libentry")
-        ET.SubElement(entry_xml, "priority").text = str(0)
+        ET.SubElement(entry_xml, "priority").text = str(entry['priority'])
         ET.SubElement(entry_xml, "inLabel").text = str(label)
         ET.SubElement(entry_xml, "inInterface").text = "any"
         if (entry["next_hop"] == router.name):
