@@ -1,12 +1,13 @@
 # import jsonschema
 import datetime
 import os
+import random
 import xml.etree.ElementTree as ET
 import time
 from os import path
 from typing import Dict, List, Tuple
-
 import classes.network
+import math
 
 
 def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], conf, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
@@ -46,6 +47,15 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
             network.to_omnetpp_scenario(file=f, failure_scenario=failed_set_chunk[scenario],
                                         link_to_ppp=link_to_ppp_dict)
     """
+
+    failure_scenarios = conf["failure_scenarios"]
+    if failure_scenarios > 0:
+        import random
+        random.seed(conf["random_seed"])
+        scenario_dir = os.path.join(output_dir, "failure_scenarios")
+        os.makedirs(scenario_dir, exist_ok=True)
+        generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network.topology.to_undirected())
+
 
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
         to_omnetpp_ini(conf=conf, network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
@@ -192,7 +202,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
         # Either use default values for bandwidth and latency or use the edge values if present
         data = network.topology.get_edge_data(edge[0], edge[1])
         # We multiply bandwidth by 8 to convert to bits
-        bandwidth = data['bandwidth'] * 8 if 'bandwidth' in data else DEFAULT_BANDWIDTH
+        bandwidth = data['capacity'] * 8 if 'capacity' in data else DEFAULT_BANDWIDTH
         latency = data['latency'] if ('latency' in data and not zero_latency) else 0
 
         # Added for scenario manager
@@ -236,7 +246,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     return link_to_ppp
 
 
-def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, failure_scenarios_enum=0, packet_size=64,
+def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, packet_size=64,
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
 
@@ -268,35 +278,6 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for router_name, router in network.routers.items():
         file.write \
             (f"**.{router_name}.classifier.config = xmldoc(\"classification_files/{router_name}_classification.xml\")\n")
-
-    # file.write("\n[Config UDP]\n")
-    # Create a dictionary to keep track of the app entries for each source host.
-
-    # basic_send_interval = (1 / conf["demand_scaler"]) * send_interval
-    # if conf["disable_dynamic_demands"]:
-    # if conf["jitter"] > 0:
-    #    file.write(f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s + uniform({basic_send_interval}s * (-{conf["jitter"] / 2}), {basic_send_interval}s * {conf["jitter"] / 2})\n''')
-    # else:
-    #    file.write(
-    #             f'''**.{apps['source_host']}.app[{i}].sendInterval = {basic_send_interval}s\n''')
-    #   else:
-    #     if i < num_apps - 1:
-    #         next_basic_send_interval = (1 / conf["demand_scaler"]) * source_hosts_sorted[i+1][2]
-
-    #  else:
-    #      next_basic_send_interval = basic_send_interval
-
-    # get the a value of the function f(x) = ax + b. We do this by getting the difference in this sendinterval compared to the next one and dividing it by stoptime - starttime
-    #  a = (next_basic_send_interval - basic_send_interval) / (stoptime - starttime)
-    #   b = basic_send_interval
-    #    if conf["jitter"] > 0:
-    #       file.write(
-    #         f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s) + uniform(linear({a}s, {b}s) * (-{conf["jitter"]}), linear({a}s, {b}s) * {conf["jitter"]})\n''')
-    #   else:
-    #      file.write(
-    #     f'''**.{apps['source_host']}.app[{i}].sendInterval = linear({a}s, {b}s)\n''')
-
-        # Create a dictionary to keep track of the app entries for each source host.
 
     send_intervals = {}
     send_interval_start_times = {}
@@ -366,7 +347,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
             file.write(f'''**.{target}.app[{i}].io.localPort = {app['destPort']}\n''')
         file.write("\n")
 
-    for scenario in range(failure_scenarios_enum):
+    for scenario in range(conf["failure_scenarios"]):
         file.write(f'[Config Scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
         file.write("\n")
@@ -377,17 +358,6 @@ def to_omnetpp_lib(network, interface_dict, export_dir):
         table_xml = to_omnetpp_lib_xml(router, interface_dict)
         ET.indent(table_xml)  # NOTE: Requires >= Python 3.9
         ET.ElementTree(table_xml).write(f"{export_dir}/{router_name}_lib.xml")
-
-
-def to_omnetpp_scenario(network, file, failure_scenario, link_to_ppp):
-    file.write('<?xml version="1.0"?>\n')
-    file.write("<scenario>\n")
-    file.write('<at t="20s">\n')
-    for fail in failure_scenario:
-        file.write(f'	<disconnect src-module="{fail[0]}" src-gate="pppg[{link_to_ppp[tuple(fail)]}]" />\n')
-    file.write("</at>\n")
-    file.write("</scenario>\n")
-
 
 def build_flows_for_export(network):
     """
@@ -492,3 +462,70 @@ def to_omnetpp_lib_xml(router, interface_dict):
         else:
             ET.SubElement(ops, "op", code=op_code, value=str(op_label))
     return table_xml
+
+def to_omnetpp_scenario(file, link_to_ppp, conf, network_undirected, downtime, failed_links: list[tuple[int,list[(str, str)]]] = [], failed_nodes: list[tuple[int,str]]=[]):
+    # failed_links is a list of tuples in the form of (timestamp, [(src,tgt)]), eg (10, [(copenhagen, berlin), (paris, milano)]) denoting two links that disconnect at 10 seconds
+    file.write('<?xml version="1.0"?>\n')
+    file.write("<scenario>\n")
+
+    # If using link failues
+    if failed_links != []:
+        for f in failed_links:
+            timestamp, link_list = f
+            file.write(f'<at t="{timestamp}s">\n')
+            for (src, tgt) in link_list:
+                file.write(f'	<disconnect src-module="{src}" dest-module="{tgt}" />\n')
+            file.write("</at>\n")
+            file.write(f'<at t="{timestamp + downtime}s">\n')
+            for (src, tgt) in link_list:
+                capacity = network_undirected[src][tgt]["capacity"] * 8
+                latency = network_undirected[src][tgt]["latency"]
+                file.write(f'	<connect src-module="{src}" src-gate="pppg[{link_to_ppp[(src,tgt)]}]" dest-module="{tgt}" dest-gate="pppg[{link_to_ppp[(tgt,src)]}]" channel-type="ned.DatarateChannel">\n')
+                file.write(f'       <param name="datarate" value="{capacity}bps" />\n')
+                file.write(f'       <param name="delay" value="{latency}ms" />\n')
+                file.write(f'</connect>\n')
+            file.write("</at>\n")
+    # Using node failures
+    if failed_nodes:
+        for timestamp, node in failed_nodes:
+            file.write(f'   <crash t="{timestamp}s" module="{node}"/>\n')
+            file.write(f'   <startup t="{timestamp+downtime}s" module="{node}"/>\n')
+
+    file.write("</scenario>\n")
+
+def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network_undirected):
+    downtime = 10800 * conf["time_scale"]
+    # Uses sim_duration to generate a failed link
+    #link_test_scenario = [(10800*conf["time_scale"], [("a1_USCB", "a0_SRI"), ("a0_SRI", "a3_UTAH")]), (21600*conf["time_scale"], [("a1_USCB", "a2_UCLA")])]
+
+    '''num_failures = int(math.sqrt(network_undirected.number_of_nodes()))
+    nodes = network_undirected.nodes
+    for i in range(num_scenarios):
+        file_path = os.path.join(dir, f"scenario_{i}.xml")
+        failed_nodes = random.sample(nodes, num_failures)
+        timestamped_failed_nodes = sorted([(conf["time_scale"]*3600*random.randint(0,23), node) for node in failed_nodes], key=lambda x: x[0])
+        with open(file_path, "w") as f:
+            to_omnetpp_scenario(f, link_to_ppp, conf, network_undirected, downtime, failed_nodes=timestamped_failed_nodes)'''
+
+    for i in range(num_scenarios):
+        remaining_failures = int(math.sqrt(network_undirected.number_of_edges()))
+        remaining_edges = set(network_undirected.edges)
+        time_stamped_failures =[]
+        while remaining_failures > 0 and len(remaining_edges) > 0:
+            # Select a random edge
+            next_failed_edge = random.choice(list(remaining_edges))
+            # Remove the edges from the future list of edges to fail, and subtract the number of future failures by 1
+            remaining_failures -= 1
+            remaining_edges.remove(next_failed_edge)
+            # Fail 50% of the adjacent edges
+            adjacent_failed_edges = {_edge for _edge in remaining_edges if set(_edge).intersection(next_failed_edge) != set() and random.uniform(0, 1) > 0.5}
+            # Remove the failed edges from the remaining edges and subtract the number of adjacent edges from the number of remaining failures
+            remaining_edges -= adjacent_failed_edges
+            remaining_failures -= len(adjacent_failed_edges)
+            # Randomly generate a time_stamp for the failure to occur
+            time_stamp = conf["time_scale"] * 3600 * random.randint(0, 23)
+            time_stamped_failures.append((time_stamp, list(adjacent_failed_edges) + [next_failed_edge]))
+
+        file_path = os.path.join(dir, f"scenario_{i}.xml")
+        with open(file_path, "w") as f:
+            to_omnetpp_scenario(f, link_to_ppp, conf, network_undirected, downtime, failed_links=time_stamped_failures)
