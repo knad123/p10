@@ -49,7 +49,7 @@ class MLPS_Network:
         new_row = pd.DataFrame([new_row])
         self.demand_dataframe = pd.concat([self.demand_dataframe, new_row], ignore_index=True)
 
-    def install_fbr(self, paths):
+    def install_fbr(self, paths, algorithm="fbr"):
         labels = []
         for i, path in enumerate(paths):
             is_last_path = i == (len(paths) - 1)
@@ -83,7 +83,7 @@ class MLPS_Network:
                                                                   next_hop=previous_router,
                                                                   priority=1)
                     # cycle to the first if its the last path
-                    else:
+                    elif algorithm == "essence":
                         # add rule to swap to a higher label for backtracking
                         self.routers[current_router].add_rule(incoming_label=label, outgoing_label=first_label,
                                                               next_hop=current_router,

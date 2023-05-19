@@ -94,7 +94,7 @@ def main(confs):
                 filtered_paths = filter_list(paths[src, tgt], path_list)
                 paths_and_backup_paths[src, tgt] = [paths[src, tgt]] + filtered_paths
             for fbr_paths in paths_and_backup_paths.values():
-                mpls_network.install_fbr(fbr_paths)
+                mpls_network.install_fbr(fbr_paths, algorithm="essence")
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -103,7 +103,7 @@ def main(confs):
     elif conf["algorithm"] == "fbr":
         essence_state = EssenceState(mpls_network)
         for fbr_paths in essence_state.pathdict.values():
-            mpls_network.install_fbr(fbr_paths)
+            mpls_network.install_fbr(fbr_paths, algorithm="fbr")
 
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
