@@ -20,7 +20,7 @@ class MPLS_Router:
             operation = 'swap'
 
         rule = {'incoming_label': incoming_label, 'outgoing_label': outgoing_label, 'next_hop': next_hop, 'operation': operation, 'priority': priority}
-        self.forwarding_table[incoming_label, priority] = rule
+        self.forwarding_table[incoming_label, priority, next_hop] = rule
 
     # Update rule in forwarding table
     def update_rule(self, incoming_label: int, outgoing_label: int, next_hop: str, priority: int):

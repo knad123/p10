@@ -95,6 +95,8 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     elif conf["algorithm"] == "essence_split":
         essence_state = EssenceState(mpls_network)
         paths = essence_split(mpls_network, essence_state, conf, time.time())
+        for path in paths.values():
+            mpls_network.install_split_path_essence(path)
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -111,7 +113,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
 
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split"]:
         # Save the essence state in a file
         os.makedirs(pkl_dir, exist_ok=True)
         with open(os.path.join(pkl_dir, "essence_state.pkl"), "wb") as outp:

@@ -1,6 +1,6 @@
 import networkx as nx
 import pandas as pd
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Tuple
 
 from classes.label_generator import MPLS_Label_Generator
 from classes.router import MPLS_Router
@@ -20,8 +20,9 @@ class MLPS_Network:
         router = MPLS_Router(name=name)
         self.routers[name] = router
 
-    def install_lsp(self, path: List[str], priority: int):
-        label = self.label_generator.get_new_label()
+    def install_lsp(self, path: List[str], priority: int, label = None):
+        if label is None:
+            label = self.label_generator.get_new_label()
 
         for router_index in range(len(path)):
             current_router = path[router_index]
@@ -105,6 +106,11 @@ class MLPS_Network:
         new_row = {'source': path[0], 'target': path[-1], 'label': first_label, 'primary_path': paths[0], 'load': load, 'label_backup_paths_dict': label_backup_paths_dict}
         new_row = pd.DataFrame([new_row])
         self.demand_dataframe = pd.concat([self.demand_dataframe, new_row], ignore_index=True)
+
+    def install_split_path_essence(self, paths):
+        label = self.label_generator.get_new_label()
+        for path in paths:
+            self.install_lsp(path, 0, label=label)
 
     def remove_lsp(self, path: List[str], label: int):
         for router_index in range(len(path)):

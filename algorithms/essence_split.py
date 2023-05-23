@@ -25,7 +25,7 @@ def essence_split(network: MLPS_Network, essence_state: EssenceState, conf, star
                                       essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
     return genetic_paths
 
-def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=500, population_size=200,
+def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=10, population_size=100,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
     end_time = start_time + time_limit
@@ -73,7 +73,7 @@ def create_population(network, demands, population_size):
             for i in range(random_numpaths):
                 try:
                     path = next(path_generator)
-                    if (len(path) - 1) < (3 * shortest_path_len):
+                    if (len(path) - 1) < (2 * shortest_path_len):
                         individual[src, tgt].append(path)
                 except StopIteration:
                     # If the generator has no more paths, break the loop
