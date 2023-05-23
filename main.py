@@ -109,6 +109,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
 
+
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
@@ -141,8 +142,10 @@ def main(confs):
         return
 
     if conf["configuration"] == "all":
-        failure_scenario_files = os.listdir(os.path.join(simulation_directory, "failure_scenarios"))
-        failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
+        failure_scenario_configs = []
+        if os.path.exists(os.path.join(simulation_directory, "failure_scenarios")):
+            failure_scenario_files = os.listdir(os.path.join(simulation_directory, "failure_scenarios"))
+            failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
         configurations = ["General"] + failure_scenario_configs
     else:
         configurations = [conf["configuration"]]
