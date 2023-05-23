@@ -38,10 +38,11 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
     # Run the genetic algorithm
     # for generation in range(generations):
 
+    # Select parents
+    a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
+                                          essence_state.congestion_weight)
+
     while time.time() < end_time:
-        # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                              essence_state.congestion_weight)
         # print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
@@ -57,9 +58,9 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
         # Replace the population with the children
         population = children
 
-    # Sort the population by fitness
-    a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                          essence_state.congestion_weight)
+        # Select parents
+        a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
+                                              essence_state.congestion_weight)
 
     essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
