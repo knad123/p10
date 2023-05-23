@@ -50,8 +50,6 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
 
     failure_scenarios = conf["failure_scenarios"]
     if failure_scenarios > 0:
-        import random
-        random.seed(conf["random_seed"])
         scenario_dir = os.path.join(output_dir, "failure_scenarios")
         os.makedirs(scenario_dir, exist_ok=True)
         generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network.topology.to_undirected())
@@ -494,6 +492,8 @@ def to_omnetpp_scenario(file, link_to_ppp, conf, network_undirected, downtime, f
     file.write("</scenario>\n")
 
 def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network_undirected):
+    import random
+    random.seed(100)
     downtime = 10800 * conf["time_scale"]
     # Uses sim_duration to generate a failed link
     #link_test_scenario = [(10800*conf["time_scale"], [("a1_USCB", "a0_SRI"), ("a0_SRI", "a3_UTAH")]), (21600*conf["time_scale"], [("a1_USCB", "a2_UCLA")])]
@@ -509,22 +509,22 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
 
     for i in range(num_scenarios):
         remaining_failures = int(math.sqrt(network_undirected.number_of_edges()))
-        remaining_edges = set(network_undirected.edges)
+        remaining_edges = sorted(network_undirected.edges)
         time_stamped_failures =[]
         while remaining_failures > 0 and len(remaining_edges) > 0:
             # Select a random edge
-            next_failed_edge = random.choice(list(remaining_edges))
+            next_failed_edge = random.choice(remaining_edges)
             # Remove the edges from the future list of edges to fail, and subtract the number of future failures by 1
             remaining_failures -= 1
             remaining_edges.remove(next_failed_edge)
             # Fail 50% of the adjacent edges
-            adjacent_failed_edges = {_edge for _edge in remaining_edges if set(_edge).intersection(next_failed_edge) != set() and random.uniform(0, 1) > 0.5}
+            adjacent_failed_edges = [_edge for _edge in remaining_edges if set(_edge).intersection(set(next_failed_edge)) != set() and random.uniform(0, 1) > 0.5]
             # Remove the failed edges from the remaining edges and subtract the number of adjacent edges from the number of remaining failures
-            remaining_edges -= adjacent_failed_edges
+            remaining_edges = [edge for edge in remaining_edges if edge not in adjacent_failed_edges]
             remaining_failures -= len(adjacent_failed_edges)
             # Randomly generate a time_stamp for the failure to occur
             time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
-            time_stamped_failures.append((time_stamp, list(adjacent_failed_edges) + [next_failed_edge]))
+            time_stamped_failures.append((time_stamp, adjacent_failed_edges + [next_failed_edge]))
 
         file_path = os.path.join(dir, f"scenario_{i}.xml")
         with open(file_path, "w") as f:
