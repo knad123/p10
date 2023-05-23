@@ -56,7 +56,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
 
 def run_inet_simulation(simulation_directory, inet_stopped_event, ini_conf):
     os.chdir(simulation_directory)
-    subprocess.run(['inet', '-u', 'Cmdenv', '-c', f'{ini_conf}'])
+    subprocess.run(['inet', '-c', f'{ini_conf}'])
     inet_stopped_event.set()
 
 # removes element from list
@@ -174,7 +174,7 @@ def main(confs):
         # Parse results
         os.chdir(ROOT)
         os.system(f"opp_scavetool export -F CSV-R -o {ini_conf}.csv {simulation_directory}/results/{ini_conf}-#0.sca {simulation_directory}/results/{ini_conf}-#0.vec")
-        parse_results(f"{ini_conf}.csv", network_name, conf["algorithm"], conf["results_folder"], ini_conf)
+        parse_results(f"{ini_conf}.csv", network_name, conf["algorithm"], os.path.join(conf["results_folder"], conf["algorithm"]), ini_conf)
         os.remove(f"{ini_conf}.csv")
 
 
