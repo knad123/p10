@@ -8,7 +8,7 @@ class MPLS_Router:
         self.classification_table = {}
 
     # Add new forwarding rule
-    def add_rule(self, incoming_label: int, outgoing_label: int, next_hop: str):
+    def add_rule(self, incoming_label: int, outgoing_label: int, next_hop: str, priority: int):
         # Pop operation
         if outgoing_label is None:
             operation = 'pop'
@@ -19,15 +19,16 @@ class MPLS_Router:
         else:
             operation = 'swap'
 
-        rule = {'incoming_label': incoming_label, 'outgoing_label': outgoing_label, 'next_hop': next_hop, 'operation': operation}
-        self.forwarding_table[incoming_label] = rule
+        rule = {'incoming_label': incoming_label, 'outgoing_label': outgoing_label, 'next_hop': next_hop, 'operation': operation, 'priority': priority}
+        self.forwarding_table[incoming_label, priority] = rule
 
     # Update rule in forwarding table
-    def update_rule(self, incoming_label: int, outgoing_label: int, next_hop: str):
+    def update_rule(self, incoming_label: int, outgoing_label: int, next_hop: str, priority: int):
         if incoming_label in self.forwarding_table:
-            rule = self.forwarding_table[incoming_label]
+            rule = self.forwarding_table[incoming_label, priority]
             rule['outgoing_label'] = outgoing_label
             rule['next_hop'] = next_hop
+            rule['priority'] = priority
 
     # Remove rule
     def remove_rule(self, incoming_label: int):

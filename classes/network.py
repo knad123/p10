@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Union
 from classes.label_generator import MPLS_Label_Generator
 from classes.router import MPLS_Router
 
+
 class MLPS_Network:
     def __init__(self, name: str = None, demands: Dict[str, str] = None):
         self.name = name
@@ -19,7 +20,7 @@ class MLPS_Network:
         router = MPLS_Router(name=name)
         self.routers[name] = router
 
-    def install_lsp(self, path: List[str]):
+    def install_lsp(self, path: List[str], priority: int):
         label = self.label_generator.get_new_label()
 
         for router_index in range(len(path)):
@@ -29,18 +30,79 @@ class MLPS_Network:
             if router_index == 0:
                 self.routers[current_router].add_classification_rule(path[-1], label)
                 next_hop = path[router_index + 1]
-                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label, next_hop=next_hop)
+                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label, next_hop=next_hop,
+                                                      priority=priority)
             # Last router, pop label
             elif router_index == len(path) - 1:
-                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None, next_hop=next_hop)
+                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None, next_hop=next_hop,
+                                                      priority=priority)
             # Intermediate routers, swap label
             else:
                 next_hop = path[router_index + 1]
-                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label, next_hop=next_hop)
+                self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label, next_hop=next_hop,
+                                                      priority=priority)
 
         # Add demand information for the LSP to the DataFrame
         load = self.demands[(path[0], path[-1])]
-        new_row = {'source': path[0], 'target': path[-1], 'label': label, 'path': path, 'load': load}
+        new_row = {'source': path[0], 'target': path[-1], 'label': label, 'path': path, 'load': load,
+                   'priority': priority}
+        new_row = pd.DataFrame([new_row])
+        self.demand_dataframe = pd.concat([self.demand_dataframe, new_row], ignore_index=True)
+
+    def install_fbr(self, paths, algorithm="fbr"):
+        labels = []
+        for i, path in enumerate(paths):
+            is_last_path = i == (len(paths) - 1)
+            label = self.label_generator.get_new_label()
+            labels.append(label)
+            if i == 0:
+                first_label = label
+                self.routers[path[0]].add_classification_rule(path[-1], label)
+            for router_index in range(len(path)):
+                current_router = path[router_index]
+                # last router in path
+                if router_index == len(path) - 1:
+                    self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None,
+                                                          next_hop=current_router, priority=1)
+                # intermediate router
+                else:
+                    next_hop = path[router_index + 1]
+                    # add rule to forward by normal route
+                    self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label,
+                                                          next_hop=next_hop,
+                                                          priority=1)
+                    if not is_last_path:
+                        # add rule to swap to a higher label for backtracking
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label + 1,
+                                                              next_hop=current_router,
+                                                              priority=2)
+                        if current_router not in paths[i + 1]:
+                            # add rule for backtracking with higher priority label
+                            previous_router = path[router_index - 1]
+                            self.routers[current_router].add_rule(incoming_label=label + 1, outgoing_label=label + 1,
+                                                                  next_hop=previous_router,
+                                                                  priority=1)
+                    # cycle to the first if its the last path
+                    elif algorithm == "essence":
+                        # add rule to swap to a higher label for backtracking
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=first_label,
+                                                              next_hop=current_router,
+                                                              priority=2)
+                        if current_router not in paths[0]:
+                            # add rule for backtracking with higher priority label
+                            previous_router = path[router_index - 1]
+                            self.routers[current_router].add_rule(incoming_label=first_label, outgoing_label=first_label,
+                                                                  next_hop=previous_router,
+                                                                  priority=1)
+
+        path = paths[0]
+        # Add demand information for the LSP to the DataFrame
+        load = self.demands[(path[0], path[-1])]
+        label_backup_paths_zip = list(zip(labels,paths))
+        label_backup_paths_dict = {}
+        for label, fbr_path in label_backup_paths_zip:
+            label_backup_paths_dict[tuple(fbr_path)] = label
+        new_row = {'source': path[0], 'target': path[-1], 'label': first_label, 'primary_path': paths[0], 'load': load, 'label_backup_paths_dict': label_backup_paths_dict}
         new_row = pd.DataFrame([new_row])
         self.demand_dataframe = pd.concat([self.demand_dataframe, new_row], ignore_index=True)
 

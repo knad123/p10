@@ -5,6 +5,7 @@ import subprocess
 import time
 import threading
 import multiprocessing
+from copy import deepcopy
 
 import networkx as nx
 import yaml
@@ -38,8 +39,12 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
     except:
         pass
     while not inet_stopped_event.is_set():
-        if os.path.exists("demands.json") and os.path.exists("utilization.json"):
-            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
+        if os.path.exists("demands_done.json") and os.path.exists("utilization_done.json"):
+            if conf["frr"]:
+                mpls_network = parsers.communicator.fbr_update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
+            else:
+                mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
+                                                                                 essence_state, recorder, conf)
             os.remove("demands.json")
             os.remove("utilization.json")
         time.sleep(1)
@@ -55,6 +60,23 @@ def run_inet_simulation(simulation_directory, inet_stopped_event, ini_conf):
     os.chdir(simulation_directory)
     subprocess.run(['inet', '-u', 'Cmdenv', '-c', f'{ini_conf}'])
     inet_stopped_event.set()
+
+# removes element from list
+def filter_list(elem, list):
+    new_list = deepcopy(list)
+    new_list.remove(elem)
+    return new_list
+
+def main(confs):
+    # Load topology
+    with open(conf["topology"]) as f:
+        topology_data = json.load(f)
+
+    # Add package.ned
+    if conf["generate_package"]:<<<<<<< frr
+        with open(f"{conf['output_dir']}/package.ned", "w") as f:
+            f.write(f"package {conf['package_name']};")
+
 
 def generate_files(conf, network_name, topology_data, simulation_directory, pkl_dir):
     # Load demands
@@ -77,12 +99,24 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
         essence_state = EssenceState(mpls_network)
         paths = essence(mpls_network, essence_state, conf, time.time())
+        if conf["frr"]:
+            paths_and_backup_paths = {}
+            for (src, tgt), path_list in essence_state.pathdict.items():
+                filtered_paths = filter_list(paths[src, tgt], path_list)
+                paths_and_backup_paths[src, tgt] = [paths[src, tgt]] + filtered_paths
+            for fbr_paths in paths_and_backup_paths.values():
+                mpls_network.install_fbr(fbr_paths, algorithm="essence")
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
-            paths[src, tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
+            paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
+        for path in paths.values():
+            mpls_network.install_lsp(path, 0)
+    elif conf["algorithm"] == "fbr":
+        essence_state = EssenceState(mpls_network)
+        for fbr_paths in essence_state.pathdict.values():
+            mpls_network.install_fbr(fbr_paths, algorithm="fbr")
 
-    for path in paths.values():
-        mpls_network.install_lsp(path)
+
 
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
@@ -157,7 +191,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
@@ -180,6 +214,8 @@ if __name__ == "__main__":
     p.add_argument("--write_interval", type=int, default=5, help="Number of seconds between every time utilization and demands are written. Should be less than update_interval")
     p.add_argument("--disable_dynamic_demands", action="store_true", help="Use dynamically changing send intervals")
     p.add_argument("--jitter", type=float, default=0.02, help="Demand jitter as a percentage")
+    p.add_argument("--frr", action="store_true")
+
     p.add_argument("--failure_scenarios", type=int, default=0, help="Number of failure scenarios to generate")
     p.add_argument("--random_seed", type=int, default=1)
     p.add_argument("--only_execute", action="store_true", help="If set, assumes ned and ini files are already generated and will just execute the specified conf(s)")
