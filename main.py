@@ -150,8 +150,10 @@ def main(confs):
         return
 
     if conf["configuration"] == "all":
-        failure_scenario_files = os.listdir(os.path.join(simulation_directory, "failure_scenarios"))
-        failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
+        failure_scenario_configs = []
+        if os.path.exists(os.path.join(simulation_directory, "failure_scenarios")):
+            failure_scenario_files = os.listdir(os.path.join(simulation_directory, "failure_scenarios"))
+            failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
         configurations = ["General"] + failure_scenario_configs
     else:
         configurations = [conf["configuration"]]
