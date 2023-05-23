@@ -24,7 +24,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
                 demands_loaded = True
         except:
             print("Failed to load demands, retrying..")
-            time.sleep(30)
+            time.sleep(5)
     # Used to set the weight of congestion and stretch
     utilization_loaded = False
 
@@ -42,7 +42,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
             utilization_loaded = True
         except:
             print("Failed to load utilization, retrying..")
-            time.sleep(30)
+            time.sleep(5)
     # Start timer
     start_time = time.time()
     demands: Dict[(str,str), float] = import_demands(demands_data)

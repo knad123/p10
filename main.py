@@ -18,21 +18,30 @@ from classes.essence_state import EssenceState
 from classes.recorder import Recorder
 from algorithms.essence import essence
 from parsers.omnet import to_omnetpp
+from parsers.parse_data import parse_results
 import os
 import shutil
+import pickle
+
+import pandas as pd
 
 # Constants
 ROOT = os.path.dirname(__file__)
-
-def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, conf):
+def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
+    try:
+        os.remove("demands.json")
+    except:
+        pass
+    try:
+        os.remove("utilization.json")
+    except:
+        pass
     while not inet_stopped_event.is_set():
-        if os.path.exists("demands_done.json") and os.path.exists("utilization_done.json"):
+        if os.path.exists("demands.json") and os.path.exists("utilization.json"):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
             os.remove("demands.json")
             os.remove("utilization.json")
-            os.remove("demands_done.json")
-            os.remove("utilization_done.json")
         time.sleep(1)
     os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
@@ -40,22 +49,14 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
     with open(conf["results_folder"] + "/" + conf['algorithm'] + "_" + mpls_network.name + "_changes" + ".txt", "w") as results:
         results.write(str(recorder.changes))
 
-def run_inet_simulation(simulation_directory, inet_stopped_event):
+    monitor_stopped_event.set()
+
+def run_inet_simulation(simulation_directory, inet_stopped_event, ini_conf):
     os.chdir(simulation_directory)
-    subprocess.run(['inet', '-u', 'Cmdenv'])
-    #subprocess.run(['inet'])
+    subprocess.run(['inet', '-u', 'Cmdenv', '-c', f'{ini_conf}'])
     inet_stopped_event.set()
-    
-def main(confs):
-    # Load topology
-    with open(conf["topology"]) as f:
-        topology_data = json.load(f)
 
-    # Add package.ned
-    if conf["generate_package"]:
-        with open(f"{conf['output_dir']}/package.ned", "w") as f:
-            f.write(f"package {conf['package_name']};")
-
+def generate_files(conf, network_name, topology_data, simulation_directory, pkl_dir):
     # Load demands
     with open(conf["demands"], "r") as file:
         demand_data = yaml.load(file, Loader=yaml.BaseLoader)
@@ -67,41 +68,89 @@ def main(confs):
     # Create the network graph
     mpls_network.create_MPLS_network_topology(topology_data)
 
-    simulation_directory = os.path.join(conf['output_dir'], mpls_network.name, conf['algorithm'])
     if os.path.isdir(simulation_directory):
         shutil.rmtree(simulation_directory)
     # Create initial routing
 
     paths = {}
-
+    essence_state = []
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
         essence_state = EssenceState(mpls_network)
         paths = essence(mpls_network, essence_state, conf, time.time())
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
-            paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
+            paths[src, tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
 
     for path in paths.values():
         mpls_network.install_lsp(path)
+
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
 
-    if conf['no_omnet']:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
+        # Save the essence state in a file
+        os.makedirs(pkl_dir, exist_ok=True)
+        with open(os.path.join(pkl_dir, "essence_state.pkl"), "wb") as outp:
+            pickle.dump(essence_state, outp, pickle.HIGHEST_PROTOCOL)
+        with open(os.path.join(pkl_dir, "mpls_network.pkl"), "wb") as outp:
+            pickle.dump(mpls_network, outp, pickle.HIGHEST_PROTOCOL)
+def main(confs):
+    with open(conf["topology"]) as f:
+        topology_data = json.load(f)
+    network_name = topology_data["network"]["name"]
+    simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm'])
+    pkl_dir = os.path.abspath(os.path.join(simulation_directory, "pkl_files"))
+    # Add package.ned
+    if conf["generate_package"]:
+        with open(f"{conf['output_dir']}/package.ned", "w") as f:
+            f.write(f"package {conf['package_name']};")
+    essence_state = []
+    mpls_network = []
+    if not conf["only_execute"]:
+        generate_files(conf, network_name, topology_data, simulation_directory, pkl_dir)
+
+    if conf['no_execution']:
         return
 
-    inet_stopped_event = threading.Event()
+    if conf["configuration"] == "all":
+        failure_scenario_files = os.listdir(os.path.join(simulation_directory, "failure_scenarios"))
+        failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
+        configurations = ["General"] + failure_scenario_configs
+    else:
+        configurations = [conf["configuration"]]
 
-    inet_simulation_thread = threading.Thread(target=run_inet_simulation,
-                                              args=(simulation_directory, inet_stopped_event,))
-    inet_simulation_thread.start()
+    for ini_conf in configurations:
+        os.chdir(ROOT)
+        inet_stopped_event = threading.Event()
 
-    if conf['algorithm'] in ['essence', 'essence_stateless']:
-        monitor_output_thread = threading.Thread(target=monitor_omnet, args=(
-        simulation_directory, mpls_network, essence_state, inet_stopped_event, conf))
-        monitor_output_thread.start()
+        inet_simulation_thread = threading.Thread(target=run_inet_simulation,
+                                                  args=(simulation_directory, inet_stopped_event, ini_conf))
+        inet_simulation_thread.start()
+
+        if conf['algorithm'] in ['essence', 'essence_stateless']:
+            with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
+                essence_state = pickle.load(inp)
+            with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
+                mpls_network = pickle.load(inp)
+            monitor_stopped_event = threading.Event()
+            monitor_output_thread = threading.Thread(target=monitor_omnet, args=(
+            simulation_directory, mpls_network, essence_state, inet_stopped_event, monitor_stopped_event, conf))
+            monitor_output_thread.start()
+
+            while not monitor_stopped_event.is_set():
+                time.sleep(1)
+        else:
+            while not inet_stopped_event.is_set():
+                time.sleep(1)
+        # Parse results
+        os.chdir(ROOT)
+        os.system(f"opp_scavetool export -F CSV-R -o {ini_conf}.csv {simulation_directory}/results/{ini_conf}-#0.sca {simulation_directory}/results/{ini_conf}-#0.vec")
+        parse_results(f"{ini_conf}.csv", network_name, conf["algorithm"], conf["results_folder"], ini_conf)
+        os.remove(f"{ini_conf}.csv")
+
 
 if __name__ == "__main__":
     # Arguments for framework
@@ -121,7 +170,7 @@ if __name__ == "__main__":
     p.add_argument("--omnet_path", type=str, default="../p10",
                    help="Path to omnet++, used for the demands and 2-phase-commit files")
     p.add_argument("--inet_path", type=str, default="", help="Path to inet")
-    p.add_argument("--no_omnet", action="store_true")
+    p.add_argument("--no_execution", action="store_true", help="if set, only generate files, dont execute simulation")
     p.add_argument("--results_folder", type=str, default="results", help="folder for results")
     p.add_argument("--time_scale", type=float, default=1, help="the time scale of the experiments. Start and stop times of demands are multiplied by this value. ")
     p.add_argument("--update_interval", type=int, default=120, help="How often the routing is updated in seconds")
@@ -131,6 +180,10 @@ if __name__ == "__main__":
     p.add_argument("--write_interval", type=int, default=5, help="Number of seconds between every time utilization and demands are written. Should be less than update_interval")
     p.add_argument("--disable_dynamic_demands", action="store_true", help="Use dynamically changing send intervals")
     p.add_argument("--jitter", type=float, default=0.02, help="Demand jitter as a percentage")
+    p.add_argument("--failure_scenarios", type=int, default=0, help="Number of failure scenarios to generate")
+    p.add_argument("--random_seed", type=int, default=1)
+    p.add_argument("--only_execute", action="store_true", help="If set, assumes ned and ini files are already generated and will just execute the specified conf(s)")
+    p.add_argument("--configuration", type=str, default="all", help="name of the configuration(s) to run")
 
     conf = vars(p.parse_args())
 

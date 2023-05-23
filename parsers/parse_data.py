@@ -28,9 +28,7 @@ def parse_results(csv_path, network_name, algorithm, output_dir, ini_conf):
     all_util_vectors = df[
         df['name'].astype(str).str.contains('utilization:vector') & ~df[
             'vectime' or 'vecvalue'].isnull()]["vecvalue"].tolist()
-    print(all_util_vectors)
     all_util_recordings = [float(y) for y in (itertools.chain.from_iterable([x.split(" ") for x in all_util_vectors]))]
-    print(all_util_recordings)
     results["max_util"] = max(all_util_recordings)
     results["avg_util"] = mean(all_util_recordings)
 

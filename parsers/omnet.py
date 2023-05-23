@@ -348,7 +348,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         file.write("\n")
 
     for scenario in range(conf["failure_scenarios"]):
-        file.write(f'[Config Scenario_{scenario}]\n')
+        file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
         file.write("\n")
 
@@ -523,7 +523,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
             remaining_edges -= adjacent_failed_edges
             remaining_failures -= len(adjacent_failed_edges)
             # Randomly generate a time_stamp for the failure to occur
-            time_stamp = conf["time_scale"] * 3600 * random.randint(0, 23)
+            time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
             time_stamped_failures.append((time_stamp, list(adjacent_failed_edges) + [next_failed_edge]))
 
         file_path = os.path.join(dir, f"scenario_{i}.xml")
