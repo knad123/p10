@@ -40,12 +40,9 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
     except:
         pass
     while not inet_stopped_event.is_set():
-        if os.path.exists("demands_done.json") and os.path.exists("utilization_done.json"):
-            if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "fbr"]:
-                mpls_network = parsers.communicator.fbr_update_demands_and_paths(simulation_dir, mpls_network, essence_state, recorder, conf)
-            else:
-                mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
-                                                                                 essence_state, recorder, conf)
+        if os.path.exists("demands.json") and os.path.exists("utilization.json"):
+            mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
+                                                                             essence_state, recorder, conf)
             os.remove("demands.json")
             os.remove("utilization.json")
         time.sleep(1)
