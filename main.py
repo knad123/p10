@@ -171,11 +171,13 @@ def main(confs):
         else:
             while not inet_stopped_event.is_set():
                 time.sleep(1)
+
         # Parse results
         os.chdir(ROOT)
-        os.system(f"opp_scavetool export -F CSV-R -o {ini_conf}.csv {simulation_directory}/results/{ini_conf}-#0.sca {simulation_directory}/results/{ini_conf}-#0.vec")
-        parse_results(f"{ini_conf}.csv", network_name, conf["algorithm"], os.path.join(conf["results_folder"], conf["algorithm"]), ini_conf)
-        os.remove(f"{ini_conf}.csv")
+        csv_path = os.path.join(os.path.abspath(simulation_directory), f"{ini_conf}.csv")
+        os.system(f"opp_scavetool export -F CSV-R -o {csv_path} {simulation_directory}/results/{ini_conf}-#0.sca {simulation_directory}/results/{ini_conf}-#0.vec")
+        parse_results(csv_path, network_name, conf["algorithm"], os.path.join(conf["results_folder"], conf["algorithm"]), ini_conf)
+        os.remove(csv_path)
 
 
 if __name__ == "__main__":
