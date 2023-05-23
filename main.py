@@ -67,17 +67,6 @@ def filter_list(elem, list):
     new_list.remove(elem)
     return new_list
 
-def main(confs):
-    # Load topology
-    with open(conf["topology"]) as f:
-        topology_data = json.load(f)
-
-    # Add package.ned
-    if conf["generate_package"]:<<<<<<< frr
-        with open(f"{conf['output_dir']}/package.ned", "w") as f:
-            f.write(f"package {conf['package_name']};")
-
-
 def generate_files(conf, network_name, topology_data, simulation_directory, pkl_dir):
     # Load demands
     with open(conf["demands"], "r") as file:
@@ -115,8 +104,6 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state = EssenceState(mpls_network)
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
-
-
 
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
