@@ -18,6 +18,7 @@ from classes.network import MLPS_Network
 from classes.essence_state import EssenceState
 from classes.recorder import Recorder
 from algorithms.essence import essence
+from algorithms.essence_split import essence_split
 from parsers.omnet import to_omnetpp
 from parsers.parse_data import parse_results
 import os
@@ -67,17 +68,6 @@ def filter_list(elem, list):
     new_list.remove(elem)
     return new_list
 
-def main(confs):
-    # Load topology
-    with open(conf["topology"]) as f:
-        topology_data = json.load(f)
-
-    # Add package.ned
-    if conf["generate_package"]:<<<<<<< frr
-        with open(f"{conf['output_dir']}/package.ned", "w") as f:
-            f.write(f"package {conf['package_name']};")
-
-
 def generate_files(conf, network_name, topology_data, simulation_directory, pkl_dir):
     # Load demands
     with open(conf["demands"], "r") as file:
@@ -106,6 +96,9 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
                 paths_and_backup_paths[src, tgt] = [paths[src, tgt]] + filtered_paths
             for fbr_paths in paths_and_backup_paths.values():
                 mpls_network.install_fbr(fbr_paths, algorithm="essence")
+    elif conf["algorithm"] == "essence_split":
+        essence_state = EssenceState(mpls_network)
+        paths = essence_split(mpls_network, essence_state, conf, time.time())
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -115,9 +108,6 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state = EssenceState(mpls_network)
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
-
-
-
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
@@ -131,6 +121,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             pickle.dump(essence_state, outp, pickle.HIGHEST_PROTOCOL)
         with open(os.path.join(pkl_dir, "mpls_network.pkl"), "wb") as outp:
             pickle.dump(mpls_network, outp, pickle.HIGHEST_PROTOCOL)
+
 def main(confs):
     with open(conf["topology"]) as f:
         topology_data = json.load(f)
@@ -191,7 +182,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
