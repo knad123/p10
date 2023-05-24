@@ -50,14 +50,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
     # Update the demand dataframe
     for (src,tgt), load in demands.items():
-        existing_row = network.demand_dataframe[(network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
-
-        if not existing_row.empty:
-            network.demand_dataframe.loc[existing_row.index, 'load'] = load
-        else:
-            new_row = {'source': src, 'target': tgt, 'label': None, 'path': None, 'load': load}
-            new_row = pd.DataFrame([new_row])
-            network.demand_dataframe = pd.concat([network.demand_dataframe, new_row], ignore_index=True)
+        network.demand_dict[src,tgt]['load'] = load
 
     # Calculate new paths
     paths = essence(network, essence_state, conf, start_time)
@@ -71,32 +64,43 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
         for path in paths.values():
             src, tgt = path[0], path[-1]
-            existing_row = network.demand_dataframe[
-                (network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
+            existing_row = network.demand_dict[src,tgt]
 
-            if list(existing_row['primary_path'].iloc[0]) != path:
-                new_label = existing_row['label_backup_paths_dict'].iloc[0].get(tuple(path))
-                network.demand_dataframe.loc[(network.demand_dataframe['source'] == src) & (
-                            network.demand_dataframe['target'] == tgt), 'label'] = new_label
-                network.demand_dataframe.loc[(network.demand_dataframe['source'] == src) & (
-                            network.demand_dataframe['target'] == tgt), 'primary_path'] = network.demand_dataframe.loc[
-                    (network.demand_dataframe['source'] == src) & (
-                                network.demand_dataframe['target'] == tgt), 'primary_path'].apply(lambda x: path)
-                changes.append(str(existing_row['source'].iloc[0]) + " -> " + str(existing_row['target'].iloc[0]))
+            if existing_row['primary_path'] != path:
+                for path, label in network.demand_dict[src,tgt]['label_backup_paths_dict'].items():
+                    # Remove old path
+                    for router_index, router_name in enumerate(path):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[label].items():
+                            operation = "remove"
+
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(label)))
+                            elem.append(create_xml_element("inRouter", "any"))
+
+                            root.append(elem)
+                        network.routers[router_name].remove_rule(label)
+
+                fbr_paths = [list(path)]
+                for backup_path in existing_row['label_backup_paths_dict'].keys():
+                    if backup_path != path:
+                        fbr_paths.append(list(backup_path))
+                network.install_fbr(fbr_paths, algorithm=conf['algorithm'], omnet_xml_root=root)
 
                 # initial router of the path
                 reclassify_element = ET.SubElement(root, "reclassify")
                 reclassify_element.set("router", src)
 
                 label_element = ET.SubElement(reclassify_element, "label")
-                label_element.text = str(new_label)
+                label_element.text = str(network.demand_dict[src,tgt]['label'])
 
                 destination_element = ET.SubElement(reclassify_element, "destination")
                 destination_element.text = network.external_connections[tgt]["target"]
 
                 source_element = ET.SubElement(reclassify_element, "source")
                 source_element.text = network.external_connections[src]["source"]
-    else:
+    elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]
             existing_row = network.demand_dataframe[(network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]

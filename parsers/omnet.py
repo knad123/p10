@@ -1,5 +1,6 @@
 # import jsonschema
 import datetime
+import json
 import os
 import random
 import xml.etree.ElementTree as ET
@@ -67,6 +68,20 @@ def to_omnetpp(network: classes.network.MLPS_Network, temporal_demands: Dict[Tup
 
     to_omnetpp_lib(network, interface_dict, output_dir + "/lib_files")
     to_omnetpp_classification(network, export_flows, output_dir + "/classification_files")
+
+    with open(f'{output_dir}/network_topology.json', mode='w') as f:
+        to_omnetpp_network_topology_json(network, f)
+
+def to_omnetpp_network_topology_json(network, file):
+    topology = {}
+    for (src,tgt) in network.topology.edges:
+        if src not in topology:
+            topology[src] = {}
+        topology[src][tgt] = network.topology.edges[(src,tgt)]['capacity']
+    json_object = json.dumps(topology, indent=2)
+    file.write(json_object)
+
+
 
 
 def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, bandwidth_divisor=1, zero_latency=False,
@@ -366,7 +381,7 @@ def build_flows_for_export(network):
     # Initialize external_connections dictionary in the network
     network.external_connections = {}
 
-    for index, row in network.demand_dataframe.iterrows():
+    for index, row in network.demand_dict.items():
         source = row['source']
         target = row['target']
         label = row['label']
@@ -442,23 +457,24 @@ def to_omnetpp_classification(network, export_flows, export_dir):
 
 def to_omnetpp_lib_xml(router, interface_dict):
     table_xml = ET.Element("libtable")
-    for (label,priority,next_hop), entry in router.forwarding_table.items():
-        entry_xml = ET.SubElement(table_xml, "libentry")
-        ET.SubElement(entry_xml, "priority").text = str(entry['priority'])
-        ET.SubElement(entry_xml, "inLabel").text = str(label)
-        ET.SubElement(entry_xml, "inInterface").text = "any"
-        if (entry["next_hop"] == router.name):
-            ET.SubElement(entry_xml, "outInterface").text = "mlo0"  # custom loopback interface
-        else:
-            ET.SubElement(entry_xml, "outInterface").text = "ppp" + str(interface_dict[router.name][entry["next_hop"]])
-        ops = ET.SubElement(entry_xml, "outLabel")
-        op_code = entry["operation"]
-        op_label = entry["outgoing_label"]
-        if op_code == 'pop':
-            # pop should not contain a value attribute (violates an assertion in DEBUG mode)
-            ET.SubElement(ops, "op", code=op_code)
-        else:
-            ET.SubElement(ops, "op", code=op_code, value=str(op_label))
+    for label, row in router.forwarding_table.items():
+        for (priority, next_hop), entry in row.items():
+            entry_xml = ET.SubElement(table_xml, "libentry")
+            ET.SubElement(entry_xml, "priority").text = str(entry['priority'])
+            ET.SubElement(entry_xml, "inLabel").text = str(label)
+            ET.SubElement(entry_xml, "inInterface").text = "any"
+            if (entry["next_hop"] == router.name):
+                ET.SubElement(entry_xml, "outInterface").text = "mlo0"  # custom loopback interface
+            else:
+                ET.SubElement(entry_xml, "outInterface").text = "ppp" + str(interface_dict[router.name][entry["next_hop"]])
+            ops = ET.SubElement(entry_xml, "outLabel")
+            op_code = entry["operation"]
+            op_label = entry["outgoing_label"]
+            if op_code == 'pop':
+                # pop should not contain a value attribute (violates an assertion in DEBUG mode)
+                ET.SubElement(ops, "op", code=op_code)
+            else:
+                ET.SubElement(ops, "op", code=op_code, value=str(op_label))
     return table_xml
 
 def to_omnetpp_scenario(file, link_to_ppp, conf, network_undirected, downtime, failed_links: list[tuple[int,list[(str, str)]]] = [], failed_nodes: list[tuple[int,str]]=[]):
