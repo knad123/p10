@@ -177,7 +177,7 @@ def main(confs):
         os.chdir(ROOT)
         csv_path = os.path.join(os.path.abspath(simulation_directory), f"{ini_conf}.csv")
         os.system(f"opp_scavetool export -F CSV-R -o {csv_path} {simulation_directory}/results/{ini_conf}-#0.sca {simulation_directory}/results/{ini_conf}-#0.vec")
-        parse_results(csv_path, network_name, conf["algorithm"], os.path.join(conf["results_folder"], conf["algorithm"]), ini_conf)
+        parse_results(csv_path, network_name, conf["algorithm"], os.path.join(conf["results_folder"], network_name, conf["algorithm"]), ini_conf)
         os.remove(csv_path)
         os.remove(f"{simulation_directory}/results/{ini_conf}-#0.sca")
         os.remove(f"{simulation_directory}/results/{ini_conf}-#0.vec")
