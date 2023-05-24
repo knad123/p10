@@ -266,6 +266,8 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     file.write("[General]\n")
     if conf["algorithm"] in ['essence', 'essence_stateless']:
         file.write('**.twoPhaseCommit.updatePath = "2-phase-commit-General.xml"\n')
+        file.write('**.measureWriter.demandPath = "demands-General.json"\n')
+        file.write('**.measureWriter.utilizationPath = "utilization-General.json"\n')
     file.write(f"network = {name}_{algorithm}\n")
     file.write(f"**.cmdenv-log-level = OFF\n")
     file.write(f"**.utilization.statistic-recording = true\n")
@@ -367,6 +369,8 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
         if conf["algorithm"] in ['essence', 'essence_stateless']:
             file.write(f'**.twoPhaseCommit.updatePath = "2-phase-commit-scenario_{scenario}.xml"\n')
+            file.write(f'**.measureWriter.demandPath = "demands-scenario_{scenario}.json"\n')
+            file.write(f'**.measureWriter.utilizationPath = "utilization-scenario_{scenario}.json"\n')
         file.write("\n")
 
 

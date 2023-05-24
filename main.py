@@ -32,19 +32,19 @@ ROOT = os.path.dirname(__file__)
 def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
     try:
-        os.remove("demands.json")
+        os.remove(conf["demand_path"])
     except:
         pass
     try:
-        os.remove("utilization.json")
+        os.remove(conf["utilization_path"])
     except:
         pass
     while not inet_stopped_event.is_set():
-        if os.path.exists("demands.json") and os.path.exists("utilization.json"):
+        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
-            os.remove("demands.json")
-            os.remove("utilization.json")
+            os.remove(conf["demand_path"])
+            os.remove(conf["utilization_path"])
         time.sleep(1)
     os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
@@ -150,6 +150,8 @@ def main(confs):
 
     for ini_conf in configurations:
         conf["configuration"] = ini_conf
+        conf["demand_path"] = f"demands-{conf['configuration']}.json"
+        conf["utilization_path"] = f"utilization-{conf['configuration']}.json"
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 

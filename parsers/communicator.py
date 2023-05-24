@@ -18,7 +18,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
     demands_loaded = False
     while not demands_loaded:
         try:
-            with open("demands.json", "r") as file:
+            with open(conf["demand_path"], "r") as file:
                 content = file.read()
                 demands_data = json.loads(content)
                 demands_loaded = True
@@ -30,7 +30,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
     while not utilization_loaded:
         try:
-            with open("utilization.json", "r") as file:
+            with open(conf["utilization_path"], "r") as file:
                 utilizations_data = json.load(file)
                 max_utilization = 0
                 for key, value in utilizations_data.items():
