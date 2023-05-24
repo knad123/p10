@@ -164,8 +164,7 @@ def parse_results(csv_path, network_name, algorithm, output_dir, ini_conf):
 
     # WRITE RESULTS TO FILE
     _dir = output_dir
-    if not os.path.exists(_dir):
-        os.makedirs(_dir)
+    os.makedirs(_dir, exist_ok=True)
     with open(os.path.join(_dir, f"{network_name}-{ini_conf}.json"), "w") as f:
         json.dump(results, f, indent=2)
 
