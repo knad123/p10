@@ -264,6 +264,8 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
 
     file.write("[General]\n")
+    if conf["algorithm"] in ['essence', 'essence_stateless']:
+        file.write('**.twoPhaseCommit.updatePath = "2-phase-commit-General.xml"\n')
     file.write(f"network = {name}_{algorithm}\n")
     file.write(f"**.cmdenv-log-level = OFF\n")
     file.write(f"**.utilization.statistic-recording = true\n")
@@ -363,6 +365,8 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for scenario in range(conf["failure_scenarios"]):
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
+        if conf["algorithm"] in ['essence', 'essence_stateless']:
+            file.write(f'**.twoPhaseCommit.updatePath = "2-phase-commit-scenario_{scenario}.xml"\n')
         file.write("\n")
 
 

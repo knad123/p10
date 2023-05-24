@@ -169,8 +169,8 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
     # Write to xml file
     tree = ET.ElementTree(root)
     #tree.write(os.path.join(simulation_dir,'2-phase-commit.xml'))
-    tree.write('2pc.xml')
-    os.rename('2pc.xml', '2-phase-commit.xml')
+    tree.write(f'2pc-{conf["configuration"]}.xml')
+    os.rename(f'2pc-{conf["configuration"]}.xml', f'2-phase-commit-{conf["configuration"]}.xml')
 
     '''
     # Print 2 phase commit file
