@@ -49,14 +49,14 @@ def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state
     os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
         os.mkdir(conf["results_folder"])
-    with open(conf["results_folder"] + "/" + conf['algorithm'] + "_" + mpls_network.name + "_changes" + ".txt", "w") as results:
+    with open(os.path.join(conf["results_folder"], f"{conf['algorithm']}_{mpls_network.name}_{conf['configuration']}_changes.txt"), "w") as results:
         results.write(str(recorder.changes))
 
     monitor_stopped_event.set()
 
 def run_inet_simulation(simulation_directory, inet_stopped_event, ini_conf):
     os.chdir(simulation_directory)
-    subprocess.run(['inet', '-c', f'{ini_conf}'])
+    subprocess.run(['inet', '-u', 'Cmdenv', '-c', f'{ini_conf}'])
     inet_stopped_event.set()
 
 # removes element from list
@@ -149,6 +149,7 @@ def main(confs):
         configurations = [conf["configuration"]]
 
     for ini_conf in configurations:
+        conf["configuration"] = ini_conf
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 
@@ -178,6 +179,8 @@ def main(confs):
         os.system(f"opp_scavetool export -F CSV-R -o {csv_path} {simulation_directory}/results/{ini_conf}-#0.sca {simulation_directory}/results/{ini_conf}-#0.vec")
         parse_results(csv_path, network_name, conf["algorithm"], os.path.join(conf["results_folder"], conf["algorithm"]), ini_conf)
         os.remove(csv_path)
+        os.remove(f"{simulation_directory}/results/{ini_conf}-#0.sca")
+        os.remove(f"{simulation_directory}/results/{ini_conf}-#0.vec")
 
 
 if __name__ == "__main__":
