@@ -1,11 +1,11 @@
 import networkx as nx
 from networkx import shortest_path
 
-from classes.network import MLPS_Network
+from classes.network import MPLS_Network
 
 
 class EssenceState:
-    def __init__(self, network: MLPS_Network):
+    def __init__(self, network: MPLS_Network):
         self.pathdict = dict()
         self.stretchdict = dict()
         self.current_population = []
@@ -15,7 +15,7 @@ class EssenceState:
         self.create_stretchdict(network)
 
 
-    def create_stretchdict(self, network: MLPS_Network):
+    def create_stretchdict(self, network: MPLS_Network):
         shortest_paths_len = dict()
         stretch_dict = {}
 
@@ -32,7 +32,7 @@ class EssenceState:
 
         self.stretchdict = stretch_dict
 
-    def create_pathdict(self, network: MLPS_Network):
+    def create_pathdict(self, network: MPLS_Network):
         flow_to_graph = {f: network.topology for f in network.demands}
         for graph in flow_to_graph.values():
             for src, tgt in graph.edges:

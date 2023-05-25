@@ -15,11 +15,11 @@ import itertools
 from typing import Dict, Tuple, List, Callable
 
 import time
-from classes.network import MLPS_Network
+from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 
 
-def essence_split(network: MLPS_Network, essence_state: EssenceState, conf, start_time):
+def essence_split(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
     genetic_paths = genetic_algorithm(network=network ,loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
                                       essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])

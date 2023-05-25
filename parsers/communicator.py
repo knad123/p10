@@ -6,13 +6,15 @@ import xml.dom.minidom as md
 
 import pandas as pd
 
-from classes.network import MLPS_Network
+from classes.network import MPLS_Network
 from algorithms.essence import essence
+from algorithms.essence_split import essence_split
 from classes.essence_state import EssenceState
 import os
 import time
 
-def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence_state: EssenceState, recorder, conf):
+
+def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence_state: EssenceState, recorder, conf):
     if conf["algorithm"] == "essence_stateless":
         essence_state.current_population = []
     demands_loaded = False
@@ -45,29 +47,26 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
             time.sleep(5)
     # Start timer
     start_time = time.time()
-    demands: Dict[(str,str), float] = import_demands(demands_data)
+    demands: Dict[(str, str), float] = import_demands(demands_data)
     network.demands.update(demands)
 
     # Update the demand dataframe
-    for (src,tgt), load in demands.items():
-        network.demand_dict[src,tgt]['load'] = load
-
-    # Calculate new paths
-    paths = essence(network, essence_state, conf, start_time)
+    for (src, tgt), load in demands.items():
+        network.demand_dict[src, tgt]['load'] = load
 
     # Create XML root element
     root = ET.Element('twoPhaseCommit')
 
     changes = []
 
-
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
-        for path in paths.values():
-            src, tgt = path[0], path[-1]
-            existing_row = network.demand_dict[src,tgt]
+        # Calculate new paths
+        paths = essence(network, essence_state, conf, start_time)
+        for (src, tgt), path in paths.items():
+            existing_row = network.demand_dict[src, tgt]
 
             if existing_row['primary_path'] != path:
-                for path, label in network.demand_dict[src,tgt]['label_backup_paths_dict'].items():
+                for path, label in network.demand_dict[src, tgt]['label_backup_paths_dict'].items():
                     # Remove old path
                     for router_index, router_name in enumerate(path):
                         for (priority, next_hop), rule in network.routers[router_name].forwarding_table[label].items():
@@ -87,23 +86,47 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
                     if backup_path != path:
                         fbr_paths.append(list(backup_path))
                 network.install_fbr(fbr_paths, algorithm=conf['algorithm'], omnet_xml_root=root)
+    elif conf['algorithm'] == "essence_split":
+        # Calculate new paths
+        split_paths = essence_split(network, essence_state, conf, start_time)
+        for (src,tgt), paths in split_paths.items():
 
-                # initial router of the path
-                reclassify_element = ET.SubElement(root, "reclassify")
-                reclassify_element.set("router", src)
+            if network.demand_dict[src, tgt]['split_path'] != paths:
+                split_path_label = network.demand_dict[src, tgt]['label']
+                for split_path in network.demand_dict[src, tgt]['split_path']:
+                    for router_index, router_name in enumerate(split_path):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[split_path_label].items():
+                            operation = "remove"
 
-                label_element = ET.SubElement(reclassify_element, "label")
-                label_element.text = str(network.demand_dict[src,tgt]['label'])
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(split_path_label)))
+                            elem.append(create_xml_element("inRouter", "any"))
 
-                destination_element = ET.SubElement(reclassify_element, "destination")
-                destination_element.text = network.external_connections[tgt]["target"]
+                            root.append(elem)
 
-                source_element = ET.SubElement(reclassify_element, "source")
-                source_element.text = network.external_connections[src]["source"]
+                for label, path in network.demand_dict[src, tgt]['label_backup_paths_dict'].items():
+                    # Remove old path
+                    for router_index, router_name in enumerate(path[:-1]):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[label].items():
+                            operation = "remove"
+
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(label)))
+                            elem.append(create_xml_element("inRouter", "any"))
+
+                            root.append(elem)
+                        network.routers[router_name].remove_rule(label)
+
+            root = network.install_split_path_essence(paths, 1000, omnet_xml_root=root)
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]
-            existing_row = network.demand_dataframe[(network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
+            existing_row = network.demand_dataframe[
+                (network.demand_dataframe['source'] == src) & (network.demand_dataframe['target'] == tgt)]
 
             if existing_row.empty or list(existing_row['path'].iloc[0]) != path:
                 changes.append(str(existing_row['source'].iloc[0]) + " -> " + str(existing_row['target'].iloc[0]))
@@ -144,7 +167,8 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
                     out_label_elem = ET.Element("outLabel")
                     if router_index != (len(path) - 1):
-                        out_label_elem.append(create_xml_element("op", attrib={"code": "swap", "value": str(out_label)}))
+                        out_label_elem.append(
+                            create_xml_element("op", attrib={"code": "swap", "value": str(out_label)}))
                     else:
                         out_label_elem.append(create_xml_element("op", attrib={"code": "pop"}))
                     elem.append(out_label_elem)
@@ -164,11 +188,11 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
                     root.append(elem)
 
                 network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
-                network.install_lsp(path,0)
+                network.install_lsp(path, 0)
 
     # Write to xml file
     tree = ET.ElementTree(root)
-    #tree.write(os.path.join(simulation_dir,'2-phase-commit.xml'))
+    # tree.write(os.path.join(simulation_dir,'2-phase-commit.xml'))
     tree.write(f'2pc-{conf["configuration"]}.xml')
     os.rename(f'2pc-{conf["configuration"]}.xml', f'2-phase-commit-{conf["configuration"]}.xml')
 
@@ -184,6 +208,7 @@ def update_demands_and_paths(simulation_dir: str, network: MLPS_Network, essence
 
     return network
 
+
 def create_xml_element(name, text=None, attrib=None):
     elem = ET.Element(name)
     if text:
@@ -193,14 +218,16 @@ def create_xml_element(name, text=None, attrib=None):
             elem.set(key, value)
     return elem
 
+
 def import_demands(demands: Dict[str, Dict[str, float]]):
     new_demands = {}
     for src in demands.keys():
         if src != "timestamp":
             for tgt in demands[src]:
-                new_demands[src,tgt] = sendinterval_to_load(demands[src][tgt])
+                new_demands[src, tgt] = sendinterval_to_load(demands[src][tgt])
 
     return new_demands
+
 
 def sendinterval_to_load(send_interval):
     return int(64 / send_interval)

@@ -14,7 +14,7 @@ import math
 import json
 
 import parsers.communicator
-from classes.network import MLPS_Network
+from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 from classes.recorder import Recorder
 from algorithms.essence import essence
@@ -29,7 +29,7 @@ import pandas as pd
 
 # Constants
 ROOT = os.path.dirname(__file__)
-def monitor_omnet(simulation_dir: str, mpls_network: MLPS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
+def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
     try:
         os.remove(conf["demand_path"])
@@ -73,7 +73,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         # int(demand[2][0][0]) is just load for first timeslot
         initial_demands = {tuple(demand[:2]): int(demand[2][0][0]) for demand in demand_data}
 
-    mpls_network = MLPS_Network(name=topology_data["network"]["name"], demands=initial_demands)
+    mpls_network = MPLS_Network(name=topology_data["network"]["name"], demands=initial_demands)
     # Create the network graph
     mpls_network.create_MPLS_network_topology(topology_data)
 
@@ -96,7 +96,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state = EssenceState(mpls_network)
         paths = essence_split(mpls_network, essence_state, conf, time.time())
         for path in paths.values():
-            mpls_network.install_split_path_essence(path)
+            mpls_network.install_split_path_essence(path, labels_per_flow=conf['labels_per_flow'])
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -159,7 +159,7 @@ def main(confs):
                                                   args=(simulation_directory, inet_stopped_event, ini_conf))
         inet_simulation_thread.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless']:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split']:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
@@ -217,6 +217,7 @@ if __name__ == "__main__":
     p.add_argument("--random_seed", type=int, default=1)
     p.add_argument("--only_execute", action="store_true", help="If set, assumes ned and ini files are already generated and will just execute the specified conf(s)")
     p.add_argument("--configuration", type=str, default="all", help="name of the configuration(s) to run")
+    p.add_argument("--labels_per_flow", type=int, default=4)
 
     conf = vars(p.parse_args())
 

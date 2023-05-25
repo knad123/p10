@@ -14,11 +14,11 @@ import itertools
 from typing import Dict, Tuple, List, Callable
 
 import time
-from classes.network import MLPS_Network
+from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 
 
-def essence(network: MLPS_Network, essence_state: EssenceState, conf, start_time):
+def essence(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
     genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
                                       essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
