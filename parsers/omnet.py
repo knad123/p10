@@ -100,7 +100,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split']:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
         file.write(f"import inet.p10.TwoPhaseCommit;\n")
         file.write("import inet.p10.MeasureWriter;\n")
     file.write("\n")
@@ -127,7 +127,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split']:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
     for router_name, router in network.routers.items():
@@ -264,7 +264,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
 
     file.write("[General]\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split']:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
         file.write('**.twoPhaseCommit.updatePath = "2-phase-commit-General.xml"\n')
         file.write('**.measureWriter.demandPath = "demands-General.json"\n')
         file.write('**.measureWriter.utilizationPath = "utilization-General.json"\n')
@@ -368,7 +368,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for scenario in range(conf["failure_scenarios"]):
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split']:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
             file.write(f'**.twoPhaseCommit.updatePath = "2-phase-commit-scenario_{scenario}.xml"\n')
             file.write(f'**.measureWriter.demandPath = "demands-scenario_{scenario}.json"\n')
             file.write(f'**.measureWriter.utilizationPath = "utilization-scenario_{scenario}.json"\n')

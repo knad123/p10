@@ -1,3 +1,5 @@
+from typing import Tuple, List
+
 import networkx as nx
 from networkx import shortest_path
 
@@ -46,7 +48,6 @@ class EssenceState:
             pathdict[(src, tgt)] = result
 
         self.pathdict = pathdict
-
 
 def find_paths_for_demand(args):
     src, tgt, flow_to_graph = args

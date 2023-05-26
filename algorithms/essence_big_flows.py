@@ -18,13 +18,50 @@ from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 
 
-def essence(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
-    genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
+def essence_big_flows(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
+    # Modify viable_paths dictionary to include only 90% of flows
+    viable_paths, loads = get_viable_paths(essence_state.pathdict, network.demands, 0.9)
+
+    genetic_paths = genetic_algorithm(viable_paths=viable_paths, loads=loads,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
+                                      essence_state=essence_state, conf=conf, start_time=start_time,
+                                      time_limit=conf["update_interval"])
     return genetic_paths
 
-def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=100,
+
+def get_viable_paths(pathdict: Dict[Tuple[str, str], List[List[str]]], loads: Dict[Tuple[str, str], int],
+                     threshold_percentage: float) -> Tuple[Dict[Tuple[str, str], List[List[str]]], Dict[Tuple[str, str], int]]:
+    sorted_flows = sorted(loads.items(), key=lambda x: x[1], reverse=True)
+
+    # Calculate the cumulative sum of flows and find the index at which it exceeds the threshold
+    cumulative_sum = 0
+    threshold = sum(loads.values()) * threshold_percentage
+    index = 0
+    for i, (demand, flow_value) in enumerate(sorted_flows):
+        cumulative_sum += flow_value
+        if cumulative_sum > threshold:
+            index = i
+            break
+
+    # Create a new loads dictionary with demands making up some percentage of the total flow
+    valid_loads = {demand: load for demand, load in sorted_flows[:index + 1]}
+
+    valid_demands = set(valid_loads.keys())
+    viable_paths = {demand: paths for demand, paths in pathdict.items() if demand in valid_demands}
+
+    return viable_paths, valid_loads
+
+def filter_individuals(population, viable_paths):
+    filtered_population = []
+    valid_demands = set(viable_paths.keys())
+    for individual in population:
+        # Check if all demands in the individual are present in the valid demands
+        if set(individual.keys()).issubset(valid_demands):
+            filtered_individual = {demand: paths for demand, paths in individual.items() if demand in valid_demands}
+            filtered_population.append(filtered_individual)
+    return filtered_population
+
+def genetic_algorithm(viable_paths: dict[tuple[str,str], list[list[str]]], loads: dict[tuple[str,str],int], capacities: dict[tuple[str,str],int], essence_state, conf, start_time, generations=1000, population_size=100,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
     end_time = start_time + time_limit
@@ -33,7 +70,8 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
     else:
         new_population = [{k: random.choice(v) for k, v in viable_paths.items()} for i in
                           range(int(population_size * 0.8))]
-        population = essence_state.current_population + new_population
+        filtered_current_population = filter_individuals(essence_state.current_population, viable_paths)
+        population = filtered_current_population + new_population
 
     # Run the genetic algorithm
     # for generation in range(generations):
@@ -62,8 +100,7 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
         a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
                                               essence_state.congestion_weight)
 
-    if conf["algorithm"] != "essence_big_flows":
-        essence_state.current_population = population[:int(len(population) * 0.2)]
+    essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
     return a_class[0]
 

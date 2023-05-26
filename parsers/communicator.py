@@ -10,6 +10,7 @@ import pandas as pd
 from classes.network import MPLS_Network
 from algorithms.essence import essence
 from algorithms.essence_split import essence_split
+from algorithms.essence_big_flows import essence_big_flows
 from classes.essence_state import EssenceState
 import os
 import time
@@ -83,9 +84,12 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
 
     changes = []
 
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless"]:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_big_flows"]:
         # Calculate new paths
-        paths = essence(network, essence_state, conf, start_time)
+        if conf["algorithm"] == "essence_big_flows":
+            paths = essence_big_flows(network, essence_state, conf, start_time)
+        else:
+            paths = essence(network, essence_state, conf, start_time)
         for (src, tgt), path in paths.items():
             existing_row = network.demand_dict[src, tgt]
 

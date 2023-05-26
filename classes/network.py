@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 
 class MPLS_Network:
-    def __init__(self, name: str = None, demands: Dict[str, str] = None):
+    def __init__(self, name: str = None, demands: dict[(str, str), int] = None):
         self.name = name
         self.topology = nx.DiGraph()
         self.routers = {}
