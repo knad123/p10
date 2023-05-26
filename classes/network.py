@@ -17,6 +17,7 @@ class MPLS_Network:
         self.demand_dict = {}
         self.demands = demands
         self.external_connections = {}
+        self.failed_links_capacity = {}
 
     def add_router(self, name: str):
         router = MPLS_Router(name=name)

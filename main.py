@@ -39,12 +39,17 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
         os.remove(conf["utilization_path"])
     except:
         pass
+    try:
+        os.remove(conf["link_failures_path"])
+    except:
+        pass
     while not inet_stopped_event.is_set():
-        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]):
+        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
             os.remove(conf["demand_path"])
             os.remove(conf["utilization_path"])
+            os.remove(conf["link_failures_path"])
         time.sleep(1)
     os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
@@ -152,6 +157,7 @@ def main(confs):
         conf["configuration"] = ini_conf
         conf["demand_path"] = f"demands-{conf['configuration']}.json"
         conf["utilization_path"] = f"utilization-{conf['configuration']}.json"
+        conf["link_failures_path"] = f"link_failures-{conf['configuration']}.json"
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 

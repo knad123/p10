@@ -268,6 +268,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         file.write('**.twoPhaseCommit.updatePath = "2-phase-commit-General.xml"\n')
         file.write('**.measureWriter.demandPath = "demands-General.json"\n')
         file.write('**.measureWriter.utilizationPath = "utilization-General.json"\n')
+        file.write('**.measureWriter.linkFailuresPath = "link_failures-General.json"\n')
     file.write(f"network = {name}_{algorithm}\n")
     file.write(f"**.cmdenv-log-level = OFF\n")
     file.write(f"**.utilization.statistic-recording = true\n")
@@ -371,6 +372,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
             file.write(f'**.twoPhaseCommit.updatePath = "2-phase-commit-scenario_{scenario}.xml"\n')
             file.write(f'**.measureWriter.demandPath = "demands-scenario_{scenario}.json"\n')
             file.write(f'**.measureWriter.utilizationPath = "utilization-scenario_{scenario}.json"\n')
+            file.write(f'**.measureWriter.linkFailuresPath = "link_failures-scenario_{scenario}.json"\n')
         file.write("\n")
 
 
@@ -507,16 +509,10 @@ def to_omnetpp_scenario(file, link_to_ppp, conf, network_undirected, downtime, f
                 file.write(f'       <param name="delay" value="{latency}ms" />\n')
                 file.write(f'</connect>\n')
             file.write("</at>\n")
-    # Using node failures
-    if failed_nodes:
-        for timestamp, node in failed_nodes:
-            file.write(f'   <crash t="{timestamp}s" module="{node}"/>\n')
-            file.write(f'   <startup t="{timestamp+downtime}s" module="{node}"/>\n')
 
     file.write("</scenario>\n")
 
 def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network_undirected):
-    import random
     random.seed(100)
     downtime = 10800 * conf["time_scale"]
     # Uses sim_duration to generate a failed link

@@ -3,6 +3,7 @@ import time
 from typing import Dict, List
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as md
+import yaml
 
 import pandas as pd
 
@@ -17,6 +18,19 @@ import time
 def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence_state: EssenceState, recorder, conf):
     if conf["algorithm"] == "essence_stateless":
         essence_state.current_population = []
+
+    link_failures_loaded = False
+    while not link_failures_loaded:
+        try:
+            with open(conf["link_failures_path"], "r") as file:
+                link_failures_data = yaml.safe_load(file)
+                if link_failures_data is None:
+                    link_failures_data = []
+                #link_failures_data = json.load(content)
+                link_failures_loaded = True
+        except:
+            print("Failed to load failed links, retrying..")
+            time.sleep(5)
     demands_loaded = False
     while not demands_loaded:
         try:
@@ -53,6 +67,16 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
     # Update the demand dataframe
     for (src, tgt), load in demands.items():
         network.demand_dict[src, tgt]['load'] = load
+
+    # Fail links
+    for (src,tgt) in link_failures_data:
+        network.failed_links_capacity[src,tgt] = network.topology.edges[src,tgt]['capacity']
+        network.topology.edges[src,tgt]['capacity'] = 1
+
+    # Restore links
+    for (src,tgt), capacity in network.failed_links_capacity.items():
+        if (src,tgt) not in link_failures_data:
+            network.topology.edges[src, tgt]['capacity'] = network.failed_links_capacity[src,tgt]
 
     # Create XML root element
     root = ET.Element('twoPhaseCommit')
