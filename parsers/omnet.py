@@ -53,7 +53,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     if failure_scenarios > 0:
         scenario_dir = os.path.join(output_dir, "failure_scenarios")
         os.makedirs(scenario_dir, exist_ok=True)
-        generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network.topology.to_undirected())
+        generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network)
 
 
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
@@ -487,23 +487,22 @@ def to_omnetpp_lib_xml(router, interface_dict):
                 ET.SubElement(ops, "op", code=op_code, value=str(op_label))
     return table_xml
 
-def to_omnetpp_scenario(file, link_to_ppp, conf, network_undirected, downtime, failed_links: list[tuple[int,list[(str, str)]]] = [], failed_nodes: list[tuple[int,str]]=[]):
+def to_omnetpp_scenario(file, link_to_ppp, conf, network_topology, failed_links):
     # failed_links is a list of tuples in the form of (timestamp, [(src,tgt)]), eg (10, [(copenhagen, berlin), (paris, milano)]) denoting two links that disconnect at 10 seconds
     file.write('<?xml version="1.0"?>\n')
     file.write("<scenario>\n")
 
     # If using link failues
     if failed_links != []:
-        for f in failed_links:
-            timestamp, link_list = f
+        for (timestamp, link_list, downtime) in failed_links:
             file.write(f'<at t="{timestamp}s">\n')
             for (src, tgt) in link_list:
                 file.write(f'	<disconnect src-module="{src}" dest-module="{tgt}" />\n')
             file.write("</at>\n")
             file.write(f'<at t="{timestamp + downtime}s">\n')
             for (src, tgt) in link_list:
-                capacity = network_undirected[src][tgt]["capacity"] * 8
-                latency = network_undirected[src][tgt]["latency"]
+                capacity = network_topology.edges[src,tgt]['capacity'] * 8
+                latency = network_topology.edges[src,tgt]["latency"]
                 file.write(f'	<connect src-module="{src}" src-gate="pppg[{link_to_ppp[(src,tgt)]}]" dest-module="{tgt}" dest-gate="pppg[{link_to_ppp[(tgt,src)]}]" channel-type="ned.DatarateChannel">\n')
                 file.write(f'       <param name="datarate" value="{capacity}bps" />\n')
                 file.write(f'       <param name="delay" value="{latency}ms" />\n')
@@ -512,40 +511,55 @@ def to_omnetpp_scenario(file, link_to_ppp, conf, network_undirected, downtime, f
 
     file.write("</scenario>\n")
 
-def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network_undirected):
+def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network):
+    network_undirected = network.topology.to_undirected()
     random.seed(100)
-    downtime = 10800 * conf["time_scale"]
     # Uses sim_duration to generate a failed link
     #link_test_scenario = [(10800*conf["time_scale"], [("a1_USCB", "a0_SRI"), ("a0_SRI", "a3_UTAH")]), (21600*conf["time_scale"], [("a1_USCB", "a2_UCLA")])]
 
-    '''num_failures = int(math.sqrt(network_undirected.number_of_nodes()))
-    nodes = network_undirected.nodes
-    for i in range(num_scenarios):
-        file_path = os.path.join(dir, f"scenario_{i}.xml")
-        failed_nodes = random.sample(nodes, num_failures)
-        timestamped_failed_nodes = sorted([(conf["time_scale"]*3600*random.randint(0,23), node) for node in failed_nodes], key=lambda x: x[0])
-        with open(file_path, "w") as f:
-            to_omnetpp_scenario(f, link_to_ppp, conf, network_undirected, downtime, failed_nodes=timestamped_failed_nodes)'''
+    node_failure_probability = 0.1
+    edge_failure_probability = 0.05
+    failure_occured = False
 
     for i in range(num_scenarios):
-        remaining_failures = int(math.sqrt(network_undirected.number_of_edges()))
-        remaining_edges = sorted(network_undirected.edges)
-        time_stamped_failures =[]
-        while remaining_failures > 0 and len(remaining_edges) > 0:
-            # Select a random edge
-            next_failed_edge = random.choice(remaining_edges)
-            # Remove the edges from the future list of edges to fail, and subtract the number of future failures by 1
-            remaining_failures -= 1
-            remaining_edges.remove(next_failed_edge)
-            # Fail 50% of the adjacent edges
-            adjacent_failed_edges = [_edge for _edge in remaining_edges if set(_edge).intersection(set(next_failed_edge)) != set() and random.uniform(0, 1) > 0.5]
-            # Remove the failed edges from the remaining edges and subtract the number of adjacent edges from the number of remaining failures
-            remaining_edges = [edge for edge in remaining_edges if edge not in adjacent_failed_edges]
-            remaining_failures -= len(adjacent_failed_edges)
-            # Randomly generate a time_stamp for the failure to occur
-            time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
-            time_stamped_failures.append((time_stamp, adjacent_failed_edges + [next_failed_edge]))
+        time_stamped_failures = []
+        for node in network.topology.nodes:
+            if random.random() < node_failure_probability:
+                failed_nodes = []
+                failed_nodes.extend(network.topology.in_edges(node))
+                failed_nodes.extend(network.topology.out_edges(node))
+                downtime = random.randint(20, 10800) * conf["time_scale"]
+                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                time_stamped_failures.append((time_stamp, failed_nodes, downtime))
+                failure_occured = True
+
+        for (src,tgt) in network.topology.edges:
+            if random.random() < edge_failure_probability:
+                failed_edges = [(src, tgt)]
+                downtime = random.randint(20, 10800) * conf["time_scale"]
+                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                time_stamped_failures.append((time_stamp, failed_edges, downtime))
+                failure_occured = True
+
+        if failure_occured == False:
+            fail_type = random.choice(["link", "node"])
+            if fail_type == "node":
+                node = random.choice(list(network.topology.nodes))
+                failed_nodes = []
+                failed_nodes.extend(network.topology.in_edges(node))
+                failed_nodes.extend(network.topology.out_edges(node))
+                downtime = random.randint(20, 10800) * conf["time_scale"]
+                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                time_stamped_failures.append((time_stamp, failed_nodes, downtime))
+            else:
+                (src,tgt) = random.choice(list(network.topology.edges))
+                failed_edges = [(src, tgt)]
+                downtime = random.randint(20, 10800) * conf["time_scale"]
+                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                time_stamped_failures.append((time_stamp, failed_edges, downtime))
+
+        failure_occured = False
 
         file_path = os.path.join(dir, f"scenario_{i}.xml")
         with open(file_path, "w") as f:
-            to_omnetpp_scenario(f, link_to_ppp, conf, network_undirected, downtime, failed_links=time_stamped_failures)
+            to_omnetpp_scenario(f, link_to_ppp, conf, network.topology, failed_links=time_stamped_failures)
