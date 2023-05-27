@@ -57,7 +57,12 @@ def filter_individuals(population, viable_paths):
     for individual in population:
         # Check if all demands in the individual are present in the valid demands
         if set(individual.keys()).issubset(valid_demands):
-            filtered_individual = {demand: paths for demand, paths in individual.items() if demand in valid_demands}
+            filtered_individual = {}
+            for demand in valid_demands:
+                if demand in individual:
+                    filtered_individual[demand] = individual[demand]
+                else:
+                    filtered_individual[demand] = random.choice(viable_paths[demand])
             filtered_population.append(filtered_individual)
     return filtered_population
 
@@ -103,16 +108,6 @@ def genetic_algorithm(viable_paths: dict[tuple[str,str], list[list[str]]], loads
     essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
     return a_class[0]
-
-
-# For parallelization
-def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, viable_paths):
-    parent1 = random.choice(a_class)
-    parent2 = random.choice(b_class + c_class)
-    child1, child2 = two_point_crossover(parent1, parent2, crossover_rate)
-    child1 = mutate(child1, mutation_rate, viable_paths)
-    child2 = mutate(child2, mutation_rate, viable_paths)
-    return child1, child2
 
 
 def selection(population, capacities, loads, stretch_dict, congestion_weight):
