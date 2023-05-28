@@ -25,10 +25,10 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         try:
             with open(conf["link_failures_path"], "r") as file:
                 link_failures_data = yaml.safe_load(file)
-                if link_failures_data is None:
-                    link_failures_data = []
-                #link_failures_data = json.load(content)
-                link_failures_loaded = True
+            if link_failures_data is None:
+                link_failures_data = []
+            #link_failures_data = json.load(content)
+            link_failures_loaded = True
         except:
             print("Failed to load failed links, retrying..")
             time.sleep(5)
@@ -37,8 +37,8 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         try:
             with open(conf["demand_path"], "r") as file:
                 content = file.read()
-                demands_data = json.loads(content)
-                demands_loaded = True
+            demands_data = json.loads(content)
+            demands_loaded = True
         except:
             print("Failed to load demands, retrying..")
             time.sleep(5)
@@ -49,12 +49,12 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         try:
             with open(conf["utilization_path"], "r") as file:
                 utilizations_data = json.load(file)
-                max_utilization = 0
-                for key, value in utilizations_data.items():
-                    if key != 'timestamp':
-                        for inner_key, inner_value in value.items():
-                            if inner_value > max_utilization:
-                                max_utilization = inner_value
+            max_utilization = 0
+            for key, value in utilizations_data.items():
+                if key != 'timestamp':
+                    for inner_key, inner_value in value.items():
+                        if inner_value > max_utilization:
+                            max_utilization = inner_value
             essence_state.congestion_weight = max_utilization
             utilization_loaded = True
         except:

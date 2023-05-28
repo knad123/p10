@@ -75,9 +75,9 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     # Load demands
     with open(conf["demands"], "r") as file:
         demand_data = yaml.load(file, Loader=yaml.BaseLoader)
-        temporal_demands = {(src, tgt): loads for src, tgt, loads in demand_data}
-        # int(demand[2][0][0]) is just load for first timeslot
-        initial_demands = {tuple(demand[:2]): int(demand[2][0][0]) for demand in demand_data}
+    temporal_demands = {(src, tgt): loads for src, tgt, loads in demand_data}
+    # int(demand[2][0][0]) is just load for first timeslot
+    initial_demands = {tuple(demand[:2]): int(demand[2][0][0]) for demand in demand_data}
 
     mpls_network = MPLS_Network(name=topology_data["network"]["name"], demands=initial_demands)
     # Create the network graph
