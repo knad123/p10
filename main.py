@@ -135,8 +135,10 @@ def main(confs):
     pkl_dir = os.path.abspath(os.path.join(simulation_directory, "pkl_files"))
     # Add package.ned
     if conf["generate_package"]:
-        with open(f"{conf['output_dir']}/package.ned", "w") as f:
-            f.write(f"package {conf['package_name']};")
+        packet_path = os.path.join(conf["output_dir"], "package.ned")
+        if not os.path.exists(packet_path):
+            with open(packet_path, "w") as f:
+                f.write(f"package {conf['package_name']};")
     essence_state = []
     mpls_network = []
     if not conf["only_execute"]:
@@ -156,9 +158,9 @@ def main(confs):
 
     for ini_conf in configurations:
         conf["configuration"] = ini_conf
-        conf["demand_path"] = f"demands-{conf['configuration']}.json"
-        conf["utilization_path"] = f"utilization-{conf['configuration']}.json"
-        conf["link_failures_path"] = f"link_failures-{conf['configuration']}.json"
+        conf["demand_path"] = os.path.join(conf["sync_dir"], f"demands-{conf['configuration']}.json")
+        conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization-{conf['configuration']}.json")
+        conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures-{conf['configuration']}.json")
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 
@@ -205,6 +207,7 @@ if __name__ == "__main__":
     p.add_argument("--output_dir", default="../inet/zoo")
     p.add_argument("--package_name", default="inet.zoo_topology")
     p.add_argument("--generate_package", action="store_true")
+    p.add_argument("--sync_dir", type=str, default=".", help="Directory where the synchronization files will be")
     p.add_argument("--method_name", type=str, default="", help="Name of the algorithm that is used")
     p.add_argument("--latency_scaler", type=float, default=1)
     p.add_argument("--omnet_path", type=str, default="../p10",
@@ -225,6 +228,7 @@ if __name__ == "__main__":
     p.add_argument("--only_execute", action="store_true", help="If set, assumes ned and ini files are already generated and will just execute the specified conf(s)")
     p.add_argument("--configuration", type=str, default="all", help="name of the configuration(s) to run")
     p.add_argument("--labels_per_flow", type=int, default=4)
+
 
     conf = vars(p.parse_args())
 
