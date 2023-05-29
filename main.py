@@ -166,6 +166,7 @@ def main(confs):
         conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization-{conf['configuration']}.json")
         conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures-{conf['configuration']}.json")
         conf["2pc_path"] = os.path.join(conf["sync_dir"], f'2-phase-commit-{conf["configuration"]}.xml')
+        conf["temp_2pc_path"] = os.path.join(conf["sync_dir"], f'temp-2-phase-commit-{conf["configuration"]}.xml')
         try:
             os.remove(conf["demand_path"])
         except:
