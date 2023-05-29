@@ -105,7 +105,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_lsp(path, 0)
     elif conf["algorithm"] == "split_shortest_path":
         for src, tgt in temporal_demands.keys():
-            paths[src,tgt] = nx.all_shortest_paths(mpls_network.topology, src, tgt, weight=None)
+            paths[src,tgt] = list(nx.all_shortest_paths(mpls_network.topology, src, tgt, weight=None))
         for p in paths.values():
             mpls_network.install_split_path_essence(p)
     elif conf["algorithm"] == "fbr":
