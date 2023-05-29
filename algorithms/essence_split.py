@@ -151,18 +151,18 @@ def calculate_fitness(individual, capacities, loads):
     for (source, destination), paths in individual.items():
         load = loads[source, destination]
         longest_path_len = max([len(i) for i in paths])
+        next_hops = {}
+        next_loads = {}
         for i in range(longest_path_len):
-            next_hops = {}
-            next_loads = {}
             for path in paths:
                 if i < len(path) - 1:
-                    src,tgt = tuple(sorted([path[i], path[i + 1]]))
+                    src,tgt = path[i], path[i + 1]
                     if src not in next_hops:
                         next_hops[src] = {}
                     next_hops[src][tgt] = capacities[src,tgt]
             for path in paths:
                 if i < len(path) - 1:
-                    src,tgt = tuple(sorted([path[i], path[i+1]]))
+                    src,tgt = path[i], path[i+1]
                     capacity = capacities[src,tgt]
                     total_next_hop_capacity = sum(next_hops[src][tgt] for tgt in next_hops[src])
 
