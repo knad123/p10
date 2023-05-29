@@ -32,18 +32,6 @@ import pandas as pd
 ROOT = os.path.dirname(__file__)
 def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
-    try:
-        os.remove(conf["demand_path"])
-    except:
-        pass
-    try:
-        os.remove(conf["utilization_path"])
-    except:
-        pass
-    try:
-        os.remove(conf["link_failures_path"])
-    except:
-        pass
     while not inet_stopped_event.is_set():
         if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
@@ -161,6 +149,8 @@ def main(confs):
     if conf['no_execution']:
         return
 
+    os.makedirs(conf["sync_dir"], exist_ok=True)
+
     if conf["configuration"] == "all":
         failure_scenario_configs = []
         if os.path.exists(os.path.join(simulation_directory, "failure_scenarios")):
@@ -175,6 +165,23 @@ def main(confs):
         conf["demand_path"] = os.path.join(conf["sync_dir"], f"demands-{conf['configuration']}.json")
         conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization-{conf['configuration']}.json")
         conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures-{conf['configuration']}.json")
+        conf["2pc_path"] = os.path.join(conf["sync_dir"], f'2-phase-commit-{conf["configuration"]}.xml')
+        try:
+            os.remove(conf["demand_path"])
+        except:
+            pass
+        try:
+            os.remove(conf["utilization_path"])
+        except:
+            pass
+        try:
+            os.remove(conf["link_failures_path"])
+        except:
+            pass
+        try:
+            os.remove(conf["2pc_path"])
+        except:
+            pass
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 
