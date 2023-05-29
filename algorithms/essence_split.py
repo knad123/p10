@@ -25,7 +25,7 @@ def essence_split(network: MPLS_Network, essence_state: EssenceState, conf, star
                                       essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
     return genetic_paths
 
-def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=10, population_size=100,
+def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=100,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
     end_time = start_time + time_limit

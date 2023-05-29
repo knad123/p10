@@ -13,9 +13,6 @@ class EssenceState:
         self.current_population = []
         self.congestion_weight = 1
 
-        self.create_pathdict(network)
-        self.create_stretchdict(network)
-
 
     def create_stretchdict(self, network: MPLS_Network):
         shortest_paths_len = dict()
@@ -48,6 +45,24 @@ class EssenceState:
             pathdict[(src, tgt)] = result
 
         self.pathdict = pathdict
+
+    def create_shortest_path_pathdict(self, network: MPLS_Network):
+        for src,tgt in network.demands.keys():
+            self.pathdict[src,tgt] = find_paths_within_percentage_increase(network.topology, src, tgt, 0.2)
+
+def find_paths_within_percentage_increase(graph, source, target, percentage_increase):
+    shortest_path_length = nx.shortest_path_length(graph, source, target)
+    max_path_length = shortest_path_length * (1 + percentage_increase)
+
+    paths = []
+    for path in nx.all_simple_paths(graph, source, target):
+        path_length = len(path) - 1
+
+        if path_length <= max_path_length:
+            paths.append(path)
+
+    return paths
+
 
 def find_paths_for_demand(args):
     src, tgt, flow_to_graph = args

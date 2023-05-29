@@ -89,8 +89,13 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
 
     paths = {}
     essence_state = []
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", 'essence_big_flows']:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", 'essence_big_flows', "essence_shortest_paths"]:
         essence_state = EssenceState(mpls_network)
+        if conf["algorithm"] != "essence_shortest_paths":
+            essence_state.create_shortest_path_pathdict(mpls_network)
+        else:
+            essence_state.create_pathdict(mpls_network)
+        essence_state.create_stretchdict(mpls_network)
         paths = essence(mpls_network, essence_state, conf, time.time())
         paths_and_backup_paths = {}
         for (src, tgt), path_list in essence_state.pathdict.items():
@@ -100,6 +105,8 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="essence")
     elif conf["algorithm"] == "essence_split":
         essence_state = EssenceState(mpls_network)
+        essence_state.create_pathdict(mpls_network)
+        essence_state.create_stretchdict(mpls_network)
         paths = essence_split(mpls_network, essence_state, conf, time.time())
         for path in paths.values():
             mpls_network.install_split_path_essence(path, labels_per_flow=conf['labels_per_flow'])
@@ -108,8 +115,15 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
         for path in paths.values():
             mpls_network.install_lsp(path, 0)
+    elif conf["algorithm"] == "split_shortest_path":
+        for src, tgt in temporal_demands.keys():
+            paths[src,tgt] = nx.all_shortest_paths(mpls_network.topology, src, tgt, weight=None)
+        for p in paths.values():
+            mpls_network.install_split_path_essence(p)
     elif conf["algorithm"] == "fbr":
         essence_state = EssenceState(mpls_network)
+        essence_state.create_pathdict(mpls_network)
+        essence_state.create_stretchdict(mpls_network)
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
 
@@ -199,7 +213,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
