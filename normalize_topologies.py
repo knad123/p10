@@ -25,7 +25,7 @@ for topology in os.listdir("topologies"):
     for link in topology_info['network']['links']:
         total_bandwidth += link['bandwidth']
 
-    dictionary, scaling_factor = scale_down_network(topology_info, 100000)
+    dictionary, scaling_factor = scale_down_network(topology_info, 500000)
 
     with open(os.path.join("scaled_topologies", topology), "w") as topo:
         json.dump(dictionary, topo)
