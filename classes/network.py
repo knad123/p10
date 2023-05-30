@@ -63,8 +63,9 @@ class MPLS_Network:
                 break
             else:
                 stop = False
+                label_set = set(labels)
                 for router_name in path:
-                    if len(set(self.routers[router_name].forwarding_table.keys()) & set(labels)) >= rules_per_router_per_path:
+                    if len(set(self.routers[router_name].forwarding_table.keys()) & label_set) >= rules_per_router_per_path:
                         stop = True
                 if stop == True:
                     continue
