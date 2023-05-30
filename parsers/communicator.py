@@ -11,6 +11,7 @@ from classes.network import MPLS_Network
 from algorithms.essence import essence
 from algorithms.essence_split import essence_split
 from algorithms.essence_big_flows import essence_big_flows
+from algorithms.essence_weight_setting import essence_weight_setting
 from classes.essence_state import EssenceState
 import os
 import time
@@ -79,12 +80,13 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         if (src,tgt) not in link_failures_data:
             network.topology.edges[src, tgt]['capacity'] = network.failed_links_capacity[src,tgt]
 
-    # Create XML root element
-    root = ET.Element('twoPhaseCommit')
+
 
     changes = []
 
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_big_flows"]:
+        # Create XML root element
+        root = ET.Element('twoPhaseCommit')
         # Calculate new paths
         if conf["algorithm"] == "essence_big_flows":
             paths = essence_big_flows(network, essence_state, conf, start_time)
@@ -113,8 +115,15 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                 for backup_path in existing_row['label_backup_paths_dict'].keys():
                     if backup_path != path:
                         fbr_paths.append(list(backup_path))
-                network.install_fbr(fbr_paths, algorithm=conf['algorithm'], omnet_xml_root=root)
+                root = network.install_fbr(fbr_paths, algorithm=conf['algorithm'], omnet_xml_root=root)
+        # Write to xml file
+        tree = ET.ElementTree(root)
+
+        tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif conf['algorithm'] == "essence_split":
+        # Create XML root element
+        root = ET.Element('twoPhaseCommit')
         # Calculate new paths
         split_paths = essence_split(network, essence_state, conf, start_time)
         for (src,tgt), paths in split_paths.items():
@@ -150,6 +159,24 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                         network.routers[router_name].remove_rule(label)
 
             root = network.install_split_path_essence(paths, 1000, omnet_xml_root=root)
+            # Write to xml file
+            tree = ET.ElementTree(root)
+
+            tree.write(conf["temp_2pc_path"])
+            os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+    elif conf['algorithm'] == "essence_weight_setting":
+        # Create XML root element
+        root = ET.Element('dynamicWeights')
+        weights = essence_weight_setting(network, essence_state, conf, start_time)
+        for (src,tgt), weight in weights.items():
+            elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
+            root.append(elem)
+
+        # Write to xml file
+        tree = ET.ElementTree(root)
+
+        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-temp.xml"))
+        os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-temp.xml"), os.path.join(conf["sync_dir"], "dynamic_weights.xml"))
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]
@@ -218,11 +245,6 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                 network.remove_lsp(list(existing_row['path'].iloc[0]), old_label)
                 network.install_lsp(path, 0)
 
-    # Write to xml file
-    tree = ET.ElementTree(root)
-
-    tree.write(conf["temp_2pc_path"])
-    os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     '''
     # Print 2 phase commit file
     xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')

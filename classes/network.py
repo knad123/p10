@@ -234,6 +234,31 @@ class MPLS_Network:
         if omnet_xml_root is not None:
             return omnet_xml_root
 
+    def install_split_paths_for_essence_weight_setting(self, paths_for_flow):
+        split_label = self.label_generator.get_new_label()
+        self.routers[paths_for_flow[0][0]].add_classification_rule(paths_for_flow[0][-1], split_label)
+        src, tgt = paths_for_flow[0][0], paths_for_flow[0][-1]
+
+        for path_idx, path in enumerate(paths_for_flow):
+            for router_index, router_name in enumerate(path):
+                # last router in path
+                if router_index == len(path) - 1:
+                    self.routers[router_name].add_rule(incoming_label=split_label, outgoing_label=None,
+                                                          next_hop=router_name, priority=1)
+                # intermediate router in path
+                else:
+                    next_hop = path[router_index + 1]
+                    # add rule to forward by normal route
+                    self.routers[router_name].add_rule(incoming_label=split_label, outgoing_label=split_label,
+                                                          next_hop=next_hop,
+                                                          priority=1)
+
+        path = paths_for_flow[0]
+        # Add demand information for the LSP to the DataFrame
+        load = self.demands[(path[0], path[-1])]
+        new_row = {'source': path[0], 'target': path[-1], 'label': split_label, 'split_path': paths_for_flow, 'load': load}
+        self.demand_dict[path[0], path[-1]] = new_row
+
     def remove_lsp(self, path: List[str], label: int):
         for router_index in range(len(path)):
             current_router = path[router_index]

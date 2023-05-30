@@ -20,6 +20,7 @@ from classes.recorder import Recorder
 from algorithms.essence import essence
 from algorithms.essence_split import essence_split
 from algorithms.essence_big_flows import essence_big_flows
+from algorithms.essence_weight_setting import essence_weight_setting
 from parsers.omnet import to_omnetpp
 from parsers.parse_data import parse_results
 import os
@@ -102,6 +103,12 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         paths = essence_split(mpls_network, essence_state, conf, time.time())
         for path in paths.values():
             mpls_network.install_split_path_essence(path, labels_per_flow=conf['labels_per_flow'])
+    elif conf["algorithm"] == "essence_weight_setting":
+        essence_state = EssenceState(mpls_network)
+        essence_state.all_shortest_path_pathdict(mpls_network)
+        essence_state.link_weights = essence_weight_setting(mpls_network, essence_state, conf, time.time())
+        for path in essence_state.pathdict.values():
+            mpls_network.install_split_paths_for_essence_weight_setting(path)
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -123,7 +130,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
-               algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"])
+               algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"], essence_state=essence_state)
 
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows']:
         # Save the essence state in a file
@@ -166,11 +173,12 @@ def main(confs):
 
     for ini_conf in configurations:
         conf["configuration"] = ini_conf
-        conf["demand_path"] = os.path.join(conf["sync_dir"], f"demands-{conf['configuration']}.json")
-        conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization-{conf['configuration']}.json")
-        conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures-{conf['configuration']}.json")
-        conf["2pc_path"] = os.path.join(conf["sync_dir"], f'2-phase-commit-{conf["configuration"]}.xml')
-        conf["temp_2pc_path"] = os.path.join(conf["sync_dir"], f'temp-2-phase-commit-{conf["configuration"]}.xml')
+        conf["demand_path"] = os.path.join(conf["sync_dir"], f"demands.json")
+        conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization.json")
+        conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures.json")
+        conf["2pc_path"] = os.path.join(conf["sync_dir"], f'2-phase-commit.xml')
+        conf["temp_2pc_path"] = os.path.join(conf["sync_dir"], f'temp-2-phase-commit.xml')
+
         try:
             os.remove(conf["demand_path"])
         except:
@@ -225,7 +233,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")

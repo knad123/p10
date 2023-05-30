@@ -12,7 +12,7 @@ import math
 
 
 def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], conf, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
-               zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0):
+               zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0, essence_state=None):
     """
     Generates all files for OMNeT++.
     """
@@ -72,6 +72,15 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     with open(f'{output_dir}/network_topology.json', mode='w') as f:
         to_omnetpp_network_topology_json(network, f)
 
+    if conf['algorithm'] == "essence_weight_setting":
+        # Create XML root element
+        root = ET.Element('dynamicWeights')
+        for (src,tgt), weight in essence_state.link_weights.items():
+            elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
+            root.append(elem)
+        tree = ET.ElementTree(root)
+        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights.xml"))
+
 def to_omnetpp_network_topology_json(network, file):
     topology = {}
     for (src,tgt) in network.topology.edges:
@@ -100,7 +109,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
         file.write(f"import inet.p10.TwoPhaseCommit;\n")
         file.write("import inet.p10.MeasureWriter;\n")
     file.write("\n")
@@ -127,7 +136,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
     for router_name, router in network.routers.items():
@@ -262,12 +271,12 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
 def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, packet_size=64,
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
-    update_path = os.path.join(conf["sync_dir"], "2-phase-commit-General.xml")
-    demand_path = os.path.join(conf["sync_dir"], "demands-General.json")
-    utilization_path =os.path.join(conf["sync_dir"], "utilization-General.json")
-    link_failures_path = os.path.join(conf["sync_dir"], "link_failures-General.json")
+    update_path = os.path.join(conf["sync_dir"], "2-phase-commit.xml")
+    demand_path = os.path.join(conf["sync_dir"], "demands.json")
+    utilization_path =os.path.join(conf["sync_dir"], "utilization.json")
+    link_failures_path = os.path.join(conf["sync_dir"], "link_failures.json")
     file.write("[General]\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
         file.write(f'**.twoPhaseCommit.updatePath = "{update_path}"\n')
         file.write(f'**.measureWriter.demandPath = "{demand_path}"\n')
         file.write(f'**.measureWriter.utilizationPath = "{utilization_path}"\n')
@@ -369,13 +378,13 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         file.write("\n")
 
     for scenario in range(conf["failure_scenarios"]):
-        update_path = os.path.join(conf["sync_dir"], f"2-phase-commit-scenario_{scenario}.xml")
-        demand_path = os.path.join(conf["sync_dir"], f"demands-scenario_{scenario}.json")
-        utilization_path = os.path.join(conf["sync_dir"], f"utilization-scenario_{scenario}.json")
-        link_failures_path = os.path.join(conf["sync_dir"], f"link_failures-scenario_{scenario}.json")
+        update_path = os.path.join(conf["sync_dir"], f"2-phase-commit.xml")
+        demand_path = os.path.join(conf["sync_dir"], f"demands.json")
+        utilization_path = os.path.join(conf["sync_dir"], f"utilization.json")
+        link_failures_path = os.path.join(conf["sync_dir"], f"link_failures.json")
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
             file.write(f'**.twoPhaseCommit.updatePath = "{update_path}"\n')
             file.write(f'**.measureWriter.demandPath = "{demand_path}"\n')
             file.write(f'**.measureWriter.utilizationPath = "{utilization_path}"\n')
@@ -578,3 +587,12 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
         file_path = os.path.join(dir, f"scenario_{i}.xml")
         with open(file_path, "w") as f:
             to_omnetpp_scenario(f, link_to_ppp, conf, network_undirected, failed_links=time_stamped_failures)
+
+def create_xml_element(name, text=None, attrib=None):
+    elem = ET.Element(name)
+    if text:
+        elem.text = str(text)
+    if attrib:
+        for key, value in attrib.items():
+            elem.set(key, value)
+    return elem

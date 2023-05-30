@@ -1,5 +1,6 @@
 from typing import Tuple, List
 
+import networkx
 import networkx as nx
 from networkx import shortest_path
 
@@ -12,6 +13,7 @@ class EssenceState:
         self.stretchdict = dict()
         self.current_population = []
         self.congestion_weight = 1
+        self.link_weights = {}
 
 
     def create_stretchdict(self, network: MPLS_Network):
@@ -46,6 +48,9 @@ class EssenceState:
 
         self.pathdict = pathdict
 
+    def all_shortest_path_pathdict(self, network: MPLS_Network):
+        for src,tgt in network.demands.keys():
+            self.pathdict[src,tgt] = list(networkx.all_shortest_paths(network.topology, src, tgt, weight=None))
     def create_shortest_path_pathdict(self, network: MPLS_Network):
         for src,tgt in network.demands.keys():
             self.pathdict[src,tgt] = find_paths_within_percentage_increase(network.topology, src, tgt, 0.2)
