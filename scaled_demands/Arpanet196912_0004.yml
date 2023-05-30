@@ -1,0 +1,1 @@
+[['a0_SRI', 'a1_USCB', 27029], ['a0_SRI', 'a2_UCLA', 120826], ['a0_SRI', 'a3_UTAH', 38880], ['a1_USCB', 'a0_SRI', 4952], ['a1_USCB', 'a2_UCLA', 5338], ['a1_USCB', 'a3_UTAH', 1717], ['a2_UCLA', 'a0_SRI', 3134], ['a2_UCLA', 'a1_USCB', 755], ['a2_UCLA', 'a3_UTAH', 1086], ['a3_UTAH', 'a0_SRI', 24370], ['a3_UTAH', 'a1_USCB', 5876], ['a3_UTAH', 'a2_UCLA', 26267]]
