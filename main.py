@@ -33,12 +33,14 @@ ROOT = os.path.dirname(__file__)
 def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
     while not inet_stopped_event.is_set():
+        start_time = time.time()
         if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]):
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
             os.remove(conf["demand_path"])
             os.remove(conf["utilization_path"])
             os.remove(conf["link_failures_path"])
+        print(f"Two-phase-commit generation time: {time.time() - start_time}")
         time.sleep(1)
     os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
