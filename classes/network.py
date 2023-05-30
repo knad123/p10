@@ -18,6 +18,9 @@ class MPLS_Network:
         self.demands = demands
         self.external_connections = {}
         self.failed_links_capacity = {}
+        # Recursively prune all 1 degree nodes
+        self.pruned_topology = nx.DiGraph()
+        self.fail_graph_dict = {}
 
     def add_router(self, name: str):
         router = MPLS_Router(name=name)
@@ -52,10 +55,19 @@ class MPLS_Network:
                    'priority': priority}
         self.demand_dict[path[0], path[-1]] = new_row
 
-    def install_fbr(self, paths_for_flow, algorithm="fbr", omnet_xml_root=None):
+    def install_fbr(self, paths_for_flow, algorithm="fbr", rules_per_router_per_path=4, omnet_xml_root=None):
         labels = []
         src, tgt = paths_for_flow[0][0], paths_for_flow[0][-1]
         for i, path in enumerate(paths_for_flow):
+            if len(labels) >= rules_per_router_per_path:
+                break
+            else:
+                stop = False
+                for router_name in path:
+                    if len(set(self.routers[router_name].forwarding_table.keys()) & set(labels)) >= rules_per_router_per_path:
+                        stop = True
+                if stop == True:
+                    continue
             is_last_path = i == (len(paths_for_flow) - 1)
             label = self.label_generator.get_new_label()
             labels.append(label)
@@ -258,6 +270,50 @@ class MPLS_Network:
 
             # Assume all links are bidirectional
             self.topology.add_edge(target_router, source_router, latency=latency, capacity=capacity)
+
+def prune_1_degree_nodes(graph):
+    # Create a copy of the original graph
+    pruned_graph = graph.copy()
+
+    # Get a list of all nodes with degree 1
+    nodes_to_remove = [node for node in pruned_graph.nodes if pruned_graph.degree[node] == 2]
+
+    # Base case: if no 1 degree nodes found, return the pruned graph
+    if not nodes_to_remove:
+        return pruned_graph
+
+    # Prune all 1 degree nodes
+    for node in nodes_to_remove:
+        pruned_graph.remove_node(node)
+
+    # Recursively prune more 1 degree nodes
+    return prune_1_degree_nodes(pruned_graph)
+
+def find_high_impact_failures(graph, pruned_graph, loads):
+    # Get the degree of each node in the graph
+    degree_dict = dict(pruned_graph.degree())
+
+    # Sort the nodes by degree in descending order
+    sorted_nodes = sorted(degree_dict, key=degree_dict.get, reverse=True)
+
+    # Return the top 10 nodes with the highest degree
+    top_ten_fails = sorted_nodes[:10]
+    top_ten_percent_fails = sorted_nodes[:int(len(sorted_nodes) * 0.1)]
+
+    if len(top_ten_fails) > len(top_ten_percent_fails):
+        fails = top_ten_fails
+    else:
+        fails = top_ten_percent_fails
+
+    fail_graph_dict = {}
+
+    for failed_node in fails:
+        fail_graph = graph.copy()
+        fail_graph.remove_node(failed_node)
+        fail_graph_dict[failed_node] = fail_graph
+
+
+    return fail_graph_dict
 
 def create_xml_element(name, text=None, attrib=None):
     elem = ET.Element(name)

@@ -14,7 +14,7 @@ import math
 import json
 
 import parsers.communicator
-from classes.network import MPLS_Network
+from classes.network import MPLS_Network, prune_1_degree_nodes, find_high_impact_failures
 from classes.essence_state import EssenceState
 from classes.recorder import Recorder
 from algorithms.essence import essence
@@ -72,11 +72,13 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     mpls_network = MPLS_Network(name=topology_data["network"]["name"], demands=initial_demands)
     # Create the network graph
     mpls_network.create_MPLS_network_topology(topology_data)
+    mpls_network.pruned_topology = prune_1_degree_nodes(mpls_network.topology)
+    mpls_network.fail_graph_dict = find_high_impact_failures(mpls_network.topology, mpls_network.pruned_topology, mpls_network.demands)
 
     if os.path.isdir(simulation_directory):
         shutil.rmtree(simulation_directory)
-    # Create initial routing
 
+    # Create initial routing
     paths = {}
     essence_state = []
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", 'essence_big_flows', "essence_shortest_paths"]:
