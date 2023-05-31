@@ -26,7 +26,7 @@ def essence_split_multiple_labels(network: MPLS_Network, essence_state: EssenceS
 
 def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=200,
                       crossover_rate=0.7,
-                      mutation_rate=0.2, time_limit=118, weight_range=100):
+                      mutation_rate=0.2, time_limit=118, weight_range=10):
     end_time = start_time + time_limit
     if not essence_state.current_population:
         population = create_population(population_size, weight_range, essence_state.pathdict)
@@ -38,12 +38,11 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
     # for generation in range(generations):
 
     # Select parents
-    a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                          essence_state.congestion_weight)
+    a_class, b_class, c_class = selection(population, capacities, loads, essence_state.pathdict)
 
     #while time.time() < end_time:
     for generation in range(generations):
-        print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
+        print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, essence_state.pathdict)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = []#a_class
@@ -59,8 +58,7 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
         population = children
 
         # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                              essence_state.congestion_weight)
+        a_class, b_class, c_class = selection(population, capacities, loads, essence_state.pathdict)
 
     # Return the fittest individual
     return a_class[0]
@@ -73,24 +71,22 @@ def create_population(population_size, weight_range, pathdict):
             individual[src, tgt] = []
             for path in paths:
                 path_weight = random.randint(0,weight_range)
-                if path_weight != 0:
-                    individual[src,tgt].append((path, path_weight))
+                individual[src,tgt].append(path_weight)
 
-        summed_weight = {}
-        for (src, tgt), path_weight_tuple in individual.items():
-            summed_weight[src, tgt] = 0
-            for (path, weight) in path_weight_tuple:
-                summed_weight[src, tgt] += weight
+        for (src, tgt), weights in individual.items():
+            summed_weight = 0
+            for weight in weights:
+                summed_weight += weight
 
-            if summed_weight[src, tgt] == 0:
-                random_path = random.choice(pathdict[src,tgt])
-                individual[src,tgt] = [(random_path, 1)]
+            if summed_weight == 0:
+                random_path_index = random.randint(0, len(pathdict[src,tgt])-1)
+                individual[src,tgt][random_path_index] = 1
 
         population.append(individual)
     return population
 
-def selection(population, capacities, loads, stretch_dict, congestion_weight):
-    congestion = [calculate_fitness(individual, capacities, loads) for individual in population]
+def selection(population, capacities, loads, pathdict):
+    congestion = [calculate_fitness(individual, capacities, loads, pathdict) for individual in population]
 
     # Zip the fitness values and the population together
     fitness_population = zip(congestion, population)
@@ -139,25 +135,22 @@ def two_point_crossover(individual1, individual2, crossover_probability):
 
     return offspring1, offspring2
 
-
-def calculate_fitness(individual, capacities, loads):
+def calculate_fitness(individual, capacities, loads, pathdict):
     # Initialize the utilization of each link to 0
     link_load = {link: 0 for link in capacities.keys()}
 
     summed_weight = {}
-    for (source, destination), path_weight_tuple in individual.items():
-        for (path,weight) in path_weight_tuple:
-            if (source,destination) not in summed_weight:
-                summed_weight[source, destination] = 0
-            summed_weight[source,destination] += weight
+    for (src,tgt), weights in individual.items():
+        summed_weight[src,tgt] = sum(weights)
 
     # Calculate the utilization of each link
-    for (source, destination), path_weight_tuple in individual.items():
-        for (path, weight) in path_weight_tuple:
+    for (src,tgt), weights in individual.items():
+        for path_index ,weight in enumerate(weights):
             if weight == 0:
                 continue
+            path = pathdict[src,tgt][path_index]
             for i in range(len(path) - 1):
-                load = loads[source, destination] * (weight / summed_weight[source, destination])
+                load = loads[src,tgt] * (weight / summed_weight[src,tgt])
                 link = (path[i], path[i + 1])
                 link_load[link] += load
 
@@ -173,7 +166,6 @@ def calculate_fitness(individual, capacities, loads):
 
     return congestion
 
-
 def mutate(individual, mutation_rate, weight_range, pathdict):
     # Determine if the individual should be mutated
     if random.random() > mutation_rate:
@@ -183,25 +175,15 @@ def mutate(individual, mutation_rate, weight_range, pathdict):
     src, tgt = random.choice(list(individual.keys()))
 
 
-    new_path_weights = []
-    for path in pathdict[src, tgt]:
-        path_weight = random.randint(0, weight_range)
-        if path_weight > 0:
-            new_path_weights.append((path, path_weight))
+    new_path_weights = [random.randint(0,weight_range) for _ in range(len(individual[src,tgt]))]
 
-    summed_weight = {}
-    summed_weight[src, tgt] = 0
-    for (path, weight) in new_path_weights:
-        summed_weight[src, tgt] += weight
-
-    if summed_weight[src, tgt] == 0:
-        random_path = random.choice(pathdict[src, tgt])
-        individual[src, tgt] = [(random_path, 1)]
-    else:
+    if sum(new_path_weights) > 0:
         individual[src, tgt] = new_path_weights
-
-    return individual
-
+        return individual
+    else:
+        new_path_weights = [random.randint(1,weight_range) for _ in range(len(individual[src,tgt]))]
+        individual[src, tgt] = new_path_weights
+        return individual
 
 def normalize(value):
     min_value = min(value)

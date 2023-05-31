@@ -12,6 +12,7 @@ from algorithms.essence import essence
 from algorithms.essence_split import essence_split
 from algorithms.essence_big_flows import essence_big_flows
 from algorithms.essence_weight_setting import essence_weight_setting
+from algorithms.essence_split_multiple_labels import essence_split_multiple_labels
 from classes.essence_state import EssenceState
 import os
 import time
@@ -178,7 +179,8 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         tree.write(conf["temp_dynamic_weights_path"])
         os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
     elif conf['algorithm'] == "essence_split_multiple_labels":
-        s = 1
+        # Calculate new paths
+        path_weights = essence_split_multiple_labels(network, essence_state, conf, start_time)
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]
