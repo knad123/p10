@@ -41,6 +41,9 @@ class MPLS_Router:
     def add_classification_rule(self, target: str, incoming_label: int):
         self.classification_table[target] = incoming_label
 
+    def add_classification_rule_for_weight_split_essence(self, id, target: str, incoming_label: int):
+        self.classification_table[target, id] = incoming_label
+
     # Remove classification rule
     def remove_classification_rule(self, target: str):
         if target in self.classification_table:

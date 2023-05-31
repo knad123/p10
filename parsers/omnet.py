@@ -4,6 +4,7 @@ import json
 import os
 import random
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as md
 import time
 from os import path
 from typing import Dict, List, Tuple
@@ -67,7 +68,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
         os.makedirs(output_dir + "/classification_files")
 
     to_omnetpp_lib(network, interface_dict, output_dir + "/lib_files")
-    to_omnetpp_classification(network, export_flows, output_dir + "/classification_files")
+    to_omnetpp_classification(network, export_flows, output_dir + "/classification_files", conf)
 
     with open(f'{output_dir}/network_topology.json', mode='w') as f:
         to_omnetpp_network_topology_json(network, f)
@@ -79,7 +80,25 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
             elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
             root.append(elem)
         tree = ET.ElementTree(root)
-        print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        #print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"))
+        os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"), os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+
+    if conf['algorithm'] == "essence_split_multiple_labels":
+        # Create XML root element
+        root = ET.Element('fectables')
+        for (src,tgt), weight in essence_state.path_weights.items():
+            elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
+            root.append(elem)
+        tree = ET.ElementTree(root)
+        # Print 2 phase commit file
+        xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')
+        doc = md.parseString(xml_string)
+        pretty_xml = doc.toprettyxml(indent='  ')
+        print(pretty_xml)
+
+        time.sleep(1000)
+        #print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
         tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"))
         os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"), os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
 
@@ -473,8 +492,12 @@ def build_flows_for_export(network):
     return export_flows
 
 
-def to_omnetpp_classification(network, export_flows, export_dir):
+def to_omnetpp_classification(network, export_flows, export_dir, conf):
+
     for router_name in network.routers.keys():
+        if conf["algorithm"] == "essence_split_multiple_labels":
+            network.routers[router_name].classification_table = {}
+
         flows_at_router = list(filter(lambda entry: entry['ingress'] == router_name, export_flows))
 
         id = 0
@@ -486,6 +509,7 @@ def to_omnetpp_classification(network, export_flows, export_dir):
             ET.SubElement(entry_xml, "label").text = str(entry['in_label'])
             ET.SubElement(entry_xml, "destination").text = entry['target_host']
             ET.SubElement(entry_xml, "source").text = entry['source_host']
+            network.routers[router_name].add_classification_rule_for_weight_split_essence(id, entry['target_host'], entry['in_label'])
 
         ET.indent(table_xml)  # NOTE: Requires >= Python 3.9
         ET.ElementTree(table_xml).write(f"{export_dir}/{router_name}_classification.xml")

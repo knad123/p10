@@ -14,6 +14,7 @@ class EssenceState:
         self.current_population = []
         self.congestion_weight = 1
         self.link_weights = {}
+        self.path_weights = {}
 
 
     def create_stretchdict(self, network: MPLS_Network):
