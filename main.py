@@ -34,14 +34,14 @@ ROOT = os.path.dirname(__file__)
 def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
     while not inet_stopped_event.is_set():
-        start_time = time.time()
         if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]):
+            start_time = time.time()
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
             os.remove(conf["demand_path"])
             os.remove(conf["utilization_path"])
             os.remove(conf["link_failures_path"])
-        print(f"Two-phase-commit generation time: {time.time() - start_time}")
+            print(f"Essence iteration time: {time.time() - start_time}")
         time.sleep(1)
     os.chdir(ROOT)
     if not os.path.exists(conf["results_folder"]):
@@ -132,7 +132,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"], essence_state=essence_state)
 
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows']:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting"]:
         # Save the essence state in a file
         os.makedirs(pkl_dir, exist_ok=True)
         with open(os.path.join(pkl_dir, "essence_state.pkl"), "wb") as outp:
@@ -145,6 +145,8 @@ def main(confs):
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]
     simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm'])
+    if conf["sync_dir"] == "":
+        conf["sync_dir"] = os.path.abspath(simulation_directory)
     pkl_dir = os.path.abspath(os.path.join(simulation_directory, "pkl_files"))
     # Add package.ned
     if conf["generate_package"]:
@@ -173,12 +175,13 @@ def main(confs):
 
     for ini_conf in configurations:
         conf["configuration"] = ini_conf
-        conf["demand_path"] = os.path.join(conf["sync_dir"], f"demands.json")
-        conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization.json")
-        conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures.json")
-        conf["2pc_path"] = os.path.join(conf["sync_dir"], f'2-phase-commit.xml')
-        conf["temp_2pc_path"] = os.path.join(conf["sync_dir"], f'temp-2-phase-commit.xml')
-
+        conf["demand_path"] = os.path.join(conf["sync_dir"], f"demands-{ini_conf}.json")
+        conf["utilization_path"] = os.path.join(conf["sync_dir"], f"utilization-{ini_conf}.json")
+        conf["link_failures_path"] = os.path.join(conf["sync_dir"], f"link_failures-{ini_conf}.json")
+        conf["2pc_path"] = os.path.join(conf["sync_dir"], f'2-phase-commit-{ini_conf}.xml')
+        conf["temp_2pc_path"] = os.path.join(conf["sync_dir"], f'temp-2-phase-commit-{ini_conf}.xml')
+        conf["dynamic_weights_path"] = os.path.join(conf["sync_dir"], f'dynamic_weights-{ini_conf}.xml')
+        conf["temp_dynamic_weights_path"] = os.path.join(conf["sync_dir"], f'temp-dynamic_weights-{ini_conf}.xml')
         try:
             os.remove(conf["demand_path"])
         except:
@@ -202,7 +205,7 @@ def main(confs):
                                                   args=(simulation_directory, inet_stopped_event, ini_conf))
         inet_simulation_thread.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
@@ -241,7 +244,7 @@ if __name__ == "__main__":
     p.add_argument("--output_dir", default="../inet/zoo")
     p.add_argument("--package_name", default="inet.zoo_topology")
     p.add_argument("--generate_package", action="store_true")
-    p.add_argument("--sync_dir", type=str, default=".", help="Directory where the synchronization files will be")
+    p.add_argument("--sync_dir", type=str, default="", help="Directory where the synchronization files will be")
     p.add_argument("--method_name", type=str, default="", help="Name of the algorithm that is used")
     p.add_argument("--latency_scaler", type=float, default=1)
     p.add_argument("--omnet_path", type=str, default="../p10",

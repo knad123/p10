@@ -79,7 +79,9 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
             elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
             root.append(elem)
         tree = ET.ElementTree(root)
-        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights.xml"))
+        print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"))
+        os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"), os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
 
 def to_omnetpp_network_topology_json(network, file):
     topology = {}
@@ -110,8 +112,11 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
-        file.write(f"import inet.p10.TwoPhaseCommit;\n")
         file.write("import inet.p10.MeasureWriter;\n")
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+        file.write(f"import inet.p10.TwoPhaseCommit;\n")
+    if conf["algorithm"] in ["essence_weight_setting"]:
+        file.write(f"import inet.p10.DynamicWeights;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
 
@@ -137,8 +142,11 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
-        file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+        file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
+    if conf["algorithm"] in ["essence_weight_setting"]:
+        file.write(f"        dynamicWeights: DynamicWeights{{updateInterval = {conf['update_interval']}s;}}\n")
     for router_name, router in network.routers.items():
 
         # calculate number of flows at this router
@@ -271,16 +279,16 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
 def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], name, file, packet_size=64,
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
-    update_path = os.path.join(conf["sync_dir"], "2-phase-commit.xml")
-    demand_path = os.path.join(conf["sync_dir"], "demands.json")
-    utilization_path =os.path.join(conf["sync_dir"], "utilization.json")
-    link_failures_path = os.path.join(conf["sync_dir"], "link_failures.json")
     file.write("[General]\n")
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
-        file.write(f'**.twoPhaseCommit.updatePath = "{update_path}"\n')
-        file.write(f'**.measureWriter.demandPath = "{demand_path}"\n')
-        file.write(f'**.measureWriter.utilizationPath = "{utilization_path}"\n')
-        file.write(f'**.measureWriter.linkFailuresPath = "{link_failures_path}"\n')
+        file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], "demands-General.json")}"\n')
+        file.write(f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], "utilization-General.json")}"\n')
+        file.write(f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], "link_failures-General.json")}"\n')
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+        file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], "2-phase-commit-General.xml")}"\n')
+    if conf["algorithm"] in ["essence_weight_setting"]:
+        file.write(f'**.dynamicWeights.updatePath = "{os.path.join(conf["sync_dir"], "dynamic_weights-General.xml")}"\n')
+        file.write(f'**.dynamicWeights.initialPath = "{os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml")}"\n')
     file.write(f"network = {name}_{algorithm}\n")
     file.write(f"**.cmdenv-log-level = OFF\n")
     file.write(f"**.utilization.statistic-recording = true\n")
@@ -378,17 +386,18 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         file.write("\n")
 
     for scenario in range(conf["failure_scenarios"]):
-        update_path = os.path.join(conf["sync_dir"], f"2-phase-commit.xml")
-        demand_path = os.path.join(conf["sync_dir"], f"demands.json")
-        utilization_path = os.path.join(conf["sync_dir"], f"utilization.json")
-        link_failures_path = os.path.join(conf["sync_dir"], f"link_failures.json")
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
         if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
-            file.write(f'**.twoPhaseCommit.updatePath = "{update_path}"\n')
-            file.write(f'**.measureWriter.demandPath = "{demand_path}"\n')
-            file.write(f'**.measureWriter.utilizationPath = "{utilization_path}"\n')
-            file.write(f'**.measureWriter.linkFailuresPath = "{link_failures_path}"\n')
+            file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], f"demands-scenario_{scenario}.json")}"\n')
+            file.write(
+                f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], f"utilization-scenario_{scenario}.json")}"\n')
+            file.write(
+                f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], f"link_failures-scenario_{scenario}.json")}"\n')
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
+            file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], f"2-phase-commit-scenario_{scenario}.xml")}"\n')
+        if conf["algorithm"] in ["essence_weight_setting"]:
+            file.write(f'**.dynamicWeights.updatePath = "{os.path.join(conf["sync_dir"], f"dynamic_weights-scenario_{scenario}.xml")}"\n')
         file.write("\n")
 
 
