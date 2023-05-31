@@ -177,6 +177,8 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         #Initial write
         tree.write(conf["temp_dynamic_weights_path"])
         os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
+    elif conf['algorithm'] == "essence_split_multiple_labels":
+        s = 1
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]

@@ -111,7 +111,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels"]:
         file.write("import inet.p10.MeasureWriter;\n")
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
         file.write(f"import inet.p10.TwoPhaseCommit;\n")
@@ -141,7 +141,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels"]:
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows']:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
@@ -280,7 +280,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
     file.write("[General]\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels"]:
         file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], "demands-General.json")}"\n')
         file.write(f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], "utilization-General.json")}"\n')
         file.write(f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], "link_failures-General.json")}"\n')
@@ -388,7 +388,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for scenario in range(conf["failure_scenarios"]):
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting"]:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels"]:
             file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], f"demands-scenario_{scenario}.json")}"\n')
             file.write(
                 f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], f"utilization-scenario_{scenario}.json")}"\n')
