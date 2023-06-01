@@ -10,7 +10,7 @@ from os import path
 from typing import Dict, List, Tuple
 import classes.network
 import math
-
+from os import path
 
 def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tuple[str, str], List[Tuple[float,str,str]]], conf, name='default', output_dir='./omnet_files/default', scaler=1, packet_size=64,
                zero_latency=False, package_name="inet.zoo_topology", algorithm="none", latency_scaler=1.0, essence_state=None):
@@ -21,7 +21,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     if not path.exists(output_dir):
         os.makedirs(output_dir)
 
-    export_flows = build_flows_for_export(network)
+    export_flows = build_flows_for_export(network, conf)
 
     # Dictionary containing interfaces for connections
     interface_dict = {}
@@ -68,7 +68,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
         os.makedirs(output_dir + "/classification_files")
 
     to_omnetpp_lib(network, interface_dict, output_dir + "/lib_files")
-    to_omnetpp_classification(network, export_flows, output_dir + "/classification_files", conf)
+    to_omnetpp_classification(network, export_flows, output_dir + "/classification_files", conf, essence_state)
 
     with open(f'{output_dir}/network_topology.json', mode='w') as f:
         to_omnetpp_network_topology_json(network, f)
@@ -87,20 +87,27 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     if conf['algorithm'] == "essence_split_multiple_labels":
         # Create XML root element
         root = ET.Element('fectables')
-        for (src,tgt), weight in essence_state.path_weights.items():
-            elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
-            root.append(elem)
+        for router_name, tables in network.routers.items():
+            fectable = ET.SubElement(root, 'fectable')
+            fectable.set('router', router_name)
+            for (src,tgt), weight in essence_state.path_weights.items():
+                if src == router_name:
+                    fecentry = ET.SubElement(fectable, 'fecentry')
+                    current_weight, source_host, target_host, id = network.routers[router_name].classification_table[
+                        src, tgt, network.demand_dict[src,tgt]['label']]
+                    ET.SubElement(fecentry, 'id').text = str(id)
+                    ET.SubElement(fecentry, 'destination').text = str(target_host)
+                    ET.SubElement(fecentry, 'source').text = str(source_host)
+                    zip_weights_paths_and_labels = list(zip(network.demand_dict[src,tgt]['label_backup_paths_zip'], weight))
+                    for (label, fbr_path), updated_weight in zip_weights_paths_and_labels:
+                        weighted_label = ET.SubElement(fecentry, 'weightedLabel')
+                        ET.SubElement(weighted_label, 'label').text = str(label)
+                        ET.SubElement(weighted_label, 'weight').text = str(updated_weight)
         tree = ET.ElementTree(root)
-        # Print 2 phase commit file
-        xml_string = ET.tostring(tree.getroot(), encoding='utf-8', method='xml')
-        doc = md.parseString(xml_string)
-        pretty_xml = doc.toprettyxml(indent='  ')
-        print(pretty_xml)
 
-        time.sleep(1000)
         #print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
-        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"))
-        os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"), os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        tree.write(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"))
+        os.rename(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"), os.path.join(conf["sync_dir"], "splittable-fecs.xml"))
 
 def to_omnetpp_network_topology_json(network, file):
     topology = {}
@@ -426,7 +433,7 @@ def to_omnetpp_lib(network, interface_dict, export_dir):
         ET.indent(table_xml)  # NOTE: Requires >= Python 3.9
         ET.ElementTree(table_xml).write(f"{export_dir}/{router_name}_lib.xml")
 
-def build_flows_for_export(network):
+def build_flows_for_export(network, conf):
     """
     Returns an array with the data of all flows (as a dictionary).
     """
@@ -440,11 +447,16 @@ def build_flows_for_export(network):
         target = row['target']
         label = row['label']
         load = row['load']
+        if conf["algorithm"] == "essence_split_multiple_labels":
+            split_labels = row['label_backup_paths_zip']
 
         if source not in flows:
             flows[source] = {}
-
-        flows[source][label] = ([source], [target], load)
+        if conf["algorithm"] == "essence_split_multiple_labels":
+            for (label, path) in split_labels:
+                flows[source][label] = ([source], [target], load)
+        else:
+            flows[source][label] = ([source], [target], load)
 
     export_flows = []
     i = 0
@@ -492,8 +504,7 @@ def build_flows_for_export(network):
     return export_flows
 
 
-def to_omnetpp_classification(network, export_flows, export_dir, conf):
-
+def to_omnetpp_classification(network, export_flows, export_dir, conf, essence_state):
     for router_name in network.routers.keys():
         if conf["algorithm"] == "essence_split_multiple_labels":
             network.routers[router_name].classification_table = {}
@@ -502,14 +513,25 @@ def to_omnetpp_classification(network, export_flows, export_dir, conf):
 
         id = 0
         table_xml = ET.Element("fectable")
+        id_dict = {}
         for entry in flows_at_router:
-            id = id + 1
+            source_target_pair = (entry['ingress'], entry['egress'])
+
+            # Check if the source-target pair already has an assigned ID
+            if source_target_pair in id_dict:
+                assigned_id = id_dict[source_target_pair]
+            else:
+                assigned_id = id
+                id_dict[source_target_pair] = id
+                id += 1
+
             entry_xml = ET.SubElement(table_xml, "fecentry")
-            ET.SubElement(entry_xml, "id").text = str(id)
+            ET.SubElement(entry_xml, "id").text = str(assigned_id)
             ET.SubElement(entry_xml, "label").text = str(entry['in_label'])
             ET.SubElement(entry_xml, "destination").text = entry['target_host']
             ET.SubElement(entry_xml, "source").text = entry['source_host']
-            network.routers[router_name].add_classification_rule_for_weight_split_essence(id, entry['target_host'], entry['in_label'])
+            if conf["algorithm"] == "essence_split_multiple_labels":
+                network.routers[router_name].add_classification_rule_for_weight_split_essence(source=entry['ingress'], target=entry['egress'], id=id, source_host=entry['source_host'], target_host=entry['target_host'], incoming_label=entry['in_label'])
 
         ET.indent(table_xml)  # NOTE: Requires >= Python 3.9
         ET.ElementTree(table_xml).write(f"{export_dir}/{router_name}_classification.xml")

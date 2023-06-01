@@ -136,7 +136,7 @@ class MPLS_Network:
         label_backup_paths_dict = {}
         for label, fbr_path in label_backup_paths_zip:
             label_backup_paths_dict[tuple(fbr_path)] = label
-        new_row = {'source': path[0], 'target': path[-1], 'label': first_label, 'primary_path': paths_for_flow[0], 'load': load, 'label_backup_paths_dict': label_backup_paths_dict}
+        new_row = {'source': path[0], 'target': path[-1], 'label': first_label, 'primary_path': paths_for_flow[0], 'load': load, 'label_backup_paths_dict': label_backup_paths_dict, 'label_backup_paths_zip': label_backup_paths_zip}
         self.demand_dict[path[0], path[-1]] = new_row
         # Omnet++ two phase commit details
         if omnet_xml_root is not None:
