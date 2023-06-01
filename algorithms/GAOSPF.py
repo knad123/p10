@@ -28,7 +28,7 @@ def GAOSPF(network: MPLS_Network, conf, start_time):
 def genetic_algorithm(network, loads, capacities, conf, start_time, generations=700,
                       population_size=200,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=118, weight_range=65535):
+                      mutation_rate=0.7, time_limit=10, weight_range=65535):
     end_time = start_time + time_limit
 
     population = create_population(network, population_size, weight_range)
@@ -64,7 +64,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, generations=
 
     shortest_path_dict = {}
     for (src, tgt) in loads:
-        shortest_path_dict[src, tgt] = nx.all_shortest_paths(updated_topology, src, tgt, weight='weight')
+        shortest_path_dict[src, tgt] = list(nx.all_shortest_paths(updated_topology, src, tgt, weight='weight'))
 
     return shortest_path_dict
 

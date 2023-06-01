@@ -135,8 +135,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
     elif conf["algorithm"] == "GAOSPF":
         pathdict = GAOSPF(mpls_network, conf, time.time())
-        for path in pathdict:
-            mpls_network.install_split_path_essence(path, labels_per_flow=1000)
+        mpls_network.install_GAOSPF(pathdict)
 
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,

@@ -13,6 +13,7 @@ from algorithms.essence_split import essence_split
 from algorithms.essence_big_flows import essence_big_flows
 from algorithms.essence_weight_setting import essence_weight_setting
 from algorithms.essence_split_multiple_labels import essence_split_multiple_labels
+from algorithms.GAOSPF import GAOSPF
 from classes.essence_state import EssenceState
 import os
 import time
@@ -204,6 +205,13 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         tree.write(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"))
         os.rename(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"),
                   os.path.join(conf["sync_dir"], "splittable-fecs.xml"))
+    elif conf['algorithm'] == "GAOSPF":
+        paths = GAOSPF(network, conf, start_time)
+        root = ET.Element('twoPhaseCommit')
+        root = network.install_GAOSPF(paths, root)
+        tree = ET.ElementTree(root)
+        tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]

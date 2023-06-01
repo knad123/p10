@@ -259,6 +259,56 @@ class MPLS_Network:
         new_row = {'source': path[0], 'target': path[-1], 'label': split_label, 'split_path': paths_for_flow, 'load': load}
         self.demand_dict[path[0], path[-1]] = new_row
 
+    def install_GAOSPF(self, pathdict, omnet_xml_root=None):
+        for (src,tgt), paths_for_flow in pathdict.items():
+            split_label = self.label_generator.get_new_label()
+            self.routers[paths_for_flow[0][0]].add_classification_rule(src, split_label)
+            # Omnet++ two phase commit details
+            if omnet_xml_root is not None:
+                reclassify_element = ET.SubElement(omnet_xml_root, "reclassify")
+                reclassify_element.set("router", src)
+
+                label_element = ET.SubElement(reclassify_element, "label")
+                label_element.text = str(split_label)
+
+                destination_element = ET.SubElement(reclassify_element, "destination")
+                destination_element.text = self.external_connections[tgt]["target"]
+
+                source_element = ET.SubElement(reclassify_element, "source")
+                source_element.text = self.external_connections[src]["source"]
+
+            for path_idx, path in enumerate(paths_for_flow):
+                for router_index, router_name in enumerate(path):
+                    # last router in path
+                    if router_index == len(path) - 1:
+                        self.routers[router_name].add_rule(incoming_label=split_label, outgoing_label=None,
+                                                              next_hop=router_name, priority=1)
+                        # Omnet++ two phase commit details
+                        if omnet_xml_root is not None:
+                            omnet_xml_root.append(
+                                router_rule_to_xml(router_name=router_name, priority=1, in_label=split_label,
+                                                   out_label=None, out_router=router_name))
+                    # intermediate router in path
+                    else:
+                        next_hop = path[router_index + 1]
+                        # add rule to forward by normal route
+                        self.routers[router_name].add_rule(incoming_label=split_label, outgoing_label=split_label,
+                                                              next_hop=next_hop,
+                                                              priority=1)
+                        # Omnet++ two phase commit details
+                        if omnet_xml_root is not None:
+                            omnet_xml_root.append(
+                                router_rule_to_xml(router_name=router_name, priority=1, in_label=split_label,
+                                                   out_label=split_label, out_router=next_hop))
+            # Add demand information for the LSP to the DataFrame
+            load = self.demands[(src,tgt)]
+            new_row = {'source': src, 'target': tgt, 'label': split_label, 'split_path': paths_for_flow, 'load': load}
+            self.demand_dict[src, tgt] = new_row
+
+            # Omnet++ two phase commit details
+            if omnet_xml_root is not None:
+                return omnet_xml_root
+
     def remove_lsp(self, path: List[str], label: int):
         for router_index in range(len(path)):
             current_router = path[router_index]
