@@ -113,8 +113,9 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     elif conf["algorithm"] == "essence_split_multiple_labels":
         essence_state = EssenceState(mpls_network)
         essence_state.create_pathdict(mpls_network)
-        genetic_path_weights = essence_split_multiple_labels(mpls_network, essence_state, conf, time.time())
-        x = 1
+        essence_state.path_weights = essence_split_multiple_labels(mpls_network, essence_state, conf, time.time())
+        for fbr_paths in essence_state.pathdict.values():
+            mpls_network.install_fbr(fbr_paths, algorithm="fbr")
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)

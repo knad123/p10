@@ -180,7 +180,30 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
     elif conf['algorithm'] == "essence_split_multiple_labels":
         # Calculate new paths
-        path_weights = essence_split_multiple_labels(network, essence_state, conf, start_time)
+        essence_state.path_weights = essence_split_multiple_labels(network, essence_state, conf, start_time)
+        root = ET.Element('fectables')
+        for router_name, tables in network.routers.items():
+            fectable = ET.SubElement(root, 'fectable')
+            fectable.set('router', router_name)
+            for (src,tgt), weights in essence_state.path_weights.items():
+                if src == router_name:
+                    fecentry = ET.SubElement(fectable, 'fecentry')
+                    current_weight, source_host, target_host, id = network.routers[router_name].classification_table[
+                        src, tgt, network.demand_dict[src,tgt]['label']]
+                    ET.SubElement(fecentry, 'id').text = str(id)
+                    ET.SubElement(fecentry, 'destination').text = str(target_host)
+                    ET.SubElement(fecentry, 'source').text = str(source_host)
+                    zip_weights_paths_and_labels = list(zip(network.demand_dict[src,tgt]['label_backup_paths_zip'], weights))
+                    for (label, fbr_path), updated_weight in zip_weights_paths_and_labels:
+                        weighted_label = ET.SubElement(fecentry, 'weightedLabel')
+                        ET.SubElement(weighted_label, 'label').text = str(label)
+                        ET.SubElement(weighted_label, 'weight').text = str(updated_weight)
+        tree = ET.ElementTree(root)
+
+        # print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        tree.write(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"))
+        os.rename(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"),
+                  os.path.join(conf["sync_dir"], "splittable-fecs.xml"))
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]
