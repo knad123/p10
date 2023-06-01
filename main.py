@@ -56,6 +56,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
 def run_inet_simulation(simulation_directory, inet_stopped_event, ini_conf):
     os.chdir(simulation_directory)
     subprocess.run(['inet', '-u', 'Cmdenv', '-c', f'{ini_conf}'])
+    #subprocess.run(['inet', '-c', f'{ini_conf}'])
     inet_stopped_event.set()
 
 # removes element from list
@@ -182,7 +183,7 @@ def main(confs):
             failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
         configurations = ["General"] + failure_scenario_configs
     else:
-        configurations = [conf["configuration"]]
+        configurations = conf["configuration"].split(" ")
 
     for ini_conf in configurations:
         conf["configuration"] = ini_conf
