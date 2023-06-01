@@ -22,6 +22,7 @@ from algorithms.essence_split import essence_split
 from algorithms.essence_big_flows import essence_big_flows
 from algorithms.essence_weight_setting import essence_weight_setting
 from algorithms.essence_split_multiple_labels import essence_split_multiple_labels
+from algorithms.GAOSPF import GAOSPF
 from parsers.omnet import to_omnetpp
 from parsers.parse_data import parse_results
 import os
@@ -132,6 +133,10 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state.create_stretchdict(mpls_network)
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
+    elif conf["algorithm"] == "GAOSPF":
+        pathdict = GAOSPF(mpls_network, conf, time.time())
+        for path in pathdict:
+            mpls_network.install_split_path_essence(path, labels_per_flow=1000)
 
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
@@ -243,7 +248,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting", "essence_split_multiple_labels"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")

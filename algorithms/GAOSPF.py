@@ -16,35 +16,29 @@ from typing import Dict, Tuple, List, Callable
 
 import time
 from classes.network import MPLS_Network
-from classes.essence_state import EssenceState
 
 
-def GAOSPF(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
+def GAOSPF(network: MPLS_Network, conf, start_time):
     genetic_weights = genetic_algorithm(network=network, loads=network.demands,
-                                      capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state, conf=conf, start_time=start_time,
+                                      capacities=nx.get_edge_attributes(network.topology, 'capacity'), conf=conf, start_time=start_time,
                                       time_limit=conf["update_interval"])
     return genetic_weights
 
 
-def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=700,
+def genetic_algorithm(network, loads, capacities, conf, start_time, generations=700,
                       population_size=200,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118, weight_range=65535):
     end_time = start_time + time_limit
 
-    if not essence_state.current_population:
-        population = create_population(network, population_size, weight_range)
-    else:
-        new_population = create_population(network, int(population_size * 0.8), weight_range)
-        population = essence_state.current_population + new_population
+    population = create_population(network, population_size, weight_range)
 
     # Run the genetic algorithm
-    for generation in range(generations):
-    #while time.time() < end_time:
+    #for generation in range(generations):
+    while time.time() < end_time:
         # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads, essence_state, network.topology)
-        print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, essence_state, network.topology)))
+        a_class, b_class, c_class = selection(population, capacities, loads, network.topology)
+        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions
@@ -58,11 +52,21 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
         population = children
 
     # Sort the population by fitness
-    a_class, b_class, c_class = selection(population, capacities, loads, essence_state, network.topology)
+    a_class, b_class, c_class = selection(population, capacities, loads, network.topology)
 
-    essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
-    return a_class[0]
+
+    # Create a copy of the topology graph
+    updated_topology = network.topology.copy()
+
+    for edge, weight in a_class[0].items():
+        updated_topology.add_edge(*edge, weight=weight)
+
+    shortest_path_dict = {}
+    for (src, tgt) in loads:
+        shortest_path_dict[src, tgt] = nx.all_shortest_paths(updated_topology, src, tgt, weight='weight')
+
+    return shortest_path_dict
 
 def create_population(network, population_size, weight_range):
     population = []
@@ -74,8 +78,8 @@ def create_population(network, population_size, weight_range):
     return population
 
 
-def selection(population, capacities, loads, essence_state, topology):
-    congestion = [calculate_fitness(individual, capacities, loads, essence_state, topology) for individual in
+def selection(population, capacities, loads, topology):
+    congestion = [calculate_fitness(individual, capacities, loads, topology) for individual in
                   population]
 
     # Zip the fitness values and the population together
@@ -106,7 +110,7 @@ def crossover(p1, p2, K=0.7, pg = 0.01):
     return c
 
 
-def calculate_fitness(individual, capacities, loads, essence_state, topology):
+def calculate_fitness(individual, capacities, loads, topology):
     # Initialize the utilization of each link to 0
     link_loads = {link: 0 for link in capacities.keys()}
 
