@@ -36,7 +36,7 @@ ROOT = os.path.dirname(__file__)
 def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
     while not inet_stopped_event.is_set():
-        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]):
+        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]) and not os.path.exists(conf["2pc_path"]) and not os.path.exists(conf["dynamic_weights_path"]):
             start_time = time.time()
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
@@ -210,6 +210,10 @@ def main(confs):
             os.remove(conf["2pc_path"])
         except:
             pass
+        try:
+            os.remove(conf["dynamic_weights_path"])
+        except:
+            pass
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 
@@ -222,6 +226,7 @@ def main(confs):
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
                 mpls_network = pickle.load(inp)
+
             monitor_stopped_event = threading.Event()
             monitor_output_thread = threading.Thread(target=monitor_omnet, args=(
             simulation_directory, mpls_network, essence_state, inet_stopped_event, monitor_stopped_event, conf))

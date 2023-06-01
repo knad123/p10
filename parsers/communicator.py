@@ -20,6 +20,7 @@ import time
 
 
 def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence_state: EssenceState, recorder, conf):
+
     if conf["algorithm"] == "essence_stateless":
         essence_state.current_population = []
 
@@ -164,8 +165,8 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
             # Write to xml file
             tree = ET.ElementTree(root)
 
-            tree.write(conf["temp_2pc_path"])
-            os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+        tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif conf['algorithm'] == "essence_weight_setting":
         # Create XML root element
         root = ET.Element('dynamicWeights')
