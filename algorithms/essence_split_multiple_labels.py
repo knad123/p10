@@ -24,7 +24,7 @@ def essence_split_multiple_labels(network: MPLS_Network, essence_state: EssenceS
                                       essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
     return genetic_path_weights
 
-def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, start_time, generations=10, population_size=20,
+def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=200,
                       crossover_rate=0.7,
                       mutation_rate=0.2, time_limit=118, weight_range=10):
     end_time = start_time + time_limit
@@ -40,9 +40,9 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
     # Select parents
     a_class, b_class, c_class = selection(population, capacities, loads, essence_state.pathdict)
 
-    #while time.time() < end_time:
-    for generation in range(generations):
-        print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, essence_state.pathdict)))
+    while time.time() < end_time:
+    #for generation in range(generations):
+        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, essence_state.pathdict)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = []#a_class
