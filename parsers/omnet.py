@@ -364,7 +364,12 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
 
     source_apps = {}
     flow_idx = 0  # Used to find the simulation time limit
+    flow_tracker = {}
     for flow in export_flows:
+        if (flow['ingress'], flow['egress']) in flow_tracker:
+            continue
+        else:
+            flow_tracker[flow['ingress'], flow['egress']] = None
         flow_idx += 1
         ingress = flow['ingress']
         egress = flow['egress']
