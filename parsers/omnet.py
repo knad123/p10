@@ -8,6 +8,9 @@ import xml.dom.minidom as md
 import time
 from os import path
 from typing import Dict, List, Tuple
+
+import networkx
+
 import classes.network
 import math
 from os import path
@@ -606,19 +609,19 @@ def to_omnetpp_scenario(file, link_to_ppp, conf, network_topology, failed_links)
 
 def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network):
     network_undirected = network.topology.to_undirected()
+    pruned_network = prune_1_degree_nodes(network_undirected)
     random.seed(100)
     # Uses sim_duration to generate a failed link
     #link_test_scenario = [(10800*conf["time_scale"], [("a1_USCB", "a0_SRI"), ("a0_SRI", "a3_UTAH")]), (21600*conf["time_scale"], [("a1_USCB", "a2_UCLA")])]
 
-    node_failure_probability = 0.1
-    edge_failure_probability = 0.05
+    node_failure_probability, edge_failure_probability = compute_failure_probabilities(pruned_network)
 
     for i in range(num_scenarios):
         failed_links = []
         failure_occured = False
         time_stamped_failures = []
-        for node in network_undirected:
-            if random.random() < node_failure_probability:
+        for node in pruned_network:
+            if random.random() < node_failure_probability[node]:
                 failed_nodes = []
 
                 # Check if links are already failed
@@ -635,10 +638,10 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 time_stamped_failures.append((time_stamp, failed_nodes, downtime))
                 failure_occured = True
 
-        for (src,tgt) in network_undirected.edges:
+        for (src,tgt) in pruned_network.edges:
             if (src, tgt) in failed_links:
                 continue
-            if random.random() < edge_failure_probability:
+            if random.random() < edge_failure_probability[(src,tgt)]:
                 failed_edges = [(src, tgt)]
                 downtime = random.randint(20, 10800) * conf["time_scale"]
                 time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
@@ -664,6 +667,61 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
         file_path = os.path.join(dir, f"scenario_{i}.xml")
         with open(file_path, "w") as f:
             to_omnetpp_scenario(f, link_to_ppp, conf, network_undirected, failed_links=time_stamped_failures)
+
+def prune_1_degree_nodes(graph):
+    # Create a copy of the original graph
+    pruned_graph = graph.copy()
+
+    # Get a list of all nodes with degree 1
+    nodes_to_remove = [node for node in pruned_graph.nodes if pruned_graph.degree[node] == 1]
+
+    # Base case: if no 1 degree nodes found, return the pruned graph
+    if not nodes_to_remove:
+        return pruned_graph
+
+    # Prune all 1 degree nodes
+    for node in nodes_to_remove:
+        pruned_graph.remove_node(node)
+
+    # Recursively prune more 1 degree nodes
+    return prune_1_degree_nodes(pruned_graph)
+
+def compute_failure_probabilities(graph: networkx.Graph, node_failure_probability=0.1, edge_failure_probability=0.05):
+    node_probabilities = {}
+    edge_probabilities = {}
+
+    summed_capacity = {}
+
+    # Compute node probabilities weighted by summed capacity of connected edges
+    for node in graph.nodes:
+        summed_capacity[node] = sum(graph[node][neighbor]['capacity'] for neighbor in graph.neighbors(node))
+
+    normalize_capacities = normalize_dictionary(summed_capacity)
+
+    for node in graph.nodes:
+        node_probabilities[node] = node_failure_probability * normalize_capacities[node]
+
+    edge_capacities = {}
+
+    # Compute edge probabilities weighted by their capacity
+    for edge in graph.edges:
+        edge_capacities[edge] = graph[edge[0]][edge[1]]['capacity']
+
+    normalize_edge_capacities = normalize_dictionary(edge_capacities)
+
+    for edge in graph.edges:
+        edge_probabilities[edge] = edge_failure_probability * normalize_edge_capacities[edge]
+
+
+    return node_probabilities, edge_probabilities
+
+def normalize_dictionary(dictionary):
+    max_val = max(dictionary.values())
+
+    # Normalize the values by dividing each value by the total sum
+    normalized_dictionary = {key: value / max_val for key, value in dictionary.items()}
+
+    return normalized_dictionary
 
 def create_xml_element(name, text=None, attrib=None):
     elem = ET.Element(name)
