@@ -20,6 +20,7 @@ import time
 
 
 def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence_state: EssenceState, recorder, conf):
+
     if conf["algorithm"] == "essence_stateless":
         essence_state.current_population = []
 
@@ -164,8 +165,8 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
             # Write to xml file
             tree = ET.ElementTree(root)
 
-            tree.write(conf["temp_2pc_path"])
-            os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+        tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif conf['algorithm'] == "essence_weight_setting":
         # Create XML root element
         root = ET.Element('dynamicWeights')
@@ -202,9 +203,9 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         tree = ET.ElementTree(root)
 
         # print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
-        tree.write(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"))
-        os.rename(os.path.join(conf["sync_dir"], "splittable-fecs-temp.xml"),
-                  os.path.join(conf["sync_dir"], "splittable-fecs.xml"))
+        tree.write(conf["temp_dynamic_weights_path"])
+        os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
+
     elif conf['algorithm'] == "GAOSPF":
         paths = GAOSPF(network, conf, start_time)
         root = ET.Element('twoPhaseCommit')
@@ -212,6 +213,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         tree = ET.ElementTree(root)
         tree.write(conf["temp_2pc_path"])
         os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]

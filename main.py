@@ -36,7 +36,7 @@ ROOT = os.path.dirname(__file__)
 def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
     recorder = Recorder()
     while not inet_stopped_event.is_set():
-        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]):
+        if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]) and not os.path.exists(conf["2pc_path"]) and not os.path.exists(conf["dynamic_weights_path"]):
             start_time = time.time()
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
@@ -56,6 +56,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
 def run_inet_simulation(simulation_directory, inet_stopped_event, ini_conf):
     os.chdir(simulation_directory)
     subprocess.run(['inet', '-u', 'Cmdenv', '-c', f'{ini_conf}'])
+    #subprocess.run(['inet', '-c', f'{ini_conf}'])
     inet_stopped_event.set()
 
 # removes element from list
@@ -182,7 +183,7 @@ def main(confs):
             failure_scenario_configs = [x.split(".xml")[0] for x in failure_scenario_files]
         configurations = ["General"] + failure_scenario_configs
     else:
-        configurations = [conf["configuration"]]
+        configurations = conf["configuration"].split(" ")
 
     for ini_conf in configurations:
         conf["configuration"] = ini_conf
@@ -209,6 +210,10 @@ def main(confs):
             os.remove(conf["2pc_path"])
         except:
             pass
+        try:
+            os.remove(conf["dynamic_weights_path"])
+        except:
+            pass
         os.chdir(ROOT)
         inet_stopped_event = threading.Event()
 
@@ -221,6 +226,7 @@ def main(confs):
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
                 mpls_network = pickle.load(inp)
+
             monitor_stopped_event = threading.Event()
             monitor_output_thread = threading.Thread(target=monitor_omnet, args=(
             simulation_directory, mpls_network, essence_state, inet_stopped_event, monitor_stopped_event, conf))
