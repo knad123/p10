@@ -609,18 +609,15 @@ def to_omnetpp_scenario(file, link_to_ppp, conf, network_topology, failed_links)
 
 def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, network):
     network_undirected = network.topology.to_undirected()
-    pruned_network = prune_1_degree_nodes(network_undirected)
     random.seed(100)
-    # Uses sim_duration to generate a failed link
-    #link_test_scenario = [(10800*conf["time_scale"], [("a1_USCB", "a0_SRI"), ("a0_SRI", "a3_UTAH")]), (21600*conf["time_scale"], [("a1_USCB", "a2_UCLA")])]
 
-    node_failure_probability, edge_failure_probability = compute_failure_probabilities(pruned_network)
+    node_failure_probability, edge_failure_probability = compute_failure_probabilities(network_undirected)
 
     for i in range(num_scenarios):
         failed_links = []
         failure_occured = False
         time_stamped_failures = []
-        for node in pruned_network:
+        for node in network_undirected:
             if random.random() < node_failure_probability[node]:
                 failed_nodes = []
 
@@ -638,7 +635,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 time_stamped_failures.append((time_stamp, failed_nodes, downtime))
                 failure_occured = True
 
-        for (src,tgt) in pruned_network.edges:
+        for (src,tgt) in network_undirected.edges:
             if (src, tgt) in failed_links:
                 continue
             if random.random() < edge_failure_probability[(src,tgt)]:
