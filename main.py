@@ -135,6 +135,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
     elif conf["algorithm"] == "GAOSPF":
+        essence_state = EssenceState(mpls_network)
         pathdict = GAOSPF(mpls_network, conf, time.time())
         mpls_network.install_GAOSPF(pathdict)
 
@@ -144,7 +145,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"], essence_state=essence_state)
 
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels"]:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
         # Save the essence state in a file
         os.makedirs(pkl_dir, exist_ok=True)
         with open(os.path.join(pkl_dir, "essence_state.pkl"), "wb") as outp:
@@ -221,7 +222,7 @@ def main(confs):
                                                   args=(simulation_directory, inet_stopped_event, ini_conf))
         inet_simulation_thread.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels"]:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
