@@ -28,9 +28,9 @@ def essence_weight_setting(network: MPLS_Network, essence_state: EssenceState, c
 
 
 def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=1000,
-                      population_size=200,
+                      population_size=500,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=118, weight_range=1000):
+                      mutation_rate=0.7, time_limit=118, weight_range=100):
     end_time = start_time + time_limit
 
     if not essence_state.current_population:

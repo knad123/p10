@@ -66,7 +66,7 @@ def filter_individuals(population, viable_paths):
             filtered_population.append(filtered_individual)
     return filtered_population
 
-def genetic_algorithm(viable_paths: dict[tuple[str,str], list[list[str]]], loads: dict[tuple[str,str],int], capacities: dict[tuple[str,str],int], essence_state, conf, start_time, generations=1000, population_size=100,
+def genetic_algorithm(viable_paths: dict[tuple[str,str], list[list[str]]], loads: dict[tuple[str,str],int], capacities: dict[tuple[str,str],int], essence_state, conf, start_time, generations=1000, population_size=500,
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=118):
     end_time = start_time + time_limit
