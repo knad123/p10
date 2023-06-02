@@ -160,6 +160,7 @@ def main(confs):
     simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm'])
     if conf["sync_dir"] == "":
         conf["sync_dir"] = os.path.abspath(simulation_directory)
+    os.makedirs(conf["sync_dir"], exist_ok=True)
     pkl_dir = os.path.abspath(os.path.join(simulation_directory, "pkl_files"))
     # Add package.ned
     if conf["generate_package"]:
@@ -169,13 +170,12 @@ def main(confs):
                 f.write(f"package {conf['package_name']};")
     essence_state = []
     mpls_network = []
+
     if not conf["only_execute"]:
         generate_files(conf, network_name, topology_data, simulation_directory, pkl_dir)
 
     if conf['no_execution']:
         return
-
-    os.makedirs(conf["sync_dir"], exist_ok=True)
 
     if conf["configuration"] == "all":
         failure_scenario_configs = []
