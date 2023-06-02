@@ -122,7 +122,7 @@ def calculate_fitness(individual, capacities, loads, topology):
 
     shortest_path_dict = {}
     for (src, tgt) in loads:
-        shortest_path_dict[src, tgt] = nx.all_shortest_paths(updated_topology, src, tgt, weight='weight')
+        shortest_path_dict[src, tgt] = list(nx.all_shortest_paths(updated_topology, src, tgt, weight='weight'))
 
     # Calculate the utilization of each link
     for (source, destination), paths in shortest_path_dict.items():
