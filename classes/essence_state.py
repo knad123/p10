@@ -74,7 +74,7 @@ def find_paths_for_demand(args):
     src, tgt, flow_to_graph = args
     unique_paths = []
     paths = []
-    while True:
+    while len(paths) < 100:
         path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
         for v1, v2 in zip(path[:-1], path[1:]):
             w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
