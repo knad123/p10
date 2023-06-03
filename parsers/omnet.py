@@ -84,8 +84,8 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
             root.append(elem)
         tree = ET.ElementTree(root)
         #print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
-        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"))
-        os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"), os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        tree.write(os.path.join(conf["sim_dir"], "dynamic_weights-initial-temp.xml"))
+        os.rename(os.path.join(conf["sim_dir"], "dynamic_weights-initial-temp.xml"), os.path.join(conf["sim_dir"], "dynamic_weights-initial.xml"))
 
     if conf['algorithm'] == "essence_split_multiple_labels":
         # Create XML root element
@@ -109,9 +109,9 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
         tree = ET.ElementTree(root)
 
         #print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
-        tree.write(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"))
-        os.rename(os.path.join(conf["sync_dir"], "dynamic_weights-initial-temp.xml"),
-                  os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
+        tree.write(os.path.join(conf["sim_dir"], "dynamic_weights-initial-temp.xml"))
+        os.rename(os.path.join(conf["sim_dir"], "dynamic_weights-initial-temp.xml"),
+                  os.path.join(conf["sim_dir"], "dynamic_weights-initial.xml"))
 
 def to_omnetpp_network_topology_json(network, file):
     topology = {}
@@ -317,7 +317,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], "2-phase-commit-General.xml")}"\n')
     if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels"]:
         file.write(f'**.dynamicWeights.updatePath = "{os.path.join(conf["sync_dir"], "dynamic_weights-General.xml")}"\n')
-        file.write(f'**.dynamicWeights.initialPath = "{os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml")}"\n')
+        file.write(f'**.dynamicWeights.initialPath = \"dynamic_weights-initial.xml\"\n')
     for router in network.routers.keys():
         if conf["algorithm"] in ["split_shortest_path", "essence_split"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "capacity"\n')
@@ -438,7 +438,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF"]:
             file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], f"2-phase-commit-scenario_{scenario}.xml")}"\n')
         if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels"]:
-            file.write(f'**.dynamicWeights.updatePath = "{os.path.join(conf["sync_dir"], f"dynamic_weights-scenario_{scenario}.xml")}"\n')
+            file.write(f'**.dynamicWeights.updatePath = \"dynamic_weights-scenario_{scenario}.xml\"\n')
         file.write("\n")
 
 

@@ -158,6 +158,7 @@ def main(confs):
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]
     simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm'])
+    conf["sim_dir"] = simulation_directory
     if conf["sync_dir"] == "":
         conf["sync_dir"] = os.path.abspath(simulation_directory)
     os.makedirs(conf["sync_dir"], exist_ok=True)
