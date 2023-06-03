@@ -40,14 +40,25 @@ class EssenceState:
             for src, tgt in graph.edges:
                 graph[src][tgt]["weight"] = 0
 
-        input_data = [(src, tgt, flow_to_graph) for src, tgt in network.demands]
-        results = list(map(find_paths_for_demand, input_data))
+        path_dict = dict()
 
-        pathdict = dict()
-        for result, (src, tgt) in zip(results, network.demands):
-            pathdict[(src, tgt)] = result
+        for (src, tgt), load in network.demands.items():
+            unique_paths = []
+            num_paths = 0
+            while num_paths < 20:
+                path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
+                for i in range(len(path) - 1):
+                    v1 = path[i]
+                    v2 = path[i + 1]
+                    w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
+                    w = w * 2 + 1
+                    flow_to_graph[(src, tgt)][v1][v2]["weight"] = w
+                if path not in unique_paths:
+                    unique_paths.append(path)
+                    path_dict[src, tgt] = unique_paths
+                num_paths += 1
 
-        self.pathdict = pathdict
+        self.pathdict = path_dict
 
     def all_shortest_path_pathdict(self, network: MPLS_Network):
         for src,tgt in network.demands.keys():
@@ -66,25 +77,5 @@ def find_paths_within_percentage_increase(graph, source, target, percentage_incr
 
         if path_length <= max_path_length:
             paths.append(path)
-
-    return paths
-
-
-def find_paths_for_demand(args):
-    src, tgt, flow_to_graph = args
-    unique_paths = []
-    paths = []
-    while len(paths) < 20:
-        path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
-        for v1, v2 in zip(path[:-1], path[1:]):
-            w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
-            w = w * 2 + 1
-            flow_to_graph[(src, tgt)][v1][v2]["weight"] = w
-        paths.append(path)
-        if path not in unique_paths:
-            unique_paths.append(path)
-        if paths.count(path) == 3:
-            paths = unique_paths
-            break
 
     return paths
