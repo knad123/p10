@@ -14,11 +14,11 @@ def scale_down_network(dictionary, average_capacity):
 
     return dictionary, scaling_factor
 
-os.mkdir("scaled_topologies")
+os.mkdir("../scaled_topologies")
 os.mkdir("scaled_demands")
 
-for topology in os.listdir("topologies"):
-    with open(os.path.join("topologies", topology), "r") as f:
+for topology in os.listdir("../topologies"):
+    with open(os.path.join("../topologies", topology), "r") as f:
         topology_info = json.load(f)
 
     total_bandwidth = 0
@@ -27,12 +27,12 @@ for topology in os.listdir("topologies"):
 
     dictionary, scaling_factor = scale_down_network(topology_info, 500000)
 
-    with open(os.path.join("scaled_topologies", topology), "w") as topo:
+    with open(os.path.join("../scaled_topologies", topology), "w") as topo:
         json.dump(dictionary, topo)
 
     topology_name = topology.split(".json")[0]
     topology_name = topology_name.split("_")[1]
-    for demand in os.listdir("demands"):
+    for demand in os.listdir("../demands"):
         if demand.__contains__(topology_name):
             output = os.path.join("scaled_demands", demand)
             with open("/home/andreas/Documents/GitHub/p10/demands/" + demand, "r") as file:
