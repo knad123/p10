@@ -55,12 +55,12 @@ for topology in os.listdir("../topologies"):
     if len(network.nodes) >= 15:
         interesting_topologies.append(topology)
 
-if os.path.exists("../interesting_topologies"):
-    os.rmdir("../interesting_topologies")
-os.mkdir("../interesting_topologies")
+if os.path.exists("../interesting_scaled_topologies"):
+    os.rmdir("../interesting_scaled_topologies")
+os.mkdir("../interesting_scaled_topologies")
 
-for topology in os.listdir("../topologies"):
+for topology in os.listdir("../scaled_topologies"):
     if topology in interesting_topologies:
-        source_path = os.path.join("../topologies", topology)
-        destination_path = os.path.join("../interesting_topologies", topology)
+        source_path = os.path.join("../scaled_topologies", topology)
+        destination_path = os.path.join("../interesting_scaled_topologies", topology)
         shutil.copy(source_path, destination_path)
