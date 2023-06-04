@@ -82,12 +82,35 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     if os.path.isdir(simulation_directory):
         shutil.rmtree(simulation_directory)
 
+    flow_to_graph = {f: mpls_network.topology for f in mpls_network.demands}
+    for graph in flow_to_graph.values():
+        for src, tgt in graph.edges:
+            graph[src][tgt]["weight"] = 0
+
+    path_dict2 = dict()
+
+    for (src, tgt), load in mpls_network.demands.items():
+        unique_paths = []
+        num_paths = 0
+        while num_paths < 20:
+            path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
+            for i in range(len(path) - 1):
+                v1 = path[i]
+                v2 = path[i + 1]
+                w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
+                w = w * 2 + 1
+                flow_to_graph[(src, tgt)][v1][v2]["weight"] = w
+            if path not in unique_paths:
+                unique_paths.append(path)
+                path_dict2[src, tgt] = unique_paths
+            num_paths += 1
+    
     # Create initial routing
     paths = {}
     essence_state = []
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", 'essence_big_flows', "essence_shortest_paths"]:
         essence_state = EssenceState(mpls_network)
-        if conf["algorithm"] != "essence_shortest_paths":
+        if conf["algorithm"] == "essence_shortest_paths":
             essence_state.create_shortest_path_pathdict(mpls_network)
         else:
             essence_state.create_pathdict(mpls_network)
@@ -101,8 +124,8 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="essence")
     elif conf["algorithm"] == "essence_split":
         essence_state = EssenceState(mpls_network)
-        essence_state.create_pathdict(mpls_network)
-        essence_state.create_stretchdict(mpls_network)
+        #essence_state.create_pathdict(mpls_network)
+        #essence_state.create_stretchdict(mpls_network)
         paths = essence_split(mpls_network, essence_state, conf, time.time())
         for path in paths.values():
             mpls_network.install_split_path_essence(path, labels_per_flow=conf['labels_per_flow'])

@@ -39,11 +39,10 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
     # for generation in range(generations):
 
     # Select parents
-    a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                          essence_state.congestion_weight)
+    a_class, b_class, c_class = selection(population, capacities, loads)
 
     while time.time() < end_time:
-        # print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
+        print(str(1) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions
@@ -59,8 +58,7 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
         population = children
 
         # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads, essence_state.stretchdict,
-                                              essence_state.congestion_weight)
+        a_class, b_class, c_class = selection(population, capacities, loads)
 
     if conf["algorithm"] != "essence_big_flows":
         essence_state.current_population = population[:int(len(population) * 0.2)]
@@ -78,8 +76,8 @@ def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, via
     return child1, child2
 
 
-def selection(population, capacities, loads, stretch_dict, congestion_weight):
-    congestion = [calculate_fitness(individual, capacities, loads, stretch_dict) for individual in
+def selection(population, capacities, loads):
+    congestion = [calculate_fitness(individual, capacities, loads) for individual in
                                 population]
 
     # Zip the fitness values and the population together
