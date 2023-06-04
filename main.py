@@ -285,6 +285,9 @@ if __name__ == "__main__":
     p.add_argument("--only_execute", action="store_true", help="If set, assumes ned and ini files are already generated and will just execute the specified conf(s)")
     p.add_argument("--configuration", type=str, default="all", help="name of the configuration(s) to run")
     p.add_argument("--labels_per_flow", type=int, default=4)
+    p.add_argument("--crossover", type=float, default=0.7)
+    p.add_argument("--mutation", type=float, default=0.2)
+    p.add_argument("--population", type=int, default=250)
 
 
     conf = vars(p.parse_args())

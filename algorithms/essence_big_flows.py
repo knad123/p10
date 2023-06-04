@@ -25,7 +25,7 @@ def essence_big_flows(network: MPLS_Network, essence_state: EssenceState, conf, 
     genetic_paths = genetic_algorithm(viable_paths=viable_paths, loads=loads,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
                                       essence_state=essence_state, conf=conf, start_time=start_time,
-                                      time_limit=conf["update_interval"])
+                                      time_limit=conf["update_interval"], crossover_rate=conf['crossover'], mutation_rate=conf['mutation'], population_size=conf['population'])
     return genetic_paths
 
 

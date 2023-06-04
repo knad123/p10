@@ -21,7 +21,7 @@ from classes.essence_state import EssenceState
 def essence(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
     genetic_paths = genetic_algorithm(viable_paths=essence_state.pathdict, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
-                                      essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"])
+                                      essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"], crossover_rate=conf['crossover'], mutation_rate=conf['mutation'], population_size=conf['population'])
     return genetic_paths
 
 def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=500,
@@ -42,7 +42,7 @@ def genetic_algorithm(viable_paths, loads, capacities, essence_state, conf, star
     a_class, b_class, c_class = selection(population, capacities, loads)
 
     while time.time() < end_time:
-        print(str(1) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
+        #print(str(1) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions

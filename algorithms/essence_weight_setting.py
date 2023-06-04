@@ -23,7 +23,7 @@ def essence_weight_setting(network: MPLS_Network, essence_state: EssenceState, c
     genetic_weights = genetic_algorithm(network=network, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
                                       essence_state=essence_state, conf=conf, start_time=start_time,
-                                      time_limit=conf["update_interval"])
+                                      time_limit=conf["update_interval"], crossover_rate=conf['crossover'], mutation_rate=conf['mutation'], population_size=conf['population'])
     return genetic_weights
 
 
