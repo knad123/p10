@@ -141,7 +141,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
 
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
-               output_dir=f"{conf['output_dir']}/{mpls_network.name}/{conf['algorithm']}", scaler=conf['scaler'],
+               output_dir=f'{conf["sim_dir"]}', scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"], essence_state=essence_state)
 
@@ -157,7 +157,8 @@ def main(confs):
     with open(conf["topology"]) as f:
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]
-    simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm'])
+    conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_")
+    simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm_and_parameters'])
     conf["sim_dir"] = simulation_directory
     if conf["sync_dir"] == "":
         conf["sync_dir"] = os.path.abspath(simulation_directory)

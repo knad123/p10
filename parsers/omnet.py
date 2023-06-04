@@ -38,7 +38,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
 
     with open(f'{output_dir}/{name}.ned', mode='w') as f:
         link_to_ppp_dict = to_omnetpp_ned(network, export_flows, conf=conf, interface_dict=interface_dict, name=name, file=f, bandwidth_divisor=scaler,
-                                          zero_latency=zero_latency, package_name=package_name, algorithm=algorithm)
+                                          zero_latency=zero_latency, package_name=package_name, algorithm=conf['algorithm_and_parameters'])
 
     """
     with open("confs/zoo_" + network.name + "/failure_chunks/0.yml", 'r') as f:
@@ -63,7 +63,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
         to_omnetpp_ini(conf=conf, network=network, export_flows=export_flows, temporal_demands=temporal_demands, name=name, file=f,
                                packet_size=packet_size, send_interval_multiplier=scaler, zero_latency=zero_latency,
-                               algorithm=algorithm)
+                               algorithm=conf['algorithm_and_parameters'])
 
     if not path.exists(output_dir + "/lib_files"):
         os.makedirs(output_dir + "/lib_files")
