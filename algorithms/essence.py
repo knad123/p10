@@ -79,18 +79,11 @@ def generate_child(a_class, b_class, c_class, crossover_rate, mutation_rate, via
 
 
 def selection(population, capacities, loads, stretch_dict, congestion_weight):
-    congestion, stretch = zip(*[calculate_fitness(individual, capacities, loads, stretch_dict) for individual in
-                                population])
-
-    normalized_congestion, normalized_stretch = normalize_values(congestion, stretch)
-
-    stretch_weight = 1 - congestion_weight
-
-    fitness_values = [normalized_congestion[i] * congestion_weight + normalized_stretch[i] * stretch_weight for i in
-                      range(len(population))]
+    congestion = [calculate_fitness(individual, capacities, loads, stretch_dict) for individual in
+                                population]
 
     # Zip the fitness values and the population together
-    fitness_population = zip(fitness_values, population)
+    fitness_population = zip(congestion, population)
 
     # Sort the list of tuples by the fitness values
     sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
@@ -137,7 +130,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
     return offspring1, offspring2
 
 
-def calculate_fitness(individual, capacities, loads, stretch_dict):
+def calculate_fitness(individual, capacities, loads):
     # Initialize the utilization of each link to 0
     utilization = {link: 0 for link in capacities.keys()}
 
@@ -154,12 +147,7 @@ def calculate_fitness(individual, capacities, loads, stretch_dict):
         u = utilization[link] / capacity
         congestion += fortz_func(u)
 
-    # Calculate the stretch component of the fitness
-    stretch = 0
-    for (source, destination), paths in individual.items():
-        stretch += stretch_dict[tuple(paths)]
-
-    return congestion, stretch
+    return congestion
 
 
 def mutate(individual, mutation_rate, viable_paths):
@@ -177,23 +165,6 @@ def mutate(individual, mutation_rate, viable_paths):
     individual[(source, destination)] = new_path
 
     return individual
-
-
-def normalize(value):
-    min_value = min(value)
-    range_value = max(value) - min_value
-    if range_value == 0:
-        return value
-    else:
-        normalized_values = [(x - min_value) / range_value for x in value]
-        return normalized_values
-
-
-def normalize_values(congestion, stretch):
-    normalized_congestion = normalize(congestion)
-    normalized_stretch = normalize(stretch)
-    return normalized_congestion, normalized_stretch
-
 
 def fortz_func(u):
     if u <= 1 / 20:
