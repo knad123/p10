@@ -24,12 +24,12 @@ def create_MPLS_network_topology(topology_data):
 
     return network
 
-def prune_1_degree_nodes(graph):
+def prune_n_degree_nodes(graph, degree=1):
     # Create a copy of the original graph
     pruned_graph = graph.copy()
 
     # Get a list of all nodes with degree 1
-    nodes_to_remove = [node for node in pruned_graph.nodes if pruned_graph.degree[node] == 2]
+    nodes_to_remove = [node for node in pruned_graph.nodes if pruned_graph.degree[node] == degree]
 
     # Base case: if no 1 degree nodes found, return the pruned graph
     if not nodes_to_remove:
@@ -40,7 +40,7 @@ def prune_1_degree_nodes(graph):
         pruned_graph.remove_node(node)
 
     # Recursively prune more 1 degree nodes
-    return prune_1_degree_nodes(pruned_graph)
+    return prune_n_degree_nodes(pruned_graph)
 
 interesting_topologies = []
 
@@ -49,11 +49,16 @@ for topology in os.listdir("../topologies"):
         topology_info = json.load(f)
 
     network = create_MPLS_network_topology(topology_info)
+    network = network.to_undirected()
 
-    network = prune_1_degree_nodes(network)
+    network = prune_n_degree_nodes(network, 1)
 
     if len(network.nodes) >= 15:
         interesting_topologies.append(topology)
+
+print(len(interesting_topologies))
+for topo in interesting_topologies:
+    print(topo)
 
 if os.path.exists("../interesting_scaled_topologies"):
     os.rmdir("../interesting_scaled_topologies")
