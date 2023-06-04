@@ -81,29 +81,6 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
 
     if os.path.isdir(simulation_directory):
         shutil.rmtree(simulation_directory)
-
-    flow_to_graph = {f: mpls_network.topology for f in mpls_network.demands}
-    for graph in flow_to_graph.values():
-        for src, tgt in graph.edges:
-            graph[src][tgt]["weight"] = 0
-
-    path_dict2 = dict()
-
-    for (src, tgt), load in mpls_network.demands.items():
-        unique_paths = []
-        num_paths = 0
-        while num_paths < 20:
-            path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
-            for i in range(len(path) - 1):
-                v1 = path[i]
-                v2 = path[i + 1]
-                w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
-                w = w * 2 + 1
-                flow_to_graph[(src, tgt)][v1][v2]["weight"] = w
-            if path not in unique_paths:
-                unique_paths.append(path)
-                path_dict2[src, tgt] = unique_paths
-            num_paths += 1
     
     # Create initial routing
     paths = {}
