@@ -50,6 +50,8 @@ for topology in os.listdir("../topologies"):
 
     network = create_MPLS_network_topology(topology_info)
     network = network.to_undirected()
+    if len(network.nodes) > 60:
+        continue
 
     network = prune_n_degree_nodes(network, 1)
 
@@ -59,13 +61,14 @@ for topology in os.listdir("../topologies"):
 print(len(interesting_topologies))
 for topo in interesting_topologies:
     print(topo)
+interesting_topologies = interesting_topologies[:50]
 
-if os.path.exists("../interesting_scaled_topologies"):
-    os.rmdir("../interesting_scaled_topologies")
-os.mkdir("../interesting_scaled_topologies")
+if os.path.exists("../filtered_interesting_scaled_topologies"):
+    os.rmdir("../filtered_interesting_scaled_topologies")
+os.mkdir("../filtered_interesting_scaled_topologies")
 
 for topology in os.listdir("../scaled_topologies"):
     if topology in interesting_topologies:
         source_path = os.path.join("../scaled_topologies", topology)
-        destination_path = os.path.join("../interesting_scaled_topologies", topology)
+        destination_path = os.path.join("../filtered_interesting_scaled_topologies", topology)
         shutil.copy(source_path, destination_path)
