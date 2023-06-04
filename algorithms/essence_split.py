@@ -31,9 +31,9 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
     end_time = start_time + time_limit
 
     if not essence_state.current_population:
-        population = create_population(network, loads, population_size)
+        population = create_population(network, loads, population_size, conf)
     else:
-        new_population = create_population(network, loads, int(population_size * 0.8))
+        new_population = create_population(network, loads, int(population_size * 0.8), conf)
         population = essence_state.current_population + new_population
 
 
@@ -64,7 +64,7 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
     return a_class[0]
 
 # FIX numpaths
-def create_population(network, demands, population_size):
+def create_population(network, demands, population_size, conf):
     population = []
     for _ in range(population_size):
         individual = {}
@@ -72,12 +72,12 @@ def create_population(network, demands, population_size):
             individual[src, tgt] = []
 
             path_generator = nx.all_shortest_paths(network.topology, src, tgt)
-            random_numpaths = random.randint(1,6)
+            random_numpaths = random.randint(1,conf['split_num'])
             shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
             for i in range(random_numpaths):
                 try:
                     path = next(path_generator)
-                    if (len(path) - 1) < (2 * shortest_path_len):
+                    if (len(path) - 1) < (conf['stretch_amount'] * shortest_path_len):
                         individual[src, tgt].append(path)
                 except StopIteration:
                     # If the generator has no more paths, break the loop

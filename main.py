@@ -288,6 +288,8 @@ if __name__ == "__main__":
     p.add_argument("--crossover", type=float, default=0.7)
     p.add_argument("--mutation", type=float, default=0.2)
     p.add_argument("--population", type=int, default=250)
+    p.add_argument("--split_num", type=int, default=6, help="number of paths for split_essence")
+    p.add_argument("--stretch_amount", type=float, default=2, help="how much longer paths can be than the shortest path")
 
 
     conf = vars(p.parse_args())
