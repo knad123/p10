@@ -142,6 +142,8 @@ def selection(population, capacities, loads, stretch_dict, congestion_weight):
 
 
 def two_point_crossover(individual1, individual2, crossover_probability):
+    if (len(individual1) - 1) == 1:
+        return individual1, individual2
     # Check if crossover should happen
     if random.random() > crossover_probability:
         return individual1, individual2
