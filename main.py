@@ -168,7 +168,6 @@ def main(confs):
     if conf["sync_dir"] == "":
         conf["sync_dir"] = os.path.abspath(simulation_directory)
     os.makedirs(conf["sync_dir"], exist_ok=True)
-    os.makedirs(os.path.join(conf["results_folder"], network_name, conf["algorithm"]), exist_ok=True)
     pkl_dir = os.path.abspath(os.path.join(simulation_directory, "pkl_files"))
     # Add package.ned
     if conf["generate_package"]:
