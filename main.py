@@ -157,7 +157,9 @@ def main(confs):
     with open(conf["topology"]) as f:
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]
-    if conf['algorithm'] not in ["fbr", "shortest_path", "split_shortest_path", "GAOSPF"]:
+    if conf['algorithm'] == "essence_split":
+        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + "_numpaths" + str(conf['split_num']).replace(".","_") + "_pathstretch" + str(conf['stretch_amount']).replace(".","_")
+    elif conf['algorithm'] not in ["fbr", "shortest_path", "split_shortest_path", "GAOSPF"]:
         conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_")
     else:
         conf['algorithm_and_parameters'] = conf['algorithm']
