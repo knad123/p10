@@ -133,7 +133,7 @@ def selection(population, capacities, loads):
 
 
 def two_point_crossover(individual1, individual2, crossover_probability):
-    if len(individual1) == 1:
+    if len(individual1) == 1 or len(individual1) == 2:
         return individual1, individual2
     # Check if crossover should happen
     if random.random() > crossover_probability:
