@@ -127,7 +127,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
     return offspring1, offspring2
 
 
-def  calculate_fitness(individual, capacities, loads):
+def calculate_fitness(individual, capacities, loads):
     # Initialize the utilization of each link to 0
     link_loads = {link: 0 for link in capacities.keys()}
 

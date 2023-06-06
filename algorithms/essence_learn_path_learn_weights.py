@@ -19,7 +19,7 @@ from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 
 
-def essence_split(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
+def essence_learn_paths_learn_weights(network: MPLS_Network, essence_state: EssenceState, conf, start_time):
     genetic_paths = genetic_algorithm(network=network ,loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'),
                                       essence_state=essence_state, conf=conf, start_time=start_time, time_limit=conf["update_interval"], crossover_rate=conf['crossover'], mutation_rate=conf['mutation'], population_size=conf['population'])
@@ -27,21 +27,20 @@ def essence_split(network: MPLS_Network, essence_state: EssenceState, conf, star
 
 def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=500,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=118):
+                      mutation_rate=0.7, time_limit=118, weight_range = 10):
     end_time = start_time + time_limit
 
     if not essence_state.current_population:
-        population = create_population(network, loads, population_size, conf)
+        population = create_population(network, loads, population_size, conf, essence_state, weight_range)
     else:
-        new_population = create_population(network, loads, int(population_size * 0.8), conf)
+        new_population = create_population(network, loads, int(population_size * 0.8), conf, essence_state, weight_range)
         population = essence_state.current_population + new_population
 
+    a_class, b_class, c_class = selection(population, capacities, loads)
 
     # Run the genetic algorithm
     while time.time() < end_time:
         # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads)
-        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions
@@ -49,48 +48,38 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
             parent1 = random.choice(a_class)
             parent2 = random.choice(b_class + c_class)
             child1, child2 = two_point_crossover(parent1, parent2, crossover_rate)
-            child1 = mutate(child1, mutation_rate, network)
-            child2 = mutate(child2, mutation_rate, network)
+            child1 = mutate(child1, mutation_rate, network, essence_state.pathdict, conf, weight_range)
+            child2 = mutate(child2, mutation_rate, network, essence_state.pathdict, conf, weight_range)
             children.extend([child1, child2])
 
         # Replace the population with the children
         population = children
+        # Sort the population by fitness
+        a_class, b_class, c_class = selection(population, capacities, loads)
+        print(str(calculate_fitness(a_class[0], capacities, loads)))
 
-    # Sort the population by fitness
-    a_class, b_class, c_class = selection(population, capacities, loads)
 
     essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
-    return a_class[0]
+    return a_class[0]['paths'], a_class[0]['weights']
 
 # FIX numpaths
-def create_population(network, demands, population_size, conf):
+def create_population(network, demands, population_size, conf, essence_state, weight_range):
     population = []
     for _ in range(population_size):
         individual = {}
+        individual['paths'] = {}
+        individual['weights'] = {}
         for src, tgt in demands:
-            individual[src, tgt]['paths'] = []
+            random_numpaths = random.randint(1, conf['split_num'])
+            population_size = len(essence_state.pathdict[src, tgt])
+            num_samples = min(random_numpaths, population_size)
+            individual['paths'][src, tgt] = random.sample(essence_state.pathdict[src, tgt], num_samples)
 
-            path_generator = nx.all_shortest_paths(network.topology, src, tgt)
-            random_numpaths = random.randint(1,conf['split_num'])
-            shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
-            for i in range(random_numpaths):
-                try:
-                    path = next(path_generator)
-                    if (len(path) - 1) < (conf['stretch_amount'] * shortest_path_len):
-                        individual[src, tgt]['paths'].append(path)
-                except StopIteration:
-                    # If the generator has no more paths, break the loop
-                    break
-
-        #for path in individual.items():
+        for src, tgt in network.topology.edges:
+            individual['weights'][src,tgt] = random.randint(0,weight_range)
 
         population.append(individual)
-
-    for individual in population:
-        for src,tgt in individual.keys():
-            if len(individual[src,tgt]) == 0:
-                individual[src,tgt].append(nx.shortest_path(network.topology, src, tgt))
 
     return population
 
@@ -124,24 +113,38 @@ def two_point_crossover(individual1, individual2, crossover_probability):
         return individual1, individual2
 
     # Select two random points in the individuals
-    point1 = random.randint(1, len(individual1) - 1)
-    point2 = random.randint(point1 + 1, len(individual1))
+    point1 = random.randint(1, len(individual1['paths']) - 1)
+    point2 = random.randint(point1 + 1, len(individual1['paths']))
 
     # Create the offspring by exchanging the elements between the two points
-    offspring1 = {}
-    offspring2 = {}
+    offspring1 = {'paths': {}, 'weights': {}}
+    offspring2 = {'paths': {}, 'weights': {}}
     i = 0
-    for (src, tgt), path in individual1.items():
+    for (src, tgt), paths in individual1['paths'].items():
         if i < point1:
-            offspring1[(src, tgt)] = path
-            offspring2[(src, tgt)] = individual2[(src, tgt)]
+            offspring1['paths'][(src, tgt)] = paths
+            offspring2['paths'][(src, tgt)] = individual2['paths'][(src, tgt)]
         elif i < point2:
-            offspring1[(src, tgt)] = individual2[(src, tgt)]
-            offspring2[(src, tgt)] = path
+            offspring1['paths'][(src, tgt)] = individual2['paths'][(src, tgt)]
+            offspring2['paths'][(src, tgt)] = paths
         else:
-            offspring1[(src, tgt)] = path
-            offspring2[(src, tgt)] = individual2[(src, tgt)]
+            offspring1['paths'][(src, tgt)] = paths
+            offspring2['paths'][(src, tgt)] = individual2['paths'][(src, tgt)]
         i += 1
+
+    # Select two random points in the individuals
+    point1 = random.randint(1, len(individual1['weights']) - 1)
+    point2 = random.randint(point1 + 1, len(individual1['weights']))
+    for (src, tgt), weight in individual1['weights'].items():
+        if i < point1:
+            offspring1['weights'][(src, tgt)] = weight
+            offspring2['weights'][(src, tgt)] = individual2['weights'][(src, tgt)]
+        elif i < point2:
+            offspring1['weights'][(src, tgt)] = individual2['weights'][(src, tgt)]
+            offspring2['weights'][(src, tgt)] = weight
+        else:
+            offspring1['weights'][(src, tgt)] = weight
+            offspring2['weights'][(src, tgt)] = individual2['weights'][(src, tgt)]
 
     return offspring1, offspring2
 
@@ -151,32 +154,37 @@ def calculate_fitness(individual, capacities, loads):
     link_loads = {link: 0 for link in capacities.keys()}
 
     # Calculate the utilization of each link
-    for (source, destination), paths in individual.items():
+    for (source, destination), paths in individual['paths'].items():
         load = loads[source, destination]
-        longest_path_len = max([len(i) for i in paths])
+        longest_path_len = max([len(i) for i in paths]) - 1
         next_hops = {}
         next_loads = {}
         for i in range(longest_path_len):
             for path in paths:
                 if i < len(path) - 1:
-                    src,tgt = path[i], path[i + 1]
-                    if src not in next_hops:
-                        next_hops[src] = {}
-                    next_hops[src][tgt] = capacities[src,tgt]
+                    v1,v2 = path[i], path[i + 1]
+                    if v1 not in next_hops:
+                        next_hops[v1] = {}
+                    next_hops[v1][v2] = individual['weights'][v1,v2]
             for path in paths:
                 if i < len(path) - 1:
-                    src,tgt = path[i], path[i+1]
-                    capacity = capacities[src,tgt]
-                    total_next_hop_capacity = sum(next_hops[src][tgt] for tgt in next_hops[src])
-
-                    if src in next_loads:
-                        split_load = (capacity / total_next_hop_capacity) * next_loads[src]
+                    v1,v2 = path[i], path[i+1]
+                    weight = individual['weights'][v1,v2]
+                    total_next_hop_weight = sum(next_hops[v1][v2] for v2 in next_hops[v1])
+                    if (total_next_hop_weight == 0) and (v1 in next_loads):
+                        number_of_splits = len(next_hops[v1])
+                        split_load = (1/number_of_splits) * next_loads[v1]
+                    elif (total_next_hop_weight == 0) and (v1 not in next_loads):
+                        number_of_splits = len(next_hops[v1])
+                        split_load = (1/number_of_splits) * load
+                    elif v1 in next_loads:
+                        split_load = (weight / total_next_hop_weight) * next_loads[v1]
                     else:
-                        split_load = (capacity / total_next_hop_capacity) * load
+                        split_load = (weight / total_next_hop_weight) * load
 
-                    next_loads[tgt] = split_load
+                    next_loads[v2] = split_load
 
-                    link_loads[src,tgt] += split_load
+                    link_loads[v1,v2] += split_load
 
     # Calculate the congestion component of the fitness
     congestion = 0
@@ -187,31 +195,25 @@ def calculate_fitness(individual, capacities, loads):
 
     #return max(link_loads.values())
 
-def mutate(individual, mutation_rate, network):
+def mutate(individual, mutation_rate, network, pathdict, conf, weight_range):
     # Determine if the individual should be mutated
     if random.random() > mutation_rate:
         return individual
 
     # Choose a random source-destination pair to mutate
-    src, tgt = random.choice(list(individual.keys()))
+    src, tgt = random.choice(list(individual['paths'].keys()))
 
     # Choose a new path for the pair from the viable paths
-    individual[src, tgt] = []
+    individual['paths'][src, tgt] = []
 
-    path_generator = nx.all_simple_paths(network.topology, src, tgt)
-    random_numpaths = random.randint(1, 6)
-    shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
-    for i in range(random_numpaths):
-        try:
-            path = next(path_generator)
-            if (len(path) - 1) < (3 * shortest_path_len):
-                individual[src, tgt].append(path)
-        except StopIteration:
-            # If the generator has no more paths, break the loop
-            break
+    random_numpaths = random.randint(1, conf['split_num'])
+    population_size = len(pathdict[src, tgt])
+    num_samples = min(random_numpaths, population_size)
+    individual['paths'][src, tgt] = random.sample(pathdict[src, tgt], num_samples)
 
-    if len(individual[src, tgt]) == 0:
-        individual[src, tgt].append(nx.shortest_path(network.topology, src, tgt))
+    src, tgt = random.choice(list(individual['weights'].keys()))
+    individual['weights'][src,tgt] = random.randint(0,weight_range)
+
 
     return individual
 

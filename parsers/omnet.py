@@ -76,7 +76,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     with open(f'{output_dir}/network_topology.json', mode='w') as f:
         to_omnetpp_network_topology_json(network, f)
 
-    if conf['algorithm'] == "essence_weight_setting":
+    if conf['algorithm'] in ["essence_weight_setting", "essence_learn_paths_learn_weights"]:
         # Create XML root element
         root = ET.Element('dynamicWeights')
         for (src,tgt), weight in essence_state.link_weights.items():
@@ -141,11 +141,11 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
         file.write("import inet.p10.MeasureWriter;\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights"]:
         file.write(f"import inet.p10.TwoPhaseCommit;\n")
-    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels"]:
+    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
         file.write(f"import inet.p10.DynamicWeights;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
@@ -171,11 +171,11 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights"]:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
-    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels"]:
+    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
         file.write(f"        dynamicWeights: DynamicWeights{{updateInterval = {conf['update_interval']}s;}}\n")
     for router_name, router in network.routers.items():
 
@@ -309,19 +309,19 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
     file.write("[General]\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
         file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], "demands-General.json")}"\n')
         file.write(f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], "utilization-General.json")}"\n')
         file.write(f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], "link_failures-General.json")}"\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights"]:
         file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], "2-phase-commit-General.xml")}"\n')
-    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels"]:
+    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
         file.write(f'**.dynamicWeights.updatePath = "{os.path.join(conf["sync_dir"], "dynamic_weights-General.xml")}"\n')
         file.write(f'**.dynamicWeights.initialPath = \"dynamic_weights-initial.xml\"\n')
     for router in network.routers.keys():
         if conf["algorithm"] in ["split_shortest_path", "essence_split"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "capacity"\n')
-        if conf["algorithm"] in ["essence_weight_setting"]:
+        if conf["algorithm"] in ["essence_weight_setting", "essence_learn_paths_learn_weights"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "dynamic"\n')
         if conf["algorithm"] in ["GAOSPF"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "ecmp"\n')
@@ -429,15 +429,15 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for scenario in range(conf["failure_scenarios"]):
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
             file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], f"demands-scenario_{scenario}.json")}"\n')
             file.write(
                 f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], f"utilization-scenario_{scenario}.json")}"\n')
             file.write(
                 f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], f"link_failures-scenario_{scenario}.json")}"\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF"]:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights"]:
             file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], f"2-phase-commit-scenario_{scenario}.xml")}"\n')
-        if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels"]:
+        if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
             file.write(f'**.dynamicWeights.updatePath = \"dynamic_weights-scenario_{scenario}.xml\"\n')
         file.write("\n")
 

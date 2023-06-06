@@ -7,6 +7,7 @@ import yaml
 
 import pandas as pd
 
+from algorithms.essence_learn_path_learn_weights import essence_learn_paths_learn_weights
 from classes.network import MPLS_Network
 from algorithms.essence import essence
 from algorithms.essence_split import essence_split
@@ -205,7 +206,45 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         # print(os.path.join(conf["sync_dir"], "dynamic_weights-initial.xml"))
         tree.write(conf["temp_dynamic_weights_path"])
         os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
+    elif conf['algorithm'] == "essence_learn_paths_learn_weights":
+        split_paths, essence_state.link_weights = essence_learn_paths_learn_weights(network, essence_state, conf, time.time())
+        # Path updating part ---------------------------------------
+        path_root = ET.Element('twoPhaseCommit')
+        for (src,tgt), paths in split_paths.items():
+            if network.demand_dict[src, tgt]['split_path'] != paths:
+                split_path_label = network.demand_dict[src, tgt]['label']
+                for split_path in network.demand_dict[src, tgt]['split_path']:
+                    for router_index, router_name in enumerate(split_path):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[split_path_label].items():
+                            operation = "remove"
 
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(split_path_label)))
+                            elem.append(create_xml_element("inRouter", "any"))
+                            path_root.append(elem)
+
+                path_root = network.install_essence_learn_paths_learn_weights(paths, omnet_xml_root=path_root)
+        # Write to xml file
+        path_tree = ET.ElementTree(path_root)
+
+        path_tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+
+        # Weight setting part --------------------------------------
+        # Create XML root element
+        weights_root = ET.Element('dynamicWeights')
+        for (src,tgt), weight in essence_state.link_weights.items():
+            elem = create_xml_element("weight", attrib={"src": src, "tgt": tgt, "weight": str(weight)})
+            weights_root.append(elem)
+
+        # Write to xml file
+        weight_tree = ET.ElementTree(weights_root)
+
+        #Initial write
+        weight_tree.write(conf["temp_dynamic_weights_path"])
+        os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
     elif conf['algorithm'] == "GAOSPF":
         paths = GAOSPF(network, conf, start_time)
         root = ET.Element('twoPhaseCommit')
