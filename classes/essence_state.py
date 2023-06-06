@@ -67,6 +67,15 @@ class EssenceState:
         for src,tgt in network.demands.keys():
             self.pathdict[src,tgt] = find_paths_within_percentage_increase(network.topology, src, tgt, 0.2)
 
+    def create_bfs_pathdict(self, network: MPLS_Network, depth_limit = 2):
+        for src,tgt in network.demands.keys():
+            self.pathdict[src, tgt] = []
+            shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
+
+            for path in nx.all_simple_paths(network.topology, source=src, target=tgt, cutoff=depth_limit * shortest_path_len):
+                if len(path) - 1 <= 2 * shortest_path_len:
+                    self.pathdict[src,tgt].append(path)
+
 def find_paths_within_percentage_increase(graph, source, target, percentage_increase):
     shortest_path_length = nx.shortest_path_length(graph, source, target)
     max_path_length = shortest_path_length * (1 + percentage_increase)

@@ -101,7 +101,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="essence")
     elif conf["algorithm"] == "essence_split":
         essence_state = EssenceState(mpls_network)
-        #essence_state.create_pathdict(mpls_network)
+        essence_state.create_bfs_pathdict(mpls_network, conf['stretch_amount'])
         #essence_state.create_stretchdict(mpls_network)
         paths = essence_split(mpls_network, essence_state, conf, time.time())
         for path in paths.values():
@@ -118,6 +118,9 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state.path_weights = essence_split_multiple_labels(mpls_network, essence_state, conf, time.time())
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
+    elif conf['algorithm'] == "essence_learn_path_learn_weights":
+        essence_state = EssenceState(mpls_network)
+        paths, essence_state.link_weights = essence_split(mpls_network, essence_state, conf, time.time())
     elif conf["algorithm"] == "shortest_path":
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = nx.shortest_path(mpls_network.topology, source=src, target=tgt, weight=None)
@@ -230,7 +233,7 @@ def main(confs):
                                                   args=(simulation_directory, inet_stopped_event, ini_conf))
         inet_simulation_thread.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF"]:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_path_learn_weights"]:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:

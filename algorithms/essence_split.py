@@ -31,17 +31,16 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
     end_time = start_time + time_limit
 
     if not essence_state.current_population:
-        population = create_population(network, loads, population_size, conf)
+        population = create_population(network, loads, population_size, conf, essence_state)
     else:
-        new_population = create_population(network, loads, int(population_size * 0.8), conf)
+        new_population = create_population(network, loads, int(population_size * 0.8), conf, essence_state)
         population = essence_state.current_population + new_population
 
+    a_class, b_class, c_class = selection(population, capacities, loads)
 
     # Run the genetic algorithm
     while time.time() < end_time:
         # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads)
-        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions
@@ -49,45 +48,30 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
             parent1 = random.choice(a_class)
             parent2 = random.choice(b_class + c_class)
             child1, child2 = two_point_crossover(parent1, parent2, crossover_rate)
-            child1 = mutate(child1, mutation_rate, network)
-            child2 = mutate(child2, mutation_rate, network)
+            child1 = mutate(child1, mutation_rate, network, essence_state.pathdict, conf)
+            child2 = mutate(child2, mutation_rate, network, essence_state.pathdict, conf)
             children.extend([child1, child2])
 
         # Replace the population with the children
         population = children
-
-    # Sort the population by fitness
-    a_class, b_class, c_class = selection(population, capacities, loads)
+        # Sort the population by fitness
+        a_class, b_class, c_class = selection(population, capacities, loads)
 
     essence_state.current_population = population[:int(len(population) * 0.2)]
     # Return the fittest individual
     return a_class[0]
 
 # FIX numpaths
-def create_population(network, demands, population_size, conf):
+def create_population(network, demands, population_size, conf, essence_state):
     population = []
     for _ in range(population_size):
         individual = {}
         for src, tgt in demands:
-            individual[src, tgt] = []
-
-            path_generator = nx.all_shortest_paths(network.topology, src, tgt)
-            random_numpaths = random.randint(1,conf['split_num'])
-            shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
-            for i in range(random_numpaths):
-                try:
-                    path = next(path_generator)
-                    if (len(path) - 1) < (conf['stretch_amount'] * shortest_path_len):
-                        individual[src, tgt].append(path)
-                except StopIteration:
-                    # If the generator has no more paths, break the loop
-                    break
+            random_numpaths = random.randint(1, conf['split_num'])
+            population_size = len(essence_state.pathdict[src, tgt])
+            num_samples = min(random_numpaths, population_size)
+            individual[src, tgt] = random.sample(essence_state.pathdict[src, tgt], num_samples)
         population.append(individual)
-
-    for individual in population:
-        for src,tgt in individual.keys():
-            if len(individual[src,tgt]) == 0:
-                individual[src,tgt].append(nx.shortest_path(network.topology, src, tgt))
 
     return population
 
@@ -143,7 +127,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
     return offspring1, offspring2
 
 
-def calculate_fitness(individual, capacities, loads):
+def  calculate_fitness(individual, capacities, loads):
     # Initialize the utilization of each link to 0
     link_loads = {link: 0 for link in capacities.keys()}
 
@@ -184,7 +168,7 @@ def calculate_fitness(individual, capacities, loads):
 
     #return max(link_loads.values())
 
-def mutate(individual, mutation_rate, network):
+def mutate(individual, mutation_rate, network, pathdict, conf):
     # Determine if the individual should be mutated
     if random.random() > mutation_rate:
         return individual
@@ -195,20 +179,10 @@ def mutate(individual, mutation_rate, network):
     # Choose a new path for the pair from the viable paths
     individual[src, tgt] = []
 
-    path_generator = nx.all_simple_paths(network.topology, src, tgt)
-    random_numpaths = random.randint(1, 6)
-    shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
-    for i in range(random_numpaths):
-        try:
-            path = next(path_generator)
-            if (len(path) - 1) < (3 * shortest_path_len):
-                individual[src, tgt].append(path)
-        except StopIteration:
-            # If the generator has no more paths, break the loop
-            break
-
-    if len(individual[src, tgt]) == 0:
-        individual[src, tgt].append(nx.shortest_path(network.topology, src, tgt))
+    random_numpaths = random.randint(1, conf['split_num'])
+    population_size = len(pathdict[src, tgt])
+    num_samples = min(random_numpaths, population_size)
+    individual[src, tgt] = random.sample(pathdict[src, tgt], num_samples)
 
     return individual
 
