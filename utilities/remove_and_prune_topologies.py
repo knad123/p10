@@ -119,7 +119,7 @@ def filter_graph_data(graph_data, router_set, link_set):
 interesting_topologies = []
 
 demands = "../pruned_demands"
-topo = "../pruned_scaled_topologies"
+topo = "../pruned_topologies"
 
 if os.path.exists(demands):
     shutil.rmtree(demands)
