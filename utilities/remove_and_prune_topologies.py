@@ -146,12 +146,11 @@ for topology in os.listdir("../scaled_topologies"):
 
         if topology_name == "Aarnet":
             x = 1
-        for demand in os.listdir("../demands"):
+        for demand in os.listdir("../scaled_demands"):
             demand_name = demand.split(".yml")[0]
             demand_name = demand.split("_")[0]
             if demand_name == topology_name:
-                output = os.path.join("scaled_demands", demand)
-                with open("/home/andreas/Documents/GitHub/p10/demands/" + demand, "r") as file:
+                with open("/home/andreas/Documents/GitHub/p10/scaled_demands/" + demand, "r") as file:
                     flows_with_load = {}
                     flow_load = []
                     for (src,tgt,load) in yaml.load(file, Loader=yaml.BaseLoader):
@@ -174,18 +173,11 @@ for topology in os.listdir("../scaled_topologies"):
                                 elif (tgt not in total_removed) and (tgt != node):
                                     current_load = flows_with_load[node][tgt]
                                     flows_with_load[node][tgt] = current_load + load
-                                    yyyy = load
-                                    x = flows_with_load[node][tgt]
-                                    y = 222
                                 elif tgt in total_removed:
                                     for node2, pruned2 in removed_nodes.items():
                                         if (tgt in pruned2) and (node != node2):
                                             current_load = flows_with_load[node][node2]
                                             flows_with_load[node][node2] = current_load + load
-                                            yyyy = load
-                                            x = flows_with_load[node][tgt]
-                                            y = 222
-
                     flows_with_load = {
                         src: {tgt: load for tgt, load in flows_with_load[src].items() if tgt not in total_removed}
                         for src in flows_with_load if src not in total_removed}
