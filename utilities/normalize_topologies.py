@@ -1,5 +1,7 @@
 import json
 import os
+import shutil
+
 import yaml
 
 
@@ -14,8 +16,17 @@ def scale_down_network(dictionary, average_capacity):
 
     return dictionary, scaling_factor
 
-os.mkdir("../scaled_topologies")
-os.mkdir("scaled_demands")
+demands = "../scaled_demands"
+topo = "../scaled_topologies"
+
+
+if os.path.exists(demands):
+    shutil.rmtree(demands)
+os.mkdir(demands)
+
+if os.path.exists(topo):
+    shutil.rmtree(topo)
+os.mkdir(topo)
 
 for topology in os.listdir("../topologies"):
     with open(os.path.join("../topologies", topology), "r") as f:
@@ -33,8 +44,9 @@ for topology in os.listdir("../topologies"):
     topology_name = topology.split(".json")[0]
     topology_name = topology_name.split("_")[1]
     for demand in os.listdir("../demands"):
-        if demand.__contains__(topology_name):
-            output = os.path.join("scaled_demands", demand)
+        demand_name = demand.split("_")[0]
+        if demand_name == topology_name:
+            output = os.path.join(demands, demand)
             with open("/home/andreas/Documents/GitHub/p10/demands/" + demand, "r") as file:
                 flows_with_load = []
                 for (x,y,z) in yaml.load(file, Loader=yaml.BaseLoader):

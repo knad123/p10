@@ -118,13 +118,16 @@ def filter_graph_data(graph_data, router_set, link_set):
 
 interesting_topologies = []
 
-if os.path.exists("../pruned_demands"):
-    shutil.rmtree("../pruned_demands")
-os.mkdir("../pruned_demands")
+demands = "../pruned_demands"
+topo = "../pruned_scaled_topologies"
 
-if os.path.exists("../pruned_scaled_topologies"):
-    shutil.rmtree("../pruned_scaled_topologies")
-os.mkdir("../pruned_scaled_topologies")
+if os.path.exists(demands):
+    shutil.rmtree(demands)
+os.mkdir(demands)
+
+if os.path.exists(topo):
+    shutil.rmtree(topo)
+os.mkdir(topo)
 
 for topology in os.listdir("../scaled_topologies"):
     with open(os.path.join("../scaled_topologies", topology), "r") as f:
@@ -139,6 +142,10 @@ for topology in os.listdir("../scaled_topologies"):
 
         topology_name = topology.split(".json")[0]
         topology_name = topology_name.split("_")[1]
+        print()
+
+        if topology_name == "Aarnet":
+            x = 1
         for demand in os.listdir("../demands"):
             demand_name = demand.split(".yml")[0]
             demand_name = demand.split("_")[0]
@@ -165,11 +172,19 @@ for topology in os.listdir("../scaled_topologies"):
                                 if tgt in pruned:
                                     continue
                                 elif (tgt not in total_removed) and (tgt != node):
-                                    flows_with_load[node][tgt] += load
+                                    current_load = flows_with_load[node][tgt]
+                                    flows_with_load[node][tgt] = current_load + load
+                                    yyyy = load
+                                    x = flows_with_load[node][tgt]
+                                    y = 222
                                 elif tgt in total_removed:
                                     for node2, pruned2 in removed_nodes.items():
                                         if (tgt in pruned2) and (node != node2):
-                                            flows_with_load[node][node2] += load
+                                            current_load = flows_with_load[node][node2]
+                                            flows_with_load[node][node2] = current_load + load
+                                            yyyy = load
+                                            x = flows_with_load[node][tgt]
+                                            y = 222
 
                     flows_with_load = {
                         src: {tgt: load for tgt, load in flows_with_load[src].items() if tgt not in total_removed}
@@ -180,6 +195,9 @@ for topology in os.listdir("../scaled_topologies"):
                         for tgt, load in tgt_loads.items():
                             file_list.append([src,tgt,load])
 
+                    file_list.sort(key=lambda x: x[2])
+                    flow_load.sort(key=lambda x: x[2])
+
                     with open("/home/andreas/Documents/GitHub/p10/pruned_demands/" + demand, "w") as file:
                         file.write(str(file_list))
 
@@ -187,5 +205,5 @@ for topology in os.listdir("../scaled_topologies"):
         router_set, link_set = create_filter_set(routers, links)
         filtered_topology = filter_graph_data(topology_info, router_set, link_set)
 
-        with open("../pruned_scaled_topologies/" + topology, "w") as file:
+        with open(topo + "/" + topology, "w") as file:
             json.dump(filtered_topology, file)
