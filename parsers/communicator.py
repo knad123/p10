@@ -84,8 +84,6 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         if (src,tgt) not in link_failures_data:
             network.topology.edges[src, tgt]['capacity'] = network.failed_links_capacity[src,tgt]
 
-
-
     changes = []
 
     if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_big_flows"]:
@@ -161,10 +159,12 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
 
                             root.append(elem)
                         network.routers[router_name].remove_rule(label)
-
-            root = network.install_split_path_essence(paths, 1000, omnet_xml_root=root)
-            # Write to xml file
-            tree = ET.ElementTree(root)
+                new_paths_for_flow = [path for path in paths if
+                                      not any((src, tgt) in link_failures_data for src, tgt in zip(path[:-1], path[1:]))]
+                if new_paths_for_flow:
+                    root = network.install_split_path_essence(new_paths_for_flow, 1000, omnet_xml_root=root)
+        # Write to xml file
+        tree = ET.ElementTree(root)
 
         tree.write(conf["temp_2pc_path"])
         os.rename(conf["temp_2pc_path"], conf["2pc_path"])
@@ -225,7 +225,9 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                             elem.append(create_xml_element("inRouter", "any"))
                             path_root.append(elem)
 
-                path_root = network.install_essence_learn_paths_learn_weights(paths, omnet_xml_root=path_root)
+                new_paths_for_flow = [path for path in paths if not any((src, tgt) in link_failures_data for src, tgt in zip(path[:-1], path[1:]))]
+                if new_paths_for_flow:
+                    path_root = network.install_essence_learn_paths_learn_weights(new_paths_for_flow, omnet_xml_root=path_root)
         # Write to xml file
         path_tree = ET.ElementTree(path_root)
 
