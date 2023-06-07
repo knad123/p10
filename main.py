@@ -22,7 +22,7 @@ from algorithms.essence_split import essence_split
 from algorithms.essence_big_flows import essence_big_flows
 from algorithms.essence_weight_setting import essence_weight_setting
 from algorithms.essence_split_multiple_labels import essence_split_multiple_labels
-from algorithms.essence_learn_path_learn_weights import essence_learn_paths_learn_weights
+from algorithms.essence_learn_paths_learn_weights import essence_learn_paths_learn_weights
 from algorithms.GAOSPF import GAOSPF
 from parsers.omnet import to_omnetpp
 from parsers.parse_data import parse_results
@@ -121,8 +121,16 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
     elif conf['algorithm'] == "essence_learn_paths_learn_weights":
         essence_state = EssenceState(mpls_network)
+        start_time1 = time.time()
         essence_state.create_bfs_pathdict(mpls_network, conf['stretch_amount'])
+        print(f"pathdict: {time.time() - start_time1}")
+        start_time2 = time.time()
+        essence_state.create_bfs_flow_subgraph(mpls_network, conf['stretch_amount'])
+        print(f"subgraph: {time.time() - start_time2}")
+        time.sleep(1000)
         paths, essence_state.link_weights = essence_learn_paths_learn_weights(mpls_network, essence_state, conf, time.time())
+
+
         for path_for_flow in paths.values():
             mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
     elif conf["algorithm"] == "shortest_path":

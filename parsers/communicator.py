@@ -7,7 +7,7 @@ import yaml
 
 import pandas as pd
 
-from algorithms.essence_learn_path_learn_weights import essence_learn_paths_learn_weights
+from algorithms.essence_learn_paths_learn_weights import essence_learn_paths_learn_weights
 from classes.network import MPLS_Network
 from algorithms.essence import essence
 from algorithms.essence_split import essence_split
