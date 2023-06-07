@@ -160,6 +160,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                             root.append(elem)
                         network.routers[router_name].remove_rule(label)
                 network.demand_dict[src, tgt]['split_path'] = []
+                network.demand_dict[src, tgt]['label_backup_paths_dict'] = {}
                 new_paths_for_flow = [path for path in paths if
                                       not any((src, tgt) in link_failures_data for src, tgt in zip(path[:-1], path[1:]))]
                 if new_paths_for_flow:
