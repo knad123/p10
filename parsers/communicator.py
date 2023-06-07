@@ -159,6 +159,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
 
                             root.append(elem)
                         network.routers[router_name].remove_rule(label)
+                network.demand_dict[src, tgt]['split_path'] = []
                 new_paths_for_flow = [path for path in paths if
                                       not any((src, tgt) in link_failures_data for src, tgt in zip(path[:-1], path[1:]))]
                 if new_paths_for_flow:
@@ -225,6 +226,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                             elem.append(create_xml_element("inRouter", "any"))
                             path_root.append(elem)
 
+                network.demand_dict[src, tgt]['split_path'] = []
                 new_paths_for_flow = [path for path in paths if not any((src, tgt) in link_failures_data for src, tgt in zip(path[:-1], path[1:]))]
                 if new_paths_for_flow:
                     path_root = network.install_essence_learn_paths_learn_weights(new_paths_for_flow, omnet_xml_root=path_root)
