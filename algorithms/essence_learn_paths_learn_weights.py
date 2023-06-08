@@ -27,7 +27,7 @@ def essence_learn_paths_learn_weights(network: MPLS_Network, essence_state: Esse
 
 def genetic_algorithm(network, loads, capacities, essence_state, conf, start_time, generations=1000, population_size=500,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=118, weight_range = 10):
+                      mutation_rate=0.8, time_limit=118, weight_range = 100):
     end_time = start_time + time_limit
 
     if not essence_state.current_population:
@@ -37,9 +37,9 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
         population = essence_state.current_population + new_population
 
     a_class, b_class, c_class = selection(population, capacities, loads)
-
     # Run the genetic algorithm
     while time.time() < end_time:
+    #for generation in range(generations):
         # Select parents
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
@@ -135,6 +135,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
     # Select two random points in the individuals
     point1 = random.randint(1, len(individual1['weights']) - 1)
     point2 = random.randint(point1 + 1, len(individual1['weights']))
+    i = 0
     for (src, tgt), weight in individual1['weights'].items():
         if i < point1:
             offspring1['weights'][(src, tgt)] = weight
@@ -145,6 +146,7 @@ def two_point_crossover(individual1, individual2, crossover_probability):
         else:
             offspring1['weights'][(src, tgt)] = weight
             offspring2['weights'][(src, tgt)] = individual2['weights'][(src, tgt)]
+        i += 1
 
     return offspring1, offspring2
 
@@ -157,33 +159,47 @@ def calculate_fitness(individual, capacities, loads):
     for (source, destination), paths in individual['paths'].items():
         load = loads[source, destination]
         longest_path_len = max([len(i) for i in paths]) - 1
-        next_hops = {}
         next_loads = {}
         for i in range(longest_path_len):
+
+            # Find the number of splits and weights
+            next_weights = {}
+            next_hops = {}
             for path in paths:
                 if i < len(path) - 1:
                     v1,v2 = path[i], path[i + 1]
-                    if v1 not in next_hops:
-                        next_hops[v1] = {}
-                    next_hops[v1][v2] = individual['weights'][v1,v2]
+                    if v1 not in next_weights:
+                        next_weights[v1] = {}
+                    if (v1,v2) not in next_hops:
+                        next_hops[v1,v2] = 0
+                    next_weights[v1][v2] = individual['weights'][v1,v2]
+                    next_hops[v1,v2] += 1
+
+            # Apply load to links
             for path in paths:
                 if i < len(path) - 1:
                     v1,v2 = path[i], path[i+1]
                     weight = individual['weights'][v1,v2]
-                    total_next_hop_weight = sum(next_hops[v1][v2] for v2 in next_hops[v1])
+                    total_next_hop_weight = sum(next_weights[v1][v2] for v2 in next_weights[v1])
                     if (total_next_hop_weight == 0) and (v1 in next_loads):
-                        number_of_splits = len(next_hops[v1])
-                        split_load = (1/number_of_splits) * next_loads[v1]
+                        number_of_splits = len(next_weights[v1])
+                        split_load = ((1/number_of_splits) * next_loads[v1]) / next_hops[v1,v2]
                     elif (total_next_hop_weight == 0) and (v1 not in next_loads):
-                        number_of_splits = len(next_hops[v1])
-                        split_load = (1/number_of_splits) * load
+                        number_of_splits = len(next_weights[v1])
+                        split_load = ((1/number_of_splits) * load) / next_hops[v1,v2]
                     elif v1 in next_loads:
-                        split_load = (weight / total_next_hop_weight) * next_loads[v1]
+                        split_load = ((weight / total_next_hop_weight) * next_loads[v1]) / next_hops[v1,v2]
                     else:
-                        split_load = (weight / total_next_hop_weight) * load
+                        split_load = ((weight / total_next_hop_weight) * load) / next_hops[v1,v2]
 
-                    next_loads[v2] = split_load
+                    # Add load to next hops and remove load from previous nodes
+                    if v2 not in next_loads:
+                        next_loads[v2] = 0
+                    next_loads[v2] += split_load
+                    if v1 in next_loads:
+                        next_loads[v1] -= split_load
 
+                    # Apply link loads
                     link_loads[v1,v2] += split_load
 
     # Calculate the congestion component of the fitness
