@@ -136,28 +136,44 @@ def calculate_fitness(individual, capacities, loads, essence_state):
     for (source, destination), paths in essence_state.pathdict.items():
         load = loads[source, destination]
         longest_path_len = max([len(i) for i in paths]) - 1
-        next_hops = {}
         next_loads = {}
         for i in range(0, longest_path_len):
-            for path in paths:
-                src, tgt = path[i], path[i + 1]
-                if src not in next_hops:
-                    next_hops[src] = {}
-                next_hops[src][tgt] = individual[src, tgt]
-            for path in paths:
-                src, tgt = path[i], path[i + 1]
-                total_next_hop_weights = sum(next_hops[src][tgt] for tgt in next_hops[src])
 
-                if total_next_hop_weights == 0:
-                    split_load = load
-                    next_loads[tgt] = split_load
+            # Find the number of splits and weights
+            next_weights = {}
+            next_hops = {}
+            for path in paths:
+                if i < len(path) - 1:
+                    src,tgt = path[i], path[i + 1]
+                    if src not in next_weights:
+                        next_weights[src] = {}
+                    if (src,tgt) not in next_hops:
+                        next_hops[src,tgt] = 0
+                    next_weights[src][tgt] = individual['weights'][src,tgt]
+                    next_hops[src,tgt] += 1
+
+
+            for path in paths:
+                src, tgt = path[i], path[i + 1]
+                total_next_hop_weights = sum(next_weights[src][tgt] for tgt in next_weights[src])
+
+                if (total_next_hop_weights == 0) and (src in next_loads):
+                    number_of_splits = len(next_weights[src])
+                    split_load = ((1 / number_of_splits) * next_loads[src]) / next_hops[src, tgt]
+                elif (total_next_hop_weights == 0) and (src not in next_loads):
+                    number_of_splits = len(next_weights[src])
+                    split_load = ((1 / number_of_splits) * load) / next_hops[src, tgt]
+                elif src in next_loads:
+                    split_load = ((individual[src, tgt] / total_next_hop_weights) * next_loads[src]) / next_hops[src,tgt]
                 else:
-                    if src in next_loads:
-                        split_load = (individual[src, tgt] / total_next_hop_weights) * next_loads[src]
-                    else:
-                        split_load = (individual[src, tgt] / total_next_hop_weights) * load
+                    split_load = ((individual[src, tgt] / total_next_hop_weights) * load) / next_hops[src,tgt]
 
-                next_loads[tgt] = split_load
+                # Add load to next hops and remove load from previous nodes
+                if tgt not in next_loads:
+                    next_loads[tgt] = 0
+                next_loads[tgt] += split_load
+                if src in next_loads:
+                    next_loads[src] -= split_load
 
                 link_loads[src, tgt] += split_load
 
