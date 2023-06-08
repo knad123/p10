@@ -259,6 +259,10 @@ class MPLS_Network:
         new_row = {'source': path[0], 'target': path[-1], 'label': split_label, 'split_path': paths_for_flow, 'load': load}
         self.demand_dict[path[0], path[-1]] = new_row
 
+#    def install_casa(self, paths_for_flow, algorithm="casa", rules_per_router_per_path=4, omnet_xml_root=None):
+#        NOGET = 10
+
+
     def remove_lsp(self, path: List[str], label: int):
         for router_index in range(len(path)):
             current_router = path[router_index]
