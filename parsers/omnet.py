@@ -57,7 +57,11 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     if failure_scenarios > 0:
         scenario_dir = os.path.join(output_dir, "failure_scenarios")
         os.makedirs(scenario_dir, exist_ok=True)
-        generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network)
+        if conf["short_experiment"]:
+            generate_scenarios(failure_scenarios, 14400 * conf["time_scale"], scenario_dir, link_to_ppp_dict, conf,
+                               network)
+        else:
+            generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network)
 
 
     with open(f'{output_dir}/omnetpp.ini', mode="w") as f:
@@ -347,7 +351,10 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     # file.write("**.scenarioManager.script = xmldoc(\"scenario.xml\")\n")
     file.write("\n")
     file.write(f"warmup-period = 0s\n")
-    file.write(f"sim-time-limit = {86400 * conf['time_scale']}s\n")
+    if conf["short_experiment"]:
+        file.write(f"sim-time-limit = {14400 * conf['time_scale']}s\n")
+    else:
+        file.write(f"sim-time-limit = {86400 * conf['time_scale']}s\n")
     # Add classification files
     for router_name, router in network.routers.items():
         file.write \
@@ -359,7 +366,10 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for (src, tgt), demands in temporal_demands.items():
         for d in demands:
             load = int(d[0]) * conf["demand_scaler"]
-            send_interval = 86400
+            if conf["short_experiment"]:
+                send_interval = 14400
+            else:
+                send_interval = 86400
             if load > 0:
                 send_interval = (send_interval_multiplier * (1 / (load / packet_size)))
             start_time_unformatted = d[1]

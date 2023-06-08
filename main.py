@@ -73,7 +73,9 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     temporal_demands = {(src, tgt): loads for src, tgt, loads in demand_data}
     # int(demand[2][0][0]) is just load for first timeslot
     initial_demands = {tuple(demand[:2]): int(demand[2][0][0]) for demand in demand_data}
-
+    if conf["short_experiment"]:
+        temporal_demands = {(src, tgt): loads[16:20] for (src, tgt), loads in temporal_demands.items()}
+        initial_demands = {tuple(demand[:2]): int(demand[2][16][0]) for demand in demand_data}
     mpls_network = MPLS_Network(name=topology_data["network"]["name"], demands=initial_demands)
     # Create the network graph
     mpls_network.create_MPLS_network_topology(topology_data)
@@ -302,6 +304,7 @@ if __name__ == "__main__":
     p.add_argument("--population", type=int, default=250)
     p.add_argument("--split_num", type=int, default=6, help="number of paths for split_essence")
     p.add_argument("--stretch_amount", type=float, default=2, help="how much longer paths can be than the shortest path")
+    p.add_argument("--short_experiment", action="store_true", help="Run hours 16-20")
 
 
     conf = vars(p.parse_args())
