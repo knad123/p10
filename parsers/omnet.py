@@ -374,7 +374,12 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
                 send_interval = (send_interval_multiplier * (1 / (load / packet_size)))
             start_time_unformatted = d[1]
             x = time.strptime(start_time_unformatted, '%H:%M')
-            send_interval_start_time = int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds()) * conf["time_scale"]
+            if conf["short_experiment"]:
+                send_interval_start_time = (int(datetime.timedelta(hours=x.tm_hour, minutes=x.tm_min).total_seconds())-57600) * conf["time_scale"]
+            else:
+                send_interval_start_time = int(datetime.timedelta(hours=x.tm_hour,
+                                                                   minutes=x.tm_min).total_seconds()) * conf[
+                                               "time_scale"]
             if (src, tgt) not in send_intervals:
                 send_intervals[(src, tgt)] = f"{send_interval}"
                 send_interval_start_times[(src, tgt)] = f"{send_interval_start_time}"
