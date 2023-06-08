@@ -35,24 +35,22 @@ class EssenceState:
         self.stretchdict = stretch_dict
 
     def create_pathdict(self, network: MPLS_Network):
-        flow_to_graph = {f: network.topology for f in network.demands}
-        for graph in flow_to_graph.values():
-            for src, tgt in graph.edges:
-                graph[src][tgt]["weight"] = 0
 
         path_dict = dict()
 
         for (src, tgt), load in network.demands.items():
+            for v1111, v2222 in network.topology.edges:
+                network.topology[v1111][v2222]["weight"] = 0
             unique_paths = []
             num_paths = 0
             while num_paths < 20:
-                path = nx.shortest_path(flow_to_graph[(src, tgt)], src, tgt, weight="weight")
+                path = nx.dijkstra_path(network.topology, src, tgt, weight="weight")
                 for i in range(len(path) - 1):
                     v1 = path[i]
                     v2 = path[i + 1]
-                    w = flow_to_graph[(src, tgt)][v1][v2]["weight"]
+                    w = network.topology[v1][v2]["weight"]
                     w = w * 2 + 1
-                    flow_to_graph[(src, tgt)][v1][v2]["weight"] = w
+                    network.topology[v1][v2]["weight"] = w
                 if path not in unique_paths:
                     unique_paths.append(path)
                     path_dict[src, tgt] = unique_paths
