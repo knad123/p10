@@ -135,27 +135,38 @@ def calculate_fitness(individual, capacities, loads):
     for (source, destination), paths in individual.items():
         load = loads[source, destination]
         longest_path_len = max([len(i) for i in paths])
-        next_hops = {}
         next_loads = {}
         for i in range(longest_path_len):
+
+            # Find the number of splits and weights
+            next_weights = {}
+            next_hops = {}
             for path in paths:
                 if i < len(path) - 1:
-                    src,tgt = path[i], path[i + 1]
-                    if src not in next_hops:
-                        next_hops[src] = {}
-                    next_hops[src][tgt] = capacities[src,tgt]
+                    v1,v2 = path[i], path[i + 1]
+                    if v1 not in next_weights:
+                        next_weights[v1] = {}
+                    if (v1,v2) not in next_hops:
+                        next_hops[v1,v2] = 0
+                    next_weights[v1][v2] = capacities[v1,v2]
+                    next_hops[v1,v2] += 1
             for path in paths:
                 if i < len(path) - 1:
                     src,tgt = path[i], path[i+1]
                     capacity = capacities[src,tgt]
-                    total_next_hop_capacity = sum(next_hops[src][tgt] for tgt in next_hops[src])
+                    total_next_hop_capacity = sum(next_weights[src][tgt] for tgt in next_weights[src])
 
                     if src in next_loads:
-                        split_load = (capacity / total_next_hop_capacity) * next_loads[src]
+                        split_load = ((capacity / total_next_hop_capacity) * next_loads[src]) / next_hops[src,tgt]
                     else:
-                        split_load = (capacity / total_next_hop_capacity) * load
+                        split_load = ((capacity / total_next_hop_capacity) * load) / next_hops[src,tgt]
 
-                    next_loads[tgt] = split_load
+                    # Add load to next hops and remove load from previous nodes
+                    if tgt not in next_loads:
+                        next_loads[tgt] = 0
+                    next_loads[tgt] += split_load
+                    if src in next_loads:
+                        next_loads[src] -= split_load
 
                     link_loads[src,tgt] += split_load
 
