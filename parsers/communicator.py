@@ -8,6 +8,8 @@ import yaml
 import pandas as pd
 
 from algorithms.essence_learn_paths_learn_weights import essence_learn_paths_learn_weights
+from algorithms.essence_learn_paths_learn_weights_bugged import essence_learn_paths_learn_weights_bugged
+from algorithms.essence_split_bugged import essence_split_bugged
 from classes.network import MPLS_Network
 from algorithms.essence import essence
 from algorithms.essence_split import essence_split
@@ -127,7 +129,10 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         # Create XML root element
         root = ET.Element('twoPhaseCommit')
         # Calculate new paths
-        split_paths = essence_split(network, essence_state, conf, start_time)
+        if conf['bugged']:
+            split_paths = essence_split_bugged(network, essence_state, conf, time.time())
+        else:
+            split_paths = essence_split(network, essence_state, conf, time.time())
         for (src,tgt), paths in split_paths.items():
 
             if network.demand_dict[src, tgt]['split_path'] != paths:
@@ -209,7 +214,12 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         tree.write(conf["temp_dynamic_weights_path"])
         os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
     elif conf['algorithm'] == "essence_learn_paths_learn_weights":
-        split_paths, essence_state.link_weights = essence_learn_paths_learn_weights(network, essence_state, conf, time.time())
+        if conf['bugged']:
+            split_paths, essence_state.link_weights = essence_learn_paths_learn_weights_bugged(network, essence_state,
+                                                                                         conf, time.time())
+        else:
+            split_paths, essence_state.link_weights = essence_learn_paths_learn_weights(network, essence_state, conf,
+                                                                                  time.time())
         # Path updating part ---------------------------------------
         path_root = ET.Element('twoPhaseCommit')
         for (src,tgt), paths in split_paths.items():

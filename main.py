@@ -23,6 +23,8 @@ from algorithms.essence_big_flows import essence_big_flows
 from algorithms.essence_weight_setting import essence_weight_setting
 from algorithms.essence_split_multiple_labels import essence_split_multiple_labels
 from algorithms.essence_learn_paths_learn_weights import essence_learn_paths_learn_weights
+from algorithms.essence_learn_paths_learn_weights_bugged import essence_learn_paths_learn_weights_bugged
+from algorithms.essence_split_bugged import essence_split_bugged
 from algorithms.GAOSPF import GAOSPF
 from parsers.omnet import to_omnetpp
 from parsers.parse_data import parse_results
@@ -105,7 +107,10 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     elif conf["algorithm"] == "essence_split":
         essence_state = EssenceState(mpls_network)
         essence_state.create_bfs_pathdict(mpls_network, conf['stretch_amount'])
-        paths = essence_split(mpls_network, essence_state, conf, time.time())
+        if conf['bugged']:
+            paths = essence_split_bugged(mpls_network, essence_state, conf, time.time())
+        else:
+            paths = essence_split(mpls_network, essence_state, conf, time.time())
         for path in paths.values():
             mpls_network.install_split_path_essence(path, labels_per_flow=conf['labels_per_flow'])
     elif conf["algorithm"] == "essence_weight_setting":
@@ -123,7 +128,10 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     elif conf['algorithm'] == "essence_learn_paths_learn_weights":
         essence_state = EssenceState(mpls_network)
         essence_state.create_bfs_pathdict(mpls_network, conf['stretch_amount'])
-        paths, essence_state.link_weights = essence_learn_paths_learn_weights(mpls_network, essence_state, conf, time.time())
+        if conf['bugged']:
+            paths, essence_state.link_weights = essence_learn_paths_learn_weights_bugged(mpls_network, essence_state, conf, time.time())
+        else:
+            paths, essence_state.link_weights = essence_learn_paths_learn_weights(mpls_network, essence_state, conf, time.time())
         for path_for_flow in paths.values():
             mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
     elif conf["algorithm"] == "shortest_path":
@@ -303,8 +311,9 @@ if __name__ == "__main__":
     p.add_argument("--mutation", type=float, default=0.2)
     p.add_argument("--population", type=int, default=250)
     p.add_argument("--split_num", type=int, default=6, help="number of paths for split_essence")
-    p.add_argument("--stretch_amount", type=float, default=2, help="how much longer paths can be than the shortest path")
+    p.add_argument("--stretch_amount", type=float, default=1.4, help="how much longer paths can be than the shortest path")
     p.add_argument("--short_experiment", action="store_true", help="Run hours 16-20")
+    p.add_argument("--bugged", action="store_true", help="Run bugged essence split / other essence")
 
 
     conf = vars(p.parse_args())
