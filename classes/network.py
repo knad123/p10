@@ -18,9 +18,7 @@ class MPLS_Network:
         self.demands = demands
         self.external_connections = {}
         self.failed_links_capacity = {}
-        # Recursively prune all 1 degree nodes
-        self.pruned_topology = nx.DiGraph()
-        self.fail_graph_dict = {}
+        self.backup_path_label_dict = {}
 
     def add_router(self, name: str):
         router = MPLS_Router(name=name)
@@ -228,6 +226,8 @@ class MPLS_Network:
         for label, fbr_path in label_backup_paths_zip:
             label_backup_paths_dict[label] = fbr_path
         new_row = {'source': path[0], 'target': path[-1], 'label': split_label, 'split_path': paths_for_flow, 'load': load, 'label_backup_paths_dict': label_backup_paths_dict}
+        for path in paths_for_flow:
+            self.add_protection(path, split_label)
         self.demand_dict[path[0], path[-1]] = new_row
 
         # Omnet++ two phase commit details
@@ -300,6 +300,8 @@ class MPLS_Network:
         # Add demand information for the LSP to the DataFrame
         load = self.demands[(src, tgt)]
         new_row = {'source': src, 'target': tgt, 'label': split_label, 'split_path': paths_for_flow, 'load': load}
+        for path in paths_for_flow:
+            self.add_protection(path, split_label)
         self.demand_dict[src, tgt] = new_row
 
         # Omnet++ two phase commit details
@@ -373,6 +375,161 @@ class MPLS_Network:
         # Remove path information for the LSP from the DataFrame
         #self.demand_dataframe = self.demand_dataframe[self.demand_dataframe['label'] != label]
 
+    def create_RSVP_FN_protection(self):
+        def create_subgraph_dictionary(graph):
+            subgraph_dict = {}
+            for node in graph.nodes():
+                subgraph = graph.copy()
+                subgraph.remove_node(node)
+                subgraph_dict[node] = subgraph
+            return subgraph_dict
+
+        failed_node_dict = create_subgraph_dictionary(self.topology.copy())
+        topology = self.topology.copy().to_directed()
+
+
+        backup_paths = {}
+
+        # Node protection paths
+        for router in self.routers:
+            backup_paths[router] = {}
+            failed_topology = failed_node_dict[router]
+            neighbours = list(topology.neighbors(router))
+
+            for neighbour1 in neighbours:
+                for neighbour2 in filter(lambda x: x != neighbour1, neighbours):
+                    try:
+                        # Attempt to find a path in the failed topology
+                        path = nx.dijkstra_path(failed_topology, neighbour1, neighbour2)
+                        backup_paths[router][neighbour1,neighbour2] = path
+                    except:
+                        # Remove the edge from the original graph
+                        topology.remove_edge(neighbour1, router)
+                        topology.remove_edge(router, neighbour1)
+
+                        try:
+                            # Attempt to find a path in the modified graph
+                            path = nx.dijkstra_path(topology, neighbour1, router)
+                            backup_paths[router][neighbour1,neighbour2] = path
+                        except:
+                            # Handle the case when there is no path even after removing the edge
+                            backup_paths[router][neighbour1,neighbour2] = None
+
+                        # Add the edge back to the graph
+                        topology.add_edge(neighbour1, router)
+                        topology.add_edge(router, neighbour1)
+
+        for router in self.routers:
+            self.backup_path_label_dict[router] = {}
+            for (v1,v2), path in backup_paths[router].items():
+                if path is None:
+                    self.backup_path_label_dict[router][v1,v2] = None
+                    continue
+                label = self.label_generator.get_new_label()
+                for router_index in range(len(path)):
+                    current_router = path[router_index]
+
+                    # First router, classify and push label
+                    if router_index == 0:
+                        next_hop = path[router_index + 1]
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label,
+                                                              next_hop=next_hop,
+                                                              priority=1)
+                    # Last router, pop label
+                    elif router_index == len(path) - 1:
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None,
+                                                              next_hop=current_router,
+                                                              priority=1)
+                    # Intermediate routers, swap label
+                    else:
+                        next_hop = path[router_index + 1]
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label,
+                                                              next_hop=next_hop,
+                                                              priority=1)
+                self.backup_path_label_dict[router][v1,v2] = label
+
+        edge_backup_paths = {}
+
+        # Edge protection paths
+        for router in self.routers:
+            edge_backup_paths[router] = {}
+            neighbours = list(topology.neighbors(router))
+            for neighbour in neighbours:
+                topology.remove_edge(router, neighbour)
+                topology.remove_edge(neighbour, router)
+
+                try:
+                    # Attempt to find a path in the modified graph
+                    path = nx.dijkstra_path(topology, router, neighbour)
+                    edge_backup_paths[router][router, neighbour] = path
+                except:
+                    # Handle the case when there is no path even after removing the edge
+                    edge_backup_paths[router][router, neighbour] = None
+
+                # Add the edge back to the graph
+                topology.add_edge(router, neighbour)
+                topology.add_edge(neighbour, router)
+
+        for router in self.routers:
+            for (v1, v2), path in edge_backup_paths[router].items():
+                if path is None:
+                    self.backup_path_label_dict[router][v1,v2] = None
+                    continue
+                label = self.label_generator.get_new_label()
+                for router_index in range(len(path)):
+                    current_router = path[router_index]
+
+                    # First router, classify and push label
+                    if router_index == 0:
+                        next_hop = path[router_index + 1]
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label,
+                                                              next_hop=next_hop,
+                                                              priority=1)
+                    # Last router, pop label
+                    elif router_index == len(path) - 1:
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=None,
+                                                              next_hop=current_router,
+                                                              priority=1)
+                    # Intermediate routers, swap label
+                    else:
+                        next_hop = path[router_index + 1]
+                        self.routers[current_router].add_rule(incoming_label=label, outgoing_label=label,
+                                                              next_hop=next_hop,
+                                                              priority=1)
+                self.backup_path_label_dict[router][v1,v2] = label
+
+    def add_protection(self, path, label):
+        if len(path) == 2:
+            backup_label = self.backup_path_label_dict[path[0]][
+                path[0], path[1]]
+            if label is None:
+                return
+            self.routers[path[0]].add_rule(incoming_label=label, outgoing_label=backup_label,
+                                               next_hop=path[0],
+                                               priority=2, protection=True)
+            return
+
+        for router_index, router_name in enumerate(path):
+            if router_index == 0:
+                backup_label = self.backup_path_label_dict[path[router_index+1]][path[router_index],path[router_index+2]]
+                if label is None:
+                    continue
+                self.routers[router_name].add_rule(incoming_label=label, outgoing_label=backup_label,
+                                                      next_hop=router_name,
+                                                      priority=2, protection=True)
+            elif router_index == len(path) - 2:
+                backup_label = self.backup_path_label_dict[path[router_index]][
+                    path[router_index], path[router_index + 1]]
+                self.routers[router_name].add_rule(incoming_label=label, outgoing_label=backup_label,
+                                                   next_hop=router_name,
+                                                   priority=2, protection=True)
+                break
+            else:
+                backup_label = self.backup_path_label_dict[path[router_index + 1]][
+                    path[router_index], path[router_index + 2]]
+                self.routers[router_name].add_rule(incoming_label=label, outgoing_label=backup_label,
+                                                   next_hop=router_name,
+                                                   priority=2, protection=True)
     def create_MPLS_network_topology(self, topology_data: Dict):
 
         # Add routers to the network
@@ -392,50 +549,6 @@ class MPLS_Network:
 
             # Assume all links are bidirectional
             self.topology.add_edge(target_router, source_router, latency=latency, capacity=capacity)
-
-def prune_1_degree_nodes(graph):
-    # Create a copy of the original graph
-    pruned_graph = graph.copy()
-
-    # Get a list of all nodes with degree 1
-    nodes_to_remove = [node for node in pruned_graph.nodes if pruned_graph.degree[node] == 2]
-
-    # Base case: if no 1 degree nodes found, return the pruned graph
-    if not nodes_to_remove:
-        return pruned_graph
-
-    # Prune all 1 degree nodes
-    for node in nodes_to_remove:
-        pruned_graph.remove_node(node)
-
-    # Recursively prune more 1 degree nodes
-    return prune_1_degree_nodes(pruned_graph)
-
-def find_high_impact_failures(graph, pruned_graph, loads):
-    # Get the degree of each node in the graph
-    degree_dict = dict(pruned_graph.degree())
-
-    # Sort the nodes by degree in descending order
-    sorted_nodes = sorted(degree_dict, key=degree_dict.get, reverse=True)
-
-    # Return the top 10 nodes with the highest degree
-    top_ten_fails = sorted_nodes[:10]
-    top_ten_percent_fails = sorted_nodes[:int(len(sorted_nodes) * 0.1)]
-
-    if len(top_ten_fails) > len(top_ten_percent_fails):
-        fails = top_ten_fails
-    else:
-        fails = top_ten_percent_fails
-
-    fail_graph_dict = {}
-
-    for failed_node in fails:
-        fail_graph = graph.copy()
-        fail_graph.remove_node(failed_node)
-        fail_graph_dict[failed_node] = fail_graph
-
-
-    return fail_graph_dict
 
 def create_xml_element(name, text=None, attrib=None):
     elem = ET.Element(name)

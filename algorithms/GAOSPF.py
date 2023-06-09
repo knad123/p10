@@ -128,25 +128,35 @@ def calculate_fitness(individual, capacities, loads, topology):
     for (source, destination), paths in shortest_path_dict.items():
         load = loads[source, destination]
         longest_path_len = max([len(i) for i in paths])
-        next_hops = {}
         next_loads = {}
         for i in range(longest_path_len):
+
+            # Find the number of splits
+            next_hops = {}
             for path in paths:
                 if i < len(path) - 1:
-                    src,tgt = path[i], path[i + 1]
-                    if src not in next_hops:
-                        next_hops[src] = {}
-                    next_hops[src][tgt] = capacities[src,tgt]
+                    v1,v2 = path[i], path[i + 1]
+                    if v1 not in next_hops:
+                        next_hops[v1] = {}
+                    if v2 not in next_hops[v1]:
+                        next_hops[v1][v2] = 0
+                    next_hops[v1][v2] += 1
+
             for path in paths:
                 if i < len(path) - 1:
                     src,tgt = path[i], path[i+1]
 
                     if src in next_loads:
-                        split_load = (1 / len(next_hops[src])) * next_loads[src]
+                        split_load = ((1 / len(next_hops[src])) * next_loads[src]) / next_hops[src][tgt]
                     else:
-                        split_load = (1 / len(next_hops[src])) * load
+                        split_load = ((1 / len(next_hops[src])) * load) / next_hops[src][tgt]
 
-                    next_loads[tgt] = split_load
+                    # Add load to next hops and remove load from previous nodes
+                    if tgt not in next_loads:
+                        next_loads[tgt] = 0
+                    next_loads[tgt] += split_load
+                    if src in next_loads:
+                        next_loads[src] -= split_load
 
                     link_loads[src,tgt] += split_load
 

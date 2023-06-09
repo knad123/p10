@@ -8,12 +8,12 @@ class MPLS_Router:
         self.classification_table = {}
 
     # Add new forwarding rule
-    def add_rule(self, incoming_label: int, outgoing_label: int, next_hop: str, priority: int):
+    def add_rule(self, incoming_label: int, outgoing_label: int, next_hop: str, priority: int, protection = False):
         # Pop operation
         if outgoing_label is None:
             operation = 'pop'
         # Push operation
-        elif incoming_label is None:
+        elif incoming_label is None or protection:
             operation = 'push'
         # Swap operation
         else:
