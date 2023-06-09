@@ -15,8 +15,16 @@ class EssenceState:
         self.congestion_weight = 1
         self.link_weights = {}
         self.path_weights = {}
+        self.inverse_capacity_graph = None
 
+    def create_inverse_capacity_graph(self, G):
+        # Calculate the inverse of capacities as weights
+        weights = {edge: 1 / data['capacity'] for edge, data in G.edges.items()}
 
+        # Set the weights for the edges
+        nx.set_edge_attributes(G, values=weights, name='weight')
+
+        self.inverse_capacity_graph = G
     def create_stretchdict(self, network: MPLS_Network):
         shortest_paths_len = dict()
         stretch_dict = {}
@@ -74,6 +82,34 @@ class EssenceState:
                 if len(path) - 1 <= 2 * shortest_path_len:
                     self.pathdict[src,tgt].append(path)
 
+    def create_pathdict_combined(self, network: MPLS_Network, depth_limit = 2):
+        for src,tgt in network.demands.keys():
+            self.pathdict[src, tgt] = []
+            shortest_path_len = nx.shortest_path_length(network.topology, src, tgt)
+
+            for path in nx.all_simple_paths(network.topology, source=src, target=tgt, cutoff=depth_limit * shortest_path_len):
+                if len(path) - 1 <= 2 * shortest_path_len:
+                    self.pathdict[src,tgt].append(path)
+
+            self.pathdict[src,tgt] = sorted(self.pathdict[src,tgt], key=lambda x: len(x))[:20]
+
+            for v1111, v2222 in network.topology.edges:
+                network.topology[v1111][v2222]["weight"] = 0
+            unique_paths = []
+            num_paths = 0
+            len_pathdict = len(self.pathdict[src,tgt].copy())
+            while num_paths < (len_pathdict + 3):
+                path = nx.dijkstra_path(network.topology, src, tgt, weight="weight")
+                for i in range(len(path) - 1):
+                    v1 = path[i]
+                    v2 = path[i + 1]
+                    w = network.topology[v1][v2]["weight"]
+                    w = w * 2 + 1
+                    network.topology[v1][v2]["weight"] = w
+                if path not in unique_paths or self.pathdict[src,tgt]:
+                    self.pathdict[src,tgt].append(path)
+                    unique_paths.append(path)
+                num_paths += 1
 def find_paths_within_percentage_increase(graph, source, target, percentage_increase):
     shortest_path_length = nx.shortest_path_length(graph, source, target)
     max_path_length = shortest_path_length * (1 + percentage_increase)

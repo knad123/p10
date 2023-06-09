@@ -128,7 +128,10 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
     elif conf['algorithm'] == "essence_learn_paths_learn_weights":
         essence_state = EssenceState(mpls_network)
-        essence_state.create_bfs_pathdict(mpls_network, conf['stretch_amount'])
+        if conf["combined_paths"]:
+            essence_state.create_pathdict_combined(mpls_network, conf['stretch_amount'])
+        else:
+            essence_state.create_bfs_pathdict(mpls_network, conf['stretch_amount'])
         if conf['bugged']:
             paths, essence_state.link_weights = essence_learn_paths_learn_weights_bugged(mpls_network, essence_state, conf, time.time())
         else:
@@ -317,7 +320,8 @@ if __name__ == "__main__":
     p.add_argument("--stretch_amount", type=float, default=1.4, help="how much longer paths can be than the shortest path")
     p.add_argument("--short_experiment", action="store_true", help="Run hours 16-20")
     p.add_argument("--bugged", action="store_true", help="Run bugged essence split / other essence")
-    p.add_argument("--keep_percent", type=float, default=0.2, help="What percentage of the population to keep")
+    p.add_argument("--keep_percentage", type=float, default=0.2, help="What percentage of the population to keep")
+    p.add_argument("--combined_paths", action="store_true", help="Combine the paths of semi disjoint paths and shortest paths")
 
 
     conf = vars(p.parse_args())
