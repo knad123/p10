@@ -317,6 +317,7 @@ if __name__ == "__main__":
     p.add_argument("--stretch_amount", type=float, default=1.4, help="how much longer paths can be than the shortest path")
     p.add_argument("--short_experiment", action="store_true", help="Run hours 16-20")
     p.add_argument("--bugged", action="store_true", help="Run bugged essence split / other essence")
+    p.add_argument("--keep_percent", type=float, default=0.2, help="What percentage of the population to keep")
 
 
     conf = vars(p.parse_args())

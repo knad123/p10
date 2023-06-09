@@ -33,7 +33,7 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
     if not essence_state.current_population:
         population = create_population(network, loads, population_size, conf, essence_state, weight_range)
     else:
-        new_population = create_population(network, loads, int(population_size * 0.8), conf, essence_state, weight_range)
+        new_population = create_population(network, loads, int(population_size * (1 - conf['keep_percentage'])), conf, essence_state, weight_range)
         population = essence_state.current_population + new_population
 
     a_class, b_class, c_class = selection(population, capacities, loads)
@@ -59,7 +59,7 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
         print(str(calculate_fitness(a_class[0], capacities, loads)))
 
 
-    essence_state.current_population = population[:int(len(population) * 0.2)]
+    essence_state.current_population = population[:int(len(population) * conf['keep_percentage'])]
     # Return the fittest individual
     return a_class[0]['paths'], a_class[0]['weights']
 
@@ -206,7 +206,7 @@ def calculate_fitness(individual, capacities, loads):
     congestion = 0
     for link, capacity in capacities.items():
         utilization = link_loads[link] / capacity
-        congestion += fortz_func(utilization)
+        congestion += fortz_func(utilization) * capacity
     return congestion
 
     #return max(link_loads.values())

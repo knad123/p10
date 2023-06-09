@@ -174,7 +174,7 @@ def calculate_fitness(individual, capacities, loads):
     congestion = 0
     for link, capacity in capacities.items():
         utilization = link_loads[link] / capacity
-        congestion += fortz_func(utilization)
+        congestion += fortz_func(utilization) * capacity
     return congestion
 
     #return max(link_loads.values())
