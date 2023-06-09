@@ -178,7 +178,9 @@ def main(confs):
     elif conf['algorithm'] not in ["fbr", "shortest_path", "split_shortest_path", "GAOSPF"]:
         conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_")
     else:
-        conf['algorithm_and_parameters'] = conf['algorithm']
+        conf['algorithm_and_parameters'] = conf['algor  ithm']
+    if conf["bugged"]:
+        conf['algorithm_and_parameters'] += "_bugged"
     simulation_directory = os.path.join(conf['output_dir'], network_name, conf['algorithm_and_parameters'])
     conf["sim_dir"] = simulation_directory
     if conf["sync_dir"] == "":
