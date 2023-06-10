@@ -241,6 +241,23 @@ class MPLS_Network:
 
         for path in paths_for_flow:
             for router_index, router_name in enumerate(path):
+                if router_index == 0:
+                    first_label = split_label
+                    self.routers[path[0]].add_classification_rule(path[-1], split_label)
+
+                    # Omnet++ two phase commit details
+                    if omnet_xml_root is not None:
+                        reclassify_element = ET.SubElement(omnet_xml_root, "reclassify")
+                        reclassify_element.set("router", src)
+
+                        label_element = ET.SubElement(reclassify_element, "label")
+                        label_element.text = str(first_label)
+
+                        destination_element = ET.SubElement(reclassify_element, "destination")
+                        destination_element.text = self.external_connections[tgt]["target"]
+
+                        source_element = ET.SubElement(reclassify_element, "source")
+                        source_element.text = self.external_connections[src]["source"]
                 # last router in path
                 if router_index == len(path) - 1:
                     self.routers[router_name].add_rule(incoming_label=split_label, outgoing_label=None,
@@ -275,6 +292,22 @@ class MPLS_Network:
 
         for path in paths_for_flow:
             for router_index, router_name in enumerate(path):
+                if router_index == 0:
+                    self.routers[src].add_classification_rule(tgt, split_label)
+
+                    # Omnet++ two phase commit details
+                    if omnet_xml_root is not None:
+                        reclassify_element = ET.SubElement(omnet_xml_root, "reclassify")
+                        reclassify_element.set("router", src)
+
+                        label_element = ET.SubElement(reclassify_element, "label")
+                        label_element.text = str(split_label)
+
+                        destination_element = ET.SubElement(reclassify_element, "destination")
+                        destination_element.text = self.external_connections[tgt]["target"]
+
+                        source_element = ET.SubElement(reclassify_element, "source")
+                        source_element.text = self.external_connections[src]["source"]
                 # last router in path
                 if router_index == len(path) - 1:
                     self.routers[router_name].add_rule(incoming_label=split_label, outgoing_label=None,
