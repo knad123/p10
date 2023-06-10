@@ -15,6 +15,7 @@ import json
 
 import parsers.communicator
 from algorithms.SPUNGEET import SPUNGEET
+from algorithms.SPUNGEET_split import SPUNGEET_split
 from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 from classes.recorder import Recorder
@@ -173,13 +174,20 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         paths = SPUNGEET(mpls_network, conf, time.time(), essence_state)
         for path_for_flow in paths.values():
             mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
+    elif conf["algorithm"] == "SPUNGEET_split":
+        essence_state = EssenceState(mpls_network)
+        essence_state.create_inverse_capacity_graph(mpls_network.topology)
+
+        paths = SPUNGEET_split(mpls_network, conf, time.time(), essence_state)
+        for path_for_flow in paths.values():
+            mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f'{conf["sim_dir"]}', scaler=conf['scaler'],
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"], essence_state=essence_state)
 
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         # Save the essence state in a file
         os.makedirs(pkl_dir, exist_ok=True)
         with open(os.path.join(pkl_dir, "essence_state.pkl"), "wb") as outp:
@@ -271,7 +279,7 @@ def main(confs):
                                                   args=(simulation_directory, inet_stopped_event, ini_conf))
         inet_simulation_thread.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
@@ -303,7 +311,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
@@ -332,8 +340,8 @@ if __name__ == "__main__":
     p.add_argument("--only_execute", action="store_true", help="If set, assumes ned and ini files are already generated and will just execute the specified conf(s)")
     p.add_argument("--configuration", type=str, default="all", help="name of the configuration(s) to run")
     p.add_argument("--labels_per_flow", type=int, default=4)
-    p.add_argument("--crossover", type=float, default=0.7)
-    p.add_argument("--mutation", type=float, default=0.2)
+    p.add_argument("--crossover", type=float, default=0.9)
+    p.add_argument("--mutation", type=float, default=0.8)
     p.add_argument("--population", type=int, default=250)
     p.add_argument("--split_num", type=int, default=6, help="number of paths for split_essence")
     p.add_argument("--stretch_amount", type=float, default=1.4, help="how much longer paths can be than the shortest path")

@@ -145,9 +145,9 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write("import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n")
     file.write("import inet.node.inet.StandardHost;\n")
     file.write("import inet.node.mpls.MplsRouter;\n")  # own, modified router class
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write("import inet.p10.MeasureWriter;\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f"import inet.p10.TwoPhaseCommit;\n")
     if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
         file.write(f"import inet.p10.DynamicWeights;\n")
@@ -175,9 +175,9 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
     if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
         file.write(f"        dynamicWeights: DynamicWeights{{updateInterval = {conf['update_interval']}s;}}\n")
@@ -313,11 +313,11 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
                    send_interval_multiplier=1, zero_latency=False, algorithm="none"):
     UTILIZATION_SAMPLE_INTERVAL = 5  # seconds
     file.write("[General]\n")
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], "demands-General.json")}"\n')
         file.write(f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], "utilization-General.json")}"\n')
         file.write(f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], "link_failures-General.json")}"\n')
-    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
+    if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], "2-phase-commit-General.xml")}"\n')
         file.write(f'**.twoPhaseCommit.updateTimePath = "{os.path.join(conf["sync_dir"], "iteration_time-General.txt")}"\n')
     if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
@@ -329,7 +329,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
             file.write(f'**.{router}.libTable.splittingProtocol = "capacity"\n')
         if conf["algorithm"] in ["essence_weight_setting", "essence_learn_paths_learn_weights"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "dynamic"\n')
-        if conf["algorithm"] in ["GAOSPF"]:
+        if conf["algorithm"] in ["GAOSPF", "SPUNGEET_split"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "ecmp"\n')
     file.write(f"network = {name}_{algorithm}\n")
     file.write(f"**.cmdenv-log-level = OFF\n")

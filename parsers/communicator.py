@@ -8,6 +8,7 @@ import yaml
 import pandas as pd
 
 from algorithms.SPUNGEET import SPUNGEET
+from algorithms.SPUNGEET_split import SPUNGEET_split
 from algorithms.essence_learn_paths_learn_weights import essence_learn_paths_learn_weights
 from algorithms.essence_learn_paths_learn_weights_bugged import essence_learn_paths_learn_weights_bugged
 from algorithms.essence_split_bugged import essence_split_bugged
@@ -312,7 +313,43 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         tree = ET.ElementTree(root)
         tree.write(conf["temp_2pc_path"])
         os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+    elif conf['algorithm'] == "SPUNGEET_split":
+        root = ET.Element('twoPhaseCommit')
+        paths = SPUNGEET_split(network, conf, start_time, essence_state)
+        for (src,tgt), path in paths.items():
+            if network.demand_dict[src, tgt]['split_path'] != paths:
+                split_path_label = network.demand_dict[src, tgt]['label']
+                for split_path in network.demand_dict[src, tgt]['split_path']:
+                    for router_index, router_name in enumerate(split_path):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[
+                            split_path_label].items():
+                            operation = "remove"
 
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(split_path_label)))
+                            elem.append(create_xml_element("inRouter", "any"))
+
+                            root.append(elem)
+
+                # Convert the first sublist to a set
+                split_path_routers = set(path[0])
+
+                # Find the intersection with the remaining sublists
+                for sublist in path[1:]:
+                    split_path_routers = split_path_routers.intersection(sublist)
+
+                # Convert the intersection set back to a list
+                routers_in_paths = list(split_path_routers)
+                for router in routers_in_paths:
+                    network.routers[router].remove_rule(split_path_label)
+
+                network.demand_dict[src, tgt]['split_path'] = []
+                root = network.install_essence_learn_paths_learn_weights(path, omnet_xml_root=root)
+        tree = ET.ElementTree(root)
+        tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif 1000 == 22:
         for path in paths.values():
             src, tgt = path[0], path[-1]
