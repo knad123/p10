@@ -41,6 +41,8 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
     recorder = Recorder()
     while not inet_stopped_event.is_set():
         if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]) and not os.path.exists(conf["2pc_path"]) and not os.path.exists(conf["dynamic_weights_path"]):
+            if os.path.exists(conf["iteration_time_path"]):
+                os.remove(conf["iteration_time_path"])
             start_time = time.time()
             mpls_network = parsers.communicator.update_demands_and_paths(simulation_dir, mpls_network,
                                                                              essence_state, recorder, conf)
@@ -48,7 +50,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
             os.remove(conf["utilization_path"])
             os.remove(conf["link_failures_path"])
             total_iteration_time = time.time() - start_time
-            path = os.path.join(conf['sync_dir'], "iteration_time.txt")
+            path = conf["iteration_time_path"]
             with open(path, 'w') as iteration_time_file:
                 iteration_time_file.write(str(total_iteration_time))
             print(f"Essence iteration time: {time.time() - start_time}")
@@ -237,6 +239,7 @@ def main(confs):
         conf["temp_2pc_path"] = os.path.join(conf["sync_dir"], f'temp-2-phase-commit-{ini_conf}.xml')
         conf["dynamic_weights_path"] = os.path.join(conf["sync_dir"], f'dynamic_weights-{ini_conf}.xml')
         conf["temp_dynamic_weights_path"] = os.path.join(conf["sync_dir"], f'temp-dynamic_weights-{ini_conf}.xml')
+        conf["iteration_time_path"] = os.path.join(conf['sync_dir'], f"iteration_time-{conf['configuration']}.txt")
         try:
             os.remove(conf["demand_path"])
         except:
@@ -255,6 +258,10 @@ def main(confs):
             pass
         try:
             os.remove(conf["dynamic_weights_path"])
+        except:
+            pass
+        try:
+            os.remove(conf["iteration_time_path"])
         except:
             pass
         os.chdir(ROOT)
