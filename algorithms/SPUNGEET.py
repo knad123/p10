@@ -21,7 +21,7 @@ from classes.network import MPLS_Network
 def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state):
     genetic_weights = genetic_algorithm(network=network, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'), conf=conf, start_time=start_time,
-                                      time_limit=conf["update_interval"], essence_state=essence_state)
+                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(network.demands.keys())*10))
     return genetic_weights
 
 
