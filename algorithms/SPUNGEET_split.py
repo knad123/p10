@@ -46,6 +46,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
             parent1 = random.choice(a_class)
             parent2 = random.choice(b_class + c_class)
             child = crossover(parent1, parent2)
+            child = mutation(child, weight_range)
             children.extend([child])
 
         # Replace the population with the children
@@ -120,6 +121,14 @@ def crossover(p1, p2):
         else:
             child[demand] = p2[demand]
     return child
+
+def mutation(c, weight_range):
+    if random.random() < 0.01:
+        for src, tgt in c:
+            c[src, tgt] = random.randint(1, weight_range)
+        return c
+    else:
+        return c
 
 
 def calculate_fitness(individual, capacities, demands, topology, essence_state):
