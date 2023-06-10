@@ -46,6 +46,10 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
             os.remove(conf["demand_path"])
             os.remove(conf["utilization_path"])
             os.remove(conf["link_failures_path"])
+            total_iteration_time = time.time() - start_time
+            path = os.path.join(conf['sync_dir'], "iteration_time.txt")
+            with open(path, 'w') as iteration_time_file:
+                iteration_time_file.write(str(total_iteration_time))
             print(f"Essence iteration time: {time.time() - start_time}")
         time.sleep(1)
     os.chdir(ROOT)
@@ -178,7 +182,7 @@ def main(confs):
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]
     if conf['algorithm'] in ["essence_split", "essence_learn_paths_learn_weights"]:
-        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + "_numpaths" + str(conf['split_num']).replace(".","_") + "_pathstretch" + str(conf['stretch_amount']).replace(".","_") + (f"_cp" if conf['combined_paths'] is not None else "") + (f"_kp{str(conf['keep_percentage']).replace('.', '_')}" if conf['keep_percentage'] is not None else "") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "")
+        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + "_numpaths" + str(conf['split_num']).replace(".","_") + "_pathstretch" + str(conf['stretch_amount']).replace(".","_") + (f"_cp" if conf['combined_paths'] else "") + (f"_kp{str(conf['keep_percentage']).replace('.', '_')}" if conf['keep_percentage'] is not None else "") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "")
     elif conf['algorithm'] not in ["fbr", "shortest_path", "split_shortest_path", "GAOSPF"]:
         conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "")
     else:
