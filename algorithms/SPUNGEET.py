@@ -111,10 +111,7 @@ def selection(population, capacities, loads, topology, essence_state):
 def crossover(p1, p2):
     child = {}
     for demand in p1.keys():
-        total_value = p1[demand] + p2[demand]
-
-        random_value = random.randint(0, total_value)
-        if random_value < p1[demand]:
+        if random.random() < 0.7:
             child[demand] = p1[demand]
         else:
             child[demand] = p2[demand]
