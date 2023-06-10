@@ -81,7 +81,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
     # int(demand[2][0][0]) is just load for first timeslot
     initial_demands = {tuple(demand[:2]): int(demand[2][0][0]) for demand in demand_data}
     if conf["short_experiment"]:
-        temporal_demands = {(src, tgt): loads[16:20] for (src, tgt), loads in temporal_demands.items()}
+        temporal_demands = {(src, tgt): loads[16:19] for (src, tgt), loads in temporal_demands.items()}
         initial_demands = {tuple(demand[:2]): int(demand[2][16][0]) for demand in demand_data}
     mpls_network = MPLS_Network(name=topology_data["network"]["name"], demands=initial_demands)
     # Create the network graph
@@ -264,7 +264,7 @@ def main(confs):
                                                   args=(simulation_directory, inet_stopped_event, ini_conf))
         inet_simulation_thread.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:

@@ -58,7 +58,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
         scenario_dir = os.path.join(output_dir, "failure_scenarios")
         os.makedirs(scenario_dir, exist_ok=True)
         if conf["short_experiment"]:
-            generate_scenarios(failure_scenarios, 14400 * conf["time_scale"], scenario_dir, link_to_ppp_dict, conf,
+            generate_scenarios(failure_scenarios, 10800 * conf["time_scale"], scenario_dir, link_to_ppp_dict, conf,
                                network)
         else:
             generate_scenarios(failure_scenarios, 86400*conf["time_scale"], scenario_dir, link_to_ppp_dict, conf, network)
@@ -352,7 +352,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     file.write("\n")
     file.write(f"warmup-period = 0s\n")
     if conf["short_experiment"]:
-        file.write(f"sim-time-limit = {14400 * conf['time_scale']}s\n")
+        file.write(f"sim-time-limit = {10800 * conf['time_scale']}s\n")
     else:
         file.write(f"sim-time-limit = {86400 * conf['time_scale']}s\n")
     # Add classification files
@@ -367,7 +367,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
         for d in demands:
             load = int(d[0]) * conf["demand_scaler"]
             if conf["short_experiment"]:
-                send_interval = 14400
+                send_interval = 10800
             else:
                 send_interval = 86400
             if load > 0:
