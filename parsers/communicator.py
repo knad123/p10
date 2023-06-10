@@ -238,7 +238,17 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                             elem.append(create_xml_element("inLabel", str(split_path_label)))
                             elem.append(create_xml_element("inRouter", "any"))
                             path_root.append(elem)
+                # Convert the first sublist to a set
+                split_path_routers = set(network.demand_dict[src, tgt]['split_path'][0])
 
+                # Find the intersection with the remaining sublists
+                for sublist in network.demand_dict[src, tgt]['split_path'][1:]:
+                    split_path_routers = split_path_routers.intersection(sublist)
+
+                # Convert the intersection set back to a list
+                routers_in_paths = list(split_path_routers)
+                for router in routers_in_paths:
+                    network.routers[router].remove_rule(split_path_label)
                 network.demand_dict[src, tgt]['split_path'] = []
                 new_paths_for_flow = [path for path in paths if not any((src, tgt) in link_failures_data for src, tgt in zip(path[:-1], path[1:]))]
                 if new_paths_for_flow:
@@ -280,7 +290,17 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
                             elem.append(create_xml_element("inRouter", "any"))
 
                             root.append(elem)
-                        network.routers[router_name].remove_rule(split_path_label)
+                # Convert the first sublist to a set
+                split_path_routers = set(paths[0])
+
+                # Find the intersection with the remaining sublists
+                for sublist in paths[1:]:
+                    split_path_routers = split_path_routers.intersection(sublist)
+
+                # Convert the intersection set back to a list
+                routers_in_paths = list(split_path_routers)
+                for router in routers_in_paths:
+                    network.routers[router].remove_rule(split_path_label)
 
                 network.demand_dict[src, tgt]['split_path'] = []
                 root = network.install_essence_learn_paths_learn_weights(paths, omnet_xml_root=root)
