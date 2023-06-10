@@ -177,7 +177,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
                packet_size=conf["packet_size"], zero_latency=conf["zero_latency"], package_name=conf["package_name"],
                algorithm=conf["algorithm"], latency_scaler=conf["latency_scaler"], essence_state=essence_state)
 
-    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
+    if conf["algorithm"] in ["essence", "essence_precomputed", "essence_stateless", "essence_split", 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
         # Save the essence state in a file
         os.makedirs(pkl_dir, exist_ok=True)
         with open(os.path.join(pkl_dir, "essence_state.pkl"), "wb") as outp:

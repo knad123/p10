@@ -288,7 +288,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif conf['algorithm'] == "SPUNGEET":
         root = ET.Element('twoPhaseCommit')
-        paths = SPUNGEET(network, conf, start_time)
+        paths = SPUNGEET(network, conf, start_time, essence_state)
         for (src,tgt), path in paths.items():
             if network.demand_dict[src, tgt]['split_path'] != paths:
                 split_path_label = network.demand_dict[src, tgt]['label']
