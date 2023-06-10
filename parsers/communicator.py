@@ -7,6 +7,7 @@ import yaml
 
 import pandas as pd
 
+from algorithms.SPUNGEET import SPUNGEET
 from algorithms.essence_learn_paths_learn_weights import essence_learn_paths_learn_weights
 from algorithms.essence_learn_paths_learn_weights_bugged import essence_learn_paths_learn_weights_bugged
 from algorithms.essence_split_bugged import essence_split_bugged
@@ -261,9 +262,53 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         weight_tree.write(conf["temp_dynamic_weights_path"])
         os.rename(conf["temp_dynamic_weights_path"], conf["dynamic_weights_path"])
     elif conf['algorithm'] == "GAOSPF":
-        paths = GAOSPF(network, conf, start_time)
         root = ET.Element('twoPhaseCommit')
-        root = network.install_GAOSPF(paths, root)
+        GAOSPF_paths = GAOSPF(network, conf, start_time)
+        for (src,tgt), paths in GAOSPF_paths.items():
+            if network.demand_dict[src, tgt]['split_path'] != paths:
+                split_path_label = network.demand_dict[src, tgt]['label']
+                for split_path in network.demand_dict[src, tgt]['split_path']:
+                    for router_index, router_name in enumerate(split_path):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[split_path_label].items():
+                            operation = "remove"
+
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(split_path_label)))
+                            elem.append(create_xml_element("inRouter", "any"))
+
+                            root.append(elem)
+                        network.routers[router_name].remove_rule(split_path_label)
+
+                network.demand_dict[src, tgt]['split_path'] = []
+                root = network.install_essence_learn_paths_learn_weights(paths, omnet_xml_root=root)
+        tree = ET.ElementTree(root)
+        tree.write(conf["temp_2pc_path"])
+        os.rename(conf["temp_2pc_path"], conf["2pc_path"])
+    elif conf['algorithm'] == "SPUNGEET":
+        root = ET.Element('twoPhaseCommit')
+        paths = SPUNGEET(network, conf, start_time)
+        for (src,tgt), path in paths.items():
+            if network.demand_dict[src, tgt]['split_path'] != paths:
+                split_path_label = network.demand_dict[src, tgt]['label']
+                for split_path in network.demand_dict[src, tgt]['split_path']:
+                    for router_index, router_name in enumerate(split_path):
+                        for (priority, next_hop), rule in network.routers[router_name].forwarding_table[
+                            split_path_label].items():
+                            operation = "remove"
+
+                            # Create XML elements
+                            elem = create_xml_element(operation, attrib={"router": router_name})
+                            elem.append(create_xml_element("priority", str(rule['priority'])))
+                            elem.append(create_xml_element("inLabel", str(split_path_label)))
+                            elem.append(create_xml_element("inRouter", "any"))
+
+                            root.append(elem)
+                        network.routers[router_name].remove_rule(split_path_label)
+
+                network.demand_dict[src, tgt]['split_path'] = []
+                root = network.install_essence_learn_paths_learn_weights(path, omnet_xml_root=root)
         tree = ET.ElementTree(root)
         tree.write(conf["temp_2pc_path"])
         os.rename(conf["temp_2pc_path"], conf["2pc_path"])

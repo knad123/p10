@@ -14,6 +14,7 @@ import math
 import json
 
 import parsers.communicator
+from algorithms.SPUNGEET import SPUNGEET
 from classes.network import MPLS_Network
 from classes.essence_state import EssenceState
 from classes.recorder import Recorder
@@ -160,9 +161,16 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
     elif conf["algorithm"] == "GAOSPF":
         essence_state = EssenceState(mpls_network)
-        pathdict = GAOSPF(mpls_network, conf, time.time())
-        mpls_network.install_GAOSPF(pathdict)
+        paths = GAOSPF(mpls_network, conf, time.time())
+        for path_for_flow in paths.values():
+            mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
+    elif conf["algorithm"] == "SPUNGEET":
+        essence_state = EssenceState(mpls_network)
+        essence_state.create_inverse_capacity_graph(mpls_network.topology)
 
+        paths = SPUNGEET(mpls_network, conf, time.time(), essence_state)
+        for path_for_flow in paths.values():
+            mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
 
     to_omnetpp(mpls_network, temporal_demands, name=mpls_network.name, conf=conf,
                output_dir=f'{conf["sim_dir"]}', scaler=conf['scaler'],
@@ -288,7 +296,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description='Command line utility to generate MPLS forwarding rules.')
     p.add_argument("--topology", type=str, help="File with existing topology to be loaded.")
     p.add_argument("--demands", type=str, required=True)
-    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"])
+    p.add_argument("--algorithm", type=str, required=True, choices=["essence", "essence_stateless", "essence_precomputed", "shortest_path", "fbr", "essence_split", "essence_big_flows", "essence_shortest_paths", "split_shortest_path", "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"])
     p.add_argument("--scaler", type=float, default=1,
                    help="Multiplies the send interval by the scaler value and divides the link bandwidth by the same value")
     p.add_argument("--packet_size", type=int, default=64, help="Size in bytes")
