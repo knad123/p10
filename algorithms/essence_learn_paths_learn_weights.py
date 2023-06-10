@@ -56,7 +56,7 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
         population = children
         # Sort the population by fitness
         a_class, b_class, c_class = selection(population, capacities, loads)
-        print(str(calculate_fitness(a_class[0], capacities, loads)))
+        #print(str(calculate_fitness(a_class[0], capacities, loads)))
 
 
     essence_state.current_population = population[:int(len(population) * conf['keep_percentage'])]
