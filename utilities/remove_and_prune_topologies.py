@@ -118,8 +118,8 @@ def filter_graph_data(graph_data, router_set, link_set):
 
 interesting_topologies = []
 
-demands = "../pruned_demands"
-topo = "../pruned_topologies"
+demands = "../pruned_large_demands"
+topo = "../pruned_large_topologies"
 
 if os.path.exists(demands):
     shutil.rmtree(demands)
@@ -137,15 +137,12 @@ for topology in os.listdir("../scaled_topologies"):
 
     test_interesting = prune_n_degree_nodes(network.copy(), 2)
 
-    if (len(test_interesting.nodes) > 10) and (len(test_interesting.nodes) < 60):
+    if (len(test_interesting.nodes) > 60) and (len(test_interesting.nodes) < 90):
         interesting_topologies.append(topology)
 
         topology_name = topology.split(".json")[0]
         topology_name = topology_name.split("_")[1]
-        print()
 
-        if topology_name == "Aarnet":
-            x = 1
         for demand in os.listdir("../scaled_demands"):
             demand_name = demand.split(".yml")[0]
             demand_name = demand.split("_")[0]
@@ -190,7 +187,7 @@ for topology in os.listdir("../scaled_topologies"):
                     file_list.sort(key=lambda x: x[2])
                     flow_load.sort(key=lambda x: x[2])
 
-                    with open("/home/andreas/Documents/GitHub/p10/pruned_demands/" + demand, "w") as file:
+                    with open("/home/andreas/Documents/GitHub/p10/pruned_large_demands/" + demand, "w") as file:
                         file.write(str(file_list))
 
         routers, links = extract_graph_data(test_interesting)
