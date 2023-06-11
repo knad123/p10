@@ -30,8 +30,12 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
                       crossover_rate=0.9,
                       mutation_rate=0.7, time_limit=10, weight_range=1000):
     end_time = start_time + time_limit
+    if not essence_state.current_population:
+        population = create_population(network, population_size, weight_range)
+    else:
+        new_population = create_population(network, int(population_size * (1 - conf['keep_percentage'])), weight_range)
+        population = essence_state.current_population + new_population
 
-    population = create_population(network, population_size, weight_range)
 
     # Run the genetic algorithm
     #for generation in range(generations):
@@ -54,7 +58,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
 
     # Sort the population by fitness
     a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
-
+    essence_state.current_population = population[:int(len(population) * conf['keep_percentage'])]
     # Return the fittest individual
 
     demands_ordered = sorted(a_class[0], key=lambda weights: a_class[0][weights], reverse=True)
@@ -109,8 +113,6 @@ def selection(population, capacities, loads, topology, essence_state):
     return a_class, b_class, c_class
 
 def crossover(p1, p2, crossover_probability = 0.7):
-    if random.random() > crossover_probability:
-        return p1, p2
     child = {}
     for demand in p1.keys():
         if random.random() < 0.7:
