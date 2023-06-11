@@ -57,27 +57,66 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
 
     # Return the fittest individual
 
-    demands_ordered = sorted(a_class[0], key=lambda weights: a_class[0][weights], reverse=True)
+    weights = a_class[0]['demand_weights']
 
-    inverse_graph = essence_state.inverse_capacity_graph.copy()
+    demands_ordered = dict(sorted(weights.items(), key=lambda item: item[1], reverse=True))
+
+    link_caps = capacities.copy()
+    inverse_graph = essence_state.inverse_capacity_graph.to_directed().copy()
 
     pathdict = {}
-    link_caps = capacities.copy()
 
-    for (src, tgt) in demands_ordered:
-        paths = list(nx.all_shortest_paths(inverse_graph, src, tgt))
-        pathdict[src, tgt] = paths
-        demand = loads[(src, tgt)] / len(paths)
-        for path in paths:
-            # Apply load to each link in the path
-            for i in range(len(path) - 1):
-                v1, v2 = path[i], path[i + 1]
+    for (source, destination) in demands_ordered:
+        load = loads[source, destination]
+        pathdict[source,destination] = list(nx.all_shortest_paths(inverse_graph, source, destination, weight='weight'))
 
-                # Subtract load from capacity
-                link_caps[v1, v2] -= demand
+        longest_path_len = max([len(i) for i in pathdict[source,destination]]) - 1
+        next_loads = {}
+        for i in range(longest_path_len):
 
-                # Update inverse capacity
-                inverse_graph[v1][v2]['weight'] = 1 / max(link_caps[v1, v2], 1)
+            # Find the number of splits and weights
+            next_weights = {}
+            next_hops = {}
+            for path in pathdict[source,destination]:
+                if i < len(path) - 1:
+                    v1, v2 = path[i], path[i + 1]
+                    if v1 not in next_weights:
+                        next_weights[v1] = {}
+                    if (v1, v2) not in next_hops:
+                        next_hops[v1, v2] = 0
+                    next_weights[v1][v2] = a_class[0]['edge_weights'][v1, v2]
+                    next_hops[v1, v2] += 1
+
+            # Apply load to links
+            for path in pathdict[source,destination]:
+                if i < len(path) - 1:
+                    v1, v2 = path[i], path[i + 1]
+                    weight = a_class[0]['edge_weights'][v1, v2]
+                    total_next_hop_weight = sum(next_weights[v1][v2] for v2 in next_weights[v1])
+                    if (total_next_hop_weight == 0) and (v1 in next_loads):
+                        number_of_splits = len(next_weights[v1])
+                        split_load = ((1 / number_of_splits) * next_loads[v1]) / next_hops[v1, v2]
+                    elif (total_next_hop_weight == 0) and (v1 not in next_loads):
+                        number_of_splits = len(next_weights[v1])
+                        split_load = ((1 / number_of_splits) * load) / next_hops[v1, v2]
+                    elif v1 in next_loads:
+                        split_load = ((weight / total_next_hop_weight) * next_loads[v1]) / next_hops[v1, v2]
+                    else:
+                        split_load = ((weight / total_next_hop_weight) * load) / next_hops[v1, v2]
+
+                    # Add load to next hops and remove load from previous nodes
+                    if v2 not in next_loads:
+                        next_loads[v2] = 0
+                    next_loads[v2] += split_load
+                    if v1 in next_loads:
+                        next_loads[v1] -= split_load
+
+                    link_caps[v1, v2] -= split_load
+
+                    # Update inverse capacity
+                    inverse_graph[v1][v2]['weight'] = 1 / max(link_caps[v1, v2], 1)
+
+    essence_state.link_weights = a_class[0]['edge_weights']
 
     return pathdict
 
@@ -85,8 +124,12 @@ def create_population(network, population_size, weight_range):
     population = []
     for _ in range(population_size):
         individual = {}
+        individual['demand_weights'] = {}
+        individual['edge_weights'] = {}
         for src, tgt in network.demands:
-            individual[src,tgt] = random.randint(1,weight_range)
+            individual['demand_weights'][src,tgt] = random.randint(1,weight_range)
+        for src, tgt in network.topology.edges:
+            individual['edge_weights'][src,tgt] = random.randint(0,100)
         population.append(individual)
     return population
 
@@ -111,21 +154,26 @@ def selection(population, capacities, loads, topology, essence_state):
     return a_class, b_class, c_class
 
 def crossover(p1, p2):
-    child = {}
-    for demand in p1.keys():
-        total_value = p1[demand] + p2[demand]
-
-        random_value = random.randint(0, total_value)
-        if random_value < p1[demand]:
-            child[demand] = p1[demand]
+    child = {'demand_weights': {}, 'edge_weights': {}}
+    for demand in p1['demand_weights'].keys():
+        if random.random() < 0.7:
+            child['demand_weights'][demand] = p1['demand_weights'][demand]
         else:
-            child[demand] = p2[demand]
+            child['demand_weights'][demand] = p2['demand_weights'][demand]
+
+    for edge in p1['edge_weights'].keys():
+        if random.random() < 0.7:
+            child['edge_weights'][edge] = p1['edge_weights'][edge]
+        else:
+            child['edge_weights'][edge] = p2['edge_weights'][edge]
     return child
 
 def mutation(c, weight_range):
     if random.random() < 0.01:
-        for src, tgt in c:
-            c[src, tgt] = random.randint(1, weight_range)
+        for src, tgt in c['demand_weights']:
+            c['demand_weights'][src, tgt] = random.randint(1, weight_range)
+        for src, tgt in c['edge_weights']:
+            c['edge_weights'][src, tgt] = random.randint(1, 100)
         return c
     else:
         return c
@@ -135,32 +183,64 @@ def calculate_fitness(individual, capacities, demands, topology, essence_state):
     # Initialize the utilization of each link to 0
     link_loads = {link: 0 for link in capacities.keys()}
 
-    demands_ordered = sorted(individual, key=lambda weights: individual[weights], reverse=True)
+    weights = individual['demand_weights']
+
+    demands_ordered = dict(sorted(weights.items(), key=lambda item: item[1], reverse=True))
 
     link_caps = capacities.copy()
     inverse_graph = essence_state.inverse_capacity_graph.to_directed().copy()
 
-    pathdict = {}
+    for (source, destination) in demands_ordered:
+        load = demands[source, destination]
+        paths = nx.all_shortest_paths(inverse_graph, source, destination, weight='weight')
+        longest_path_len = max([len(i) for i in paths]) - 1
+        next_loads = {}
+        for i in range(longest_path_len):
 
-    for (src,tgt) in demands_ordered:
-        paths = list(nx.all_shortest_paths(inverse_graph, src, tgt))
-        pathdict[src,tgt] = paths
-        demand = demands[(src,tgt)] / len(paths)
-        for path in paths:
-            # Apply load to each link in the path
-            for i in range(len(path) - 1):
-                v1, v2 = path[i], path[i+1]
+            # Find the number of splits and weights
+            next_weights = {}
+            next_hops = {}
+            for path in paths:
+                if i < len(path) - 1:
+                    v1, v2 = path[i], path[i + 1]
+                    if v1 not in next_weights:
+                        next_weights[v1] = {}
+                    if (v1, v2) not in next_hops:
+                        next_hops[v1, v2] = 0
+                    next_weights[v1][v2] = individual['edge_weights'][v1, v2]
+                    next_hops[v1, v2] += 1
 
-                # Subtract load from capacity
-                link_caps[v1,v2] -= demand
+            # Apply load to links
+            for path in paths:
+                if i < len(path) - 1:
+                    v1, v2 = path[i], path[i + 1]
+                    weight = individual['edge_weights'][v1, v2]
+                    total_next_hop_weight = sum(next_weights[v1][v2] for v2 in next_weights[v1])
+                    if (total_next_hop_weight == 0) and (v1 in next_loads):
+                        number_of_splits = len(next_weights[v1])
+                        split_load = ((1 / number_of_splits) * next_loads[v1]) / next_hops[v1, v2]
+                    elif (total_next_hop_weight == 0) and (v1 not in next_loads):
+                        number_of_splits = len(next_weights[v1])
+                        split_load = ((1 / number_of_splits) * load) / next_hops[v1, v2]
+                    elif v1 in next_loads:
+                        split_load = ((weight / total_next_hop_weight) * next_loads[v1]) / next_hops[v1, v2]
+                    else:
+                        split_load = ((weight / total_next_hop_weight) * load) / next_hops[v1, v2]
 
-                # Update inverse capacity
-                inverse_graph[v1][v2]['weight'] = 1 / max(link_caps[v1,v2], 1)
+                    # Add load to next hops and remove load from previous nodes
+                    if v2 not in next_loads:
+                        next_loads[v2] = 0
+                    next_loads[v2] += split_load
+                    if v1 in next_loads:
+                        next_loads[v1] -= split_load
 
-                link_loads[(v1,v2)] += demand
+                    link_caps[v1, v2] -= split_load
 
+                    # Update inverse capacity
+                    inverse_graph[v1][v2]['weight'] = 1 / max(link_caps[v1, v2], 1)
 
-    # Calculate the congestion component of the fitness
+                    link_loads[v1, v2] += demands[v1, v2]
+
     congestion = 0
     for link, capacity in capacities.items():
         utilization = link_loads[link] / capacity

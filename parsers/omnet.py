@@ -80,7 +80,7 @@ def to_omnetpp(network: classes.network.MPLS_Network, temporal_demands: Dict[Tup
     with open(f'{output_dir}/network_topology.json', mode='w') as f:
         to_omnetpp_network_topology_json(network, f)
 
-    if conf['algorithm'] in ["essence_weight_setting", "essence_learn_paths_learn_weights"]:
+    if conf['algorithm'] in ["essence_weight_setting", "essence_learn_paths_learn_weights", "SPUNGEET_split"]:
         # Create XML root element
         root = ET.Element('dynamicWeights')
         for (src,tgt), weight in essence_state.link_weights.items():
@@ -149,7 +149,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
         file.write("import inet.p10.MeasureWriter;\n")
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f"import inet.p10.TwoPhaseCommit;\n")
-    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
+    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights", "SPUNGEET_split"]:
         file.write(f"import inet.p10.DynamicWeights;\n")
     file.write("\n")
     file.write(f"network {name}_{algorithm}{{\n")
@@ -181,7 +181,7 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
         file.write(f"        measureWriter: MeasureWriter{{writeInterval = {conf['write_interval']}s;}}\n")
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f"        twoPhaseCommit: TwoPhaseCommit{{updateInterval = {conf['update_interval']}s;}}\n")
-    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
+    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights", "SPUNGEET_split"]:
         file.write(f"        dynamicWeights: DynamicWeights{{updateInterval = {conf['update_interval']}s;}}\n")
     for router_name, router in network.routers.items():
 
@@ -322,16 +322,16 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
         file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], "2-phase-commit-General.xml")}"\n')
         file.write(f'**.twoPhaseCommit.updateTimePath = "{os.path.join(conf["sync_dir"], "iteration_time-General.txt")}"\n')
-    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
+    if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights", "SPUNGEET_split"]:
         file.write(f'**.dynamicWeights.updatePath = "{os.path.join(conf["sync_dir"], "dynamic_weights-General.xml")}"\n')
         file.write(f'**.dynamicWeights.initialPath = \"dynamic_weights-initial.xml\"\n')
         file.write(f'**.dynamicWeights.updateTimePath = "{os.path.join(conf["sync_dir"], "iteration_time-General.txt")}"\n')
     for router in network.routers.keys():
         if conf["algorithm"] in ["split_shortest_path", "essence_split"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "capacity"\n')
-        if conf["algorithm"] in ["essence_weight_setting", "essence_learn_paths_learn_weights"]:
+        if conf["algorithm"] in ["essence_weight_setting", "essence_learn_paths_learn_weights", "SPUNGEET_split"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "dynamic"\n')
-        if conf["algorithm"] in ["GAOSPF", "SPUNGEET_split"]:
+        if conf["algorithm"] in ["GAOSPF"]:
             file.write(f'**.{router}.libTable.splittingProtocol = "ecmp"\n')
     file.write(f"network = {name}_{algorithm}\n")
     file.write(f"**.cmdenv-log-level = OFF\n")
@@ -455,10 +455,10 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
                 f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], f"utilization-scenario_{scenario}.json")}"\n')
             file.write(
                 f'**.measureWriter.linkFailuresPath = "{os.path.join(conf["sync_dir"], f"link_failures-scenario_{scenario}.json")}"\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights"]:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET_split", "SPUNGEET"]:
             file.write(f'**.twoPhaseCommit.updatePath = "{os.path.join(conf["sync_dir"], f"2-phase-commit-scenario_{scenario}.xml")}"\n')
             file.write(f'**.twoPhaseCommit.updateTimePath = "{os.path.join(conf["sync_dir"], f"iteration_time-scenario_{scenario}.txt")}"\n')
-        if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights"]:
+        if conf["algorithm"] in ["essence_weight_setting", "essence_split_multiple_labels", "essence_learn_paths_learn_weights", "SPUNGEET_split"]:
             file.write(f'**.dynamicWeights.updatePath = \"dynamic_weights-scenario_{scenario}.xml\"\n')
             file.write(f'**.dynamicWeights.updateTimePath = "{os.path.join(conf["sync_dir"], f"iteration_time-scenario_{scenario}.txt")}"\n')
         file.write("\n")
@@ -652,8 +652,12 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                         failed_links.append((src,tgt))
                         failed_links.append((tgt,src))
 
-                downtime = random.randint(20, 10800) * conf["time_scale"]
-                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                if conf['short_experiment']:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                else:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
                 time_stamped_failures.append((time_stamp, failed_nodes, downtime))
                 failure_occured = True
 
@@ -662,8 +666,12 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 continue
             if random.random() < edge_failure_probability[(src,tgt)]:
                 failed_edges = [(src, tgt)]
-                downtime = random.randint(20, 10800) * conf["time_scale"]
-                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                if conf['short_experiment']:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                else:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
                 time_stamped_failures.append((time_stamp, failed_edges, downtime))
                 failure_occured = True
 
@@ -673,14 +681,22 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 node = random.choice(list(network_undirected.nodes))
                 failed_nodes = []
                 failed_nodes.extend(network_undirected.edges(node))
-                downtime = random.randint(20, 10800) * conf["time_scale"]
-                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                if conf['short_experiment']:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                else:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
                 time_stamped_failures.append((time_stamp, failed_nodes, downtime))
             else:
                 (src,tgt) = random.choice(list(network_undirected.edges))
                 failed_edges = [(src, tgt)]
-                downtime = random.randint(20, 10800) * conf["time_scale"]
-                time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
+                if conf['short_experiment']:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                else:
+                    downtime = random.randint(1800, 10800) * conf["time_scale"]
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
                 time_stamped_failures.append((time_stamp, failed_edges, downtime))
 
         file_path = os.path.join(dir, f"scenario_{i}.xml")

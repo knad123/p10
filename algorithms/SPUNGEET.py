@@ -18,17 +18,17 @@ import time
 from classes.network import MPLS_Network
 
 
-def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state):
+def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state, failed_network_links = []):
     genetic_weights = genetic_algorithm(network=network, loads=network.demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'), conf=conf, start_time=start_time,
-                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(network.demands.keys())*10))
+                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(network.demands.keys())*10), failed_network_links = failed_network_links)
     return genetic_weights
 
 
 def genetic_algorithm(network, loads, capacities, conf, start_time, essence_state, generations=700,
                       population_size=200,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=10, weight_range=1000):
+                      mutation_rate=0.7, time_limit=10, weight_range=1000, failed_network_links = []):
     end_time = start_time + time_limit
     if not essence_state.current_population:
         population = create_population(network, population_size, weight_range)
@@ -41,7 +41,10 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
     #for generation in range(generations):
     while time.time() < end_time:
         # Select parents
-        a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
+        if failed_network_links != []:
+            a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state, failed_network_links)
+        else:
+            a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
         #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
@@ -57,7 +60,10 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
         population = children
 
     # Sort the population by fitness
-    a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
+    if failed_network_links != []:
+        a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state, failed_network_links)
+    else:
+        a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
     essence_state.current_population = population[:int(len(population) * conf['keep_percentage'])]
     # Return the fittest individual
 
@@ -93,9 +99,13 @@ def create_population(network, population_size, weight_range):
     return population
 
 
-def selection(population, capacities, loads, topology, essence_state):
-    congestion = [calculate_fitness(individual, capacities.copy(), loads, topology, essence_state) for individual in
+def selection(population, capacities, loads, topology, essence_state, failed_network_links = []):
+    if failed_network_links != []:
+        congestion = [calculate_fitness(individual, capacities.copy(), loads, topology, essence_state, failed_network_links) for individual in
                   population]
+    else:
+        congestion = [calculate_fitness(individual, capacities.copy(), loads, topology, essence_state) for individual in
+                      population]
 
     # Zip the fitness values and the population together
     fitness_population = zip(congestion, population)
@@ -129,7 +139,7 @@ def mutation(c, weight_range):
     else:
         return c
 
-def calculate_fitness(individual, capacities, loads, topology, essence_state):
+def calculate_fitness(individual, capacities, loads, topology, essence_state, failed_network_links = []):
     # Initialize the utilization of each link to 0
     link_loads = {link: 0 for link in capacities.keys()}
 
@@ -138,10 +148,18 @@ def calculate_fitness(individual, capacities, loads, topology, essence_state):
     link_caps = capacities.copy()
     inverse_graph = essence_state.inverse_capacity_graph.to_directed().copy()
 
+    if failed_network_links != []:
+        for (fail_v1, fail_v2) in failed_network_links:
+            inverse_graph.remove_edge(fail_v1, fail_v2)
+            inverse_graph.remove_edge(fail_v1, fail_v2)
+
     pathdict = {}
 
     for (src,tgt) in demands_ordered:
-        path = nx.dijkstra_path(inverse_graph, src, tgt)
+        try:
+            path = nx.dijkstra_path(inverse_graph, src, tgt, weight='weight')
+        except:
+            continue
         pathdict[src,tgt] = path
         # Apply load to each link in the path
         for i in range(len(path) - 1):
