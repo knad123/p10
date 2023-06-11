@@ -202,7 +202,7 @@ def main(confs):
     if conf['algorithm'] in ["essence_split", "essence_learn_paths_learn_weights"]:
         conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + "_numpaths" + str(conf['split_num']).replace(".","_") + "_pathstretch" + str(conf['stretch_amount']).replace(".","_") + (f"_cp" if conf['combined_paths'] else "") + (f"_kp{str(conf['keep_percentage']).replace('.', '_')}" if conf['keep_percentage'] is not None else "") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "")
     elif conf['algorithm'] not in ["fbr", "shortest_path", "split_shortest_path", "GAOSPF"]:
-        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "")
+        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "") + (f"_kp{str(conf['keep_percentage']).replace('.','_')}")
     else:
         conf['algorithm_and_parameters'] = conf['algorithm']
     if conf["bugged"]:
