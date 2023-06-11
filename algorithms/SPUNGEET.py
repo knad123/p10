@@ -18,12 +18,48 @@ import time
 from classes.network import MPLS_Network
 
 
-def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state, failed_network_links = []):
-    genetic_weights = genetic_algorithm(network=network, loads=network.demands,
+def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state, failed_network_links = [], first_run = False):
+    if conf['big_flows'] and first_run == False:
+        demands = get_big_flows(network.demands, 0.9)
+    else:
+        demands = network.demands
+
+    genetic_weights = genetic_algorithm(network=network, loads=demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'), conf=conf, start_time=start_time,
-                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(network.demands.keys())*10), failed_network_links = failed_network_links)
+                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(demands.keys())*10), failed_network_links = failed_network_links)
     return genetic_weights
 
+def get_big_flows(loads, threshold_percentage: float):
+    sorted_flows = sorted(loads.items(), key=lambda x: x[1], reverse=True)
+
+    # Calculate the cumulative sum of flows and find the index at which it exceeds the threshold
+    cumulative_sum = 0
+    threshold = sum(loads.values()) * threshold_percentage
+    index = 0
+    for i, (demand, flow_value) in enumerate(sorted_flows):
+        cumulative_sum += flow_value
+        if cumulative_sum > threshold:
+            index = i
+            break
+
+    # Create a new loads dictionary with demands making up some percentage of the total flow
+    valid_loads = {demand: load for demand, load in sorted_flows[:index + 1]}
+    return valid_loads
+
+def filter_individuals(population, demands, weight_range):
+    filtered_population = []
+    valid_demands = set(demands.keys())
+    for individual in population:
+        # Check if all demands in the individual are present in the valid demands
+        if set(individual.keys()).issubset(valid_demands):
+            filtered_individual = {}
+            for demand in valid_demands:
+                if demand in individual:
+                    filtered_individual[demand] = individual[demand]
+                else:
+                    filtered_individual[demand] = random.randint(1,weight_range)
+            filtered_population.append(filtered_individual)
+    return filtered_population
 
 def genetic_algorithm(network, loads, capacities, conf, start_time, essence_state, generations=700,
                       population_size=200,
@@ -31,10 +67,11 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
                       mutation_rate=0.7, time_limit=10, weight_range=1000, failed_network_links = []):
     end_time = start_time + time_limit
     if not essence_state.current_population:
-        population = create_population(network, population_size, weight_range)
+        population = create_population(loads, population_size, weight_range)
     else:
-        new_population = create_population(network, int(population_size * (1 - conf['keep_percentage'])), weight_range)
-        population = essence_state.current_population + new_population
+        new_population = create_population(loads, int(population_size * (1 - conf['keep_percentage'])), weight_range)
+        filtered_current_population = filter_individuals(essence_state.current_population, loads, weight_range)
+        population = filtered_current_population + new_population
 
 
     # Run the genetic algorithm
@@ -89,11 +126,11 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
 
     return pathdict
 
-def create_population(network, population_size, weight_range):
+def create_population(demands, population_size, weight_range):
     population = []
     for _ in range(population_size):
         individual = {}
-        for src, tgt in network.demands:
+        for src, tgt in demands:
             individual[src,tgt] = random.randint(1,weight_range)
         population.append(individual)
     return population
@@ -164,7 +201,6 @@ def calculate_fitness(individual, capacities, loads, topology, essence_state, fa
         # Apply load to each link in the path
         for i in range(len(path) - 1):
             v1, v2 = path[i], path[i+1]
-
             # Subtract load from capacity
             link_caps[v1,v2] -= loads[(src, tgt)]
 

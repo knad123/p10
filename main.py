@@ -171,7 +171,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state = EssenceState(mpls_network)
         essence_state.create_inverse_capacity_graph(mpls_network.topology)
 
-        paths = SPUNGEET(mpls_network, conf, time.time(), essence_state)
+        paths = SPUNGEET(mpls_network, conf, time.time(), essence_state, first_run=True)
         for path_for_flow in paths.values():
             mpls_network.install_essence_learn_paths_learn_weights(path_for_flow)
     elif conf["algorithm"] == "SPUNGEET_split":
@@ -349,6 +349,7 @@ if __name__ == "__main__":
     p.add_argument("--bugged", action="store_true", help="Run bugged essence split / other essence")
     p.add_argument("--keep_percentage", type=float, default=0.2, help="What percentage of the population to keep")
     p.add_argument("--combined_paths", action="store_true", help="Combine the paths of semi disjoint paths and shortest paths")
+    p.add_argument("--big_flows", action="store_true", help="Only take the big flows")
 
 
     conf = vars(p.parse_args())
