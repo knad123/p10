@@ -108,7 +108,9 @@ def selection(population, capacities, loads, topology, essence_state):
 
     return a_class, b_class, c_class
 
-def crossover(p1, p2):
+def crossover(p1, p2, crossover_probability = 0.7):
+    if random.random() > crossover_probability:
+        return p1, p2
     child = {}
     for demand in p1.keys():
         if random.random() < 0.7:
