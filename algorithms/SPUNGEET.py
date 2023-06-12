@@ -108,6 +108,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
         print("number of iteration: " + str(iterations))
     else:
         for _ in range(100):
+            iteration_start_time = time.time()
             # Select parents
             if failed_network_links != []:
                 a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state,
@@ -128,8 +129,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
             # Replace the population with the children
             population = children
             iterations += 1
-
-        print("number of iteration: " + str(iterations))
+            print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
 
     # Sort the population by fitness
     if failed_network_links != []:
