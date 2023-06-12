@@ -1,6 +1,7 @@
 import concurrent.futures
 import itertools
 import math
+import multiprocessing
 import timeit
 
 import networkx.exception
@@ -83,30 +84,6 @@ def create_population(network, demands, population_size, conf, essence_state, we
 
     return population
 
-def selection(population, capacities, loads):
-    congestion = [calculate_fitness(individual, capacities, loads) for individual in
-                                population]
-
-    # Zip the fitness values and the population together
-    fitness_population = zip(congestion, population)
-
-    # Sort the list of tuples by the fitness values
-    sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
-
-    # Extract the individuals from the sorted list of tuples
-    population = [individual for fitness, individual in sorted_fitness_population]
-
-    # Select the top 50% of the population as parents
-    # num_parents = int(len(population) * 0.5)
-    # parents = population[:num_parents]
-
-    a_class = population[:int(len(population) * 0.2)]
-    b_class = population[int(len(population) * 0.2):int(len(population) * 0.9)]
-    c_class = population[int(len(population) * 0.9):]
-
-    return a_class, b_class, c_class
-
-
 def two_point_crossover(individual1, individual2, crossover_probability):
     # Check if crossover should happen
     if random.random() > crossover_probability:
@@ -150,6 +127,31 @@ def two_point_crossover(individual1, individual2, crossover_probability):
 
     return offspring1, offspring2
 
+def selection(population, capacities, loads):
+    fitness_values = calculate_fitness_parallel(population, capacities, loads)
+
+    # Zip the fitness values and the population together
+    fitness_population = zip(fitness_values, population)
+
+    # Sort the list of tuples by the fitness values
+    sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
+
+    # Extract the individuals from the sorted list of tuples
+    population = [individual for fitness, individual in sorted_fitness_population]
+
+    a_class = population[:int(len(population) * 0.2)]
+    b_class = population[int(len(population) * 0.2):int(len(population) * 0.9)]
+    c_class = population[int(len(population) * 0.9):]
+
+    return a_class, b_class, c_class
+
+def calculate_fitness_parallel(population, capacities, loads):
+    num_cores = multiprocessing.cpu_count() if 'SLURM_CPUS_PER_TASK' not in os.environ else int(
+        os.environ['SLURM_CPUS_PER_TASK'])
+    with multiprocessing.Pool(num_cores-2) as pool:
+        result = pool.starmap(calculate_fitness, [(individual, capacities, loads) for individual in population])
+
+    return result
 
 def calculate_fitness(individual, capacities, loads):
     # Initialize the utilization of each link to 0
