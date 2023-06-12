@@ -40,12 +40,13 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
         new_population = create_population(network, int(population_size * 0.8), weight_range)
         population = essence_state.current_population + new_population
 
+    iterations = 0
     # Run the genetic algorithm
     #for generation in range(generations):
     while time.time() < end_time:
+        iteration_start_time = time.time()
         # Select parents
         a_class, b_class, c_class = selection(population, capacities, loads, essence_state)
-        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, essence_state)))
         # Generate the children
         # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
         children = a_class  # + random_solutions
@@ -59,7 +60,9 @@ def genetic_algorithm(network, loads, capacities, essence_state, conf, start_tim
 
         # Replace the population with the children
         population = children
-
+        print(str(iterations) + ": " + str(calculate_fitness(a_class[0], capacities, loads, essence_state)))
+        print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
+        iterations += 1
     # Sort the population by fitness
     a_class, b_class, c_class = selection(population, capacities, loads, essence_state)
 
