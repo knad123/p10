@@ -25,7 +25,7 @@ def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state, failed_netw
         demands = network.demands
     genetic_weights = genetic_algorithm(network=network, loads=demands, population_size=conf['population'],
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'), conf=conf, start_time=start_time,
-                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(demands.keys())*10), failed_network_links = failed_network_links)
+                                      time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(demands.keys())*10), failed_network_links = failed_network_links, first_run=first_run)
     return genetic_weights
 
 def get_big_flows(loads, threshold_percentage: float):
@@ -68,7 +68,7 @@ def filter_individuals(population, demands, weight_range):
 def genetic_algorithm(network, loads, capacities, conf, start_time, essence_state, generations=700,
                       population_size=200,
                       crossover_rate=0.9,
-                      mutation_rate=0.7, time_limit=10, weight_range=1000, failed_network_links = []):
+                      mutation_rate=0.7, time_limit=10, weight_range=1000, failed_network_links = [], first_run = False):
     end_time = start_time + time_limit
     if not essence_state.current_population:
         population = create_population(loads, population_size, weight_range)
@@ -83,29 +83,53 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
     iterations = 0
     # Run the genetic algorithm
     #for generation in range(generations):
-    while time.time() < end_time:
-        # Select parents
-        if failed_network_links != []:
-            a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state, failed_network_links)
-        else:
-            a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
-        #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
-        # Generate the children
-        # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
-        children = a_class  # + random_solutions
-        while len(children) < population_size:
-            parent1 = random.choice(a_class)
-            parent2 = random.choice(b_class + c_class)
-            child = crossover(parent1, parent2)
-            child = mutation(child, weight_range)
-            children.extend([child])
+    if not first_run:
+        while time.time() < end_time:
+            # Select parents
+            if failed_network_links != []:
+                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state, failed_network_links)
+            else:
+                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
+            #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
+            # Generate the children
+            # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
+            children = a_class  # + random_solutions
+            while len(children) < population_size:
+                parent1 = random.choice(a_class)
+                parent2 = random.choice(b_class + c_class)
+                child = crossover(parent1, parent2)
+                child = mutation(child, weight_range)
+                children.extend([child])
 
-        # Replace the population with the children
-        population = children
-        iterations += 1
+            # Replace the population with the children
+            population = children
+            iterations += 1
 
-    print("number of iteration: " + str(iterations))
+        print("number of iteration: " + str(iterations))
+    else:
+        for _ in range(100):
+            # Select parents
+            if failed_network_links != []:
+                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state,
+                                                      failed_network_links)
+            else:
+                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
+            # print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
+            # Generate the children
+            # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
+            children = a_class  # + random_solutions
+            while len(children) < population_size:
+                parent1 = random.choice(a_class)
+                parent2 = random.choice(b_class + c_class)
+                child = crossover(parent1, parent2)
+                child = mutation(child, weight_range)
+                children.extend([child])
 
+            # Replace the population with the children
+            population = children
+            iterations += 1
+
+        print("number of iteration: " + str(iterations))
 
     # Sort the population by fitness
     if failed_network_links != []:
