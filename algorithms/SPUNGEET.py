@@ -23,7 +23,6 @@ def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state, failed_netw
         demands = get_big_flows(network.demands, 0.9)
     else:
         demands = network.demands
-
     genetic_weights = genetic_algorithm(network=network, loads=demands,
                                       capacities=nx.get_edge_attributes(network.topology, 'capacity'), conf=conf, start_time=start_time,
                                       time_limit=conf["update_interval"], essence_state=essence_state, weight_range=(len(demands.keys())*10), failed_network_links = failed_network_links)
@@ -58,6 +57,11 @@ def filter_individuals(population, demands, weight_range):
                     filtered_individual[demand] = individual[demand]
                 else:
                     filtered_individual[demand] = random.randint(1,weight_range)
+            filtered_population.append(filtered_individual)
+        else:
+            filtered_individual = {}
+            for demand in valid_demands:
+                filtered_individual[demand] = random.randint(1,weight_range)
             filtered_population.append(filtered_individual)
     return filtered_population
 
