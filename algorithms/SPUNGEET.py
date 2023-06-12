@@ -20,7 +20,7 @@ from classes.network import MPLS_Network
 
 def SPUNGEET(network: MPLS_Network, conf, start_time, essence_state, failed_network_links = [], first_run = False):
     if conf['big_flows'] and first_run == False:
-        demands = get_big_flows(network.demands, 0.9)
+        demands = get_big_flows(network.demands, 0.85)
     else:
         demands = network.demands
     genetic_weights = genetic_algorithm(network=network, loads=demands, population_size=conf['population'],
@@ -104,7 +104,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
         population = children
         iterations += 1
 
-    print(iterations)
+    print("number of iteration: " + str(iterations))
 
 
     # Sort the population by fitness
