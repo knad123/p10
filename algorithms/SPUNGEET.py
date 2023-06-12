@@ -1,6 +1,7 @@
 import concurrent.futures
 import itertools
 import math
+import multiprocessing
 import timeit
 
 import networkx.exception
@@ -170,30 +171,6 @@ def create_population(demands, population_size, weight_range):
         population.append(individual)
     return population
 
-
-def selection(population, capacities, loads, topology, essence_state, failed_network_links = []):
-    if failed_network_links != []:
-        congestion = [calculate_fitness(individual, capacities.copy(), loads, topology, essence_state, failed_network_links) for individual in
-                  population]
-    else:
-        congestion = [calculate_fitness(individual, capacities.copy(), loads, topology, essence_state) for individual in
-                      population]
-
-    # Zip the fitness values and the population together
-    fitness_population = zip(congestion, population)
-
-    # Sort the list of tuples by the fitness values
-    sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
-
-    # Extract the individuals from the sorted list of tuples
-    population = [individual for fitness, individual in sorted_fitness_population]
-
-    a_class = population[:int(len(population) * 0.2)]
-    b_class = population[int(len(population) * 0.2):int(len(population) * 0.9)]
-    c_class = population[int(len(population) * 0.9):]
-
-    return a_class, b_class, c_class
-
 def crossover(p1, p2, crossover_probability = 0.7):
     child = {}
     for demand in p1.keys():
@@ -210,6 +187,37 @@ def mutation(c, weight_range):
         return c
     else:
         return c
+
+def selection(population, capacities, loads, topology, essence_state, failed_network_links=[]):
+    if failed_network_links:
+        fitness_values = calculate_fitness_parallel(population, capacities, loads, topology, essence_state, failed_network_links)
+    else:
+        fitness_values = calculate_fitness_parallel(population, capacities, loads, topology, essence_state)
+
+    # Zip the fitness values and the population together
+    fitness_population = zip(fitness_values, population)
+
+    # Sort the list of tuples by the fitness values
+    sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
+
+    # Extract the individuals from the sorted list of tuples
+    population = [individual for fitness, individual in sorted_fitness_population]
+
+    a_class = population[:int(len(population) * 0.2)]
+    b_class = population[int(len(population) * 0.2):int(len(population) * 0.9)]
+    c_class = population[int(len(population) * 0.9):]
+
+    return a_class, b_class, c_class
+
+def calculate_fitness_parallel(population, capacities, loads, topology, essence_state, failed_network_links=[]):
+    with multiprocessing.Pool() as pool:
+        if failed_network_links:
+            result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state, failed_network_links) for individual in population])
+        else:
+            result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state) for individual in population])
+
+    return result
+
 
 def calculate_fitness(individual, capacities, loads, topology, essence_state, failed_network_links = []):
     # Initialize the utilization of each link to 0

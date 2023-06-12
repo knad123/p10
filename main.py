@@ -38,7 +38,7 @@ import pandas as pd
 
 # Constants
 ROOT = os.path.dirname(__file__)
-def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event: threading.Event, monitor_stopped_event: threading.Event, conf):
+def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state: EssenceState, inet_stopped_event, monitor_stopped_event, conf):
     recorder = Recorder()
     while not inet_stopped_event.is_set():
         if os.path.exists(conf["demand_path"]) and os.path.exists(conf["utilization_path"]) and os.path.exists(conf["link_failures_path"]) and not os.path.exists(conf["2pc_path"]) and not os.path.exists(conf["dynamic_weights_path"]):
@@ -273,22 +273,24 @@ def main(confs):
         except:
             pass
         os.chdir(ROOT)
-        inet_stopped_event = threading.Event()
+        inet_stopped_event = multiprocessing.Event()
 
-        inet_simulation_thread = threading.Thread(target=run_inet_simulation,
-                                                  args=(simulation_directory, inet_stopped_event, ini_conf))
-        inet_simulation_thread.start()
+        inet_simulation_process = multiprocessing.Process(target=run_inet_simulation,
+                                                          args=(simulation_directory, inet_stopped_event, ini_conf))
+        inet_simulation_process.start()
 
-        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
+        if conf['algorithm'] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows',
+                                 "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF",
+                                 "essence_learn_paths_learn_weights", "SPUNGEET", "SPUNGEET_split"]:
             with open(os.path.join(pkl_dir, "essence_state.pkl"), "rb") as inp:
                 essence_state = pickle.load(inp)
             with open(os.path.join(pkl_dir, "mpls_network.pkl"), "rb") as inp:
                 mpls_network = pickle.load(inp)
 
-            monitor_stopped_event = threading.Event()
-            monitor_output_thread = threading.Thread(target=monitor_omnet, args=(
-            simulation_directory, mpls_network, essence_state, inet_stopped_event, monitor_stopped_event, conf))
-            monitor_output_thread.start()
+            monitor_stopped_event = multiprocessing.Event()
+            monitor_output_process = multiprocessing.Process(target=monitor_omnet, args=(
+                simulation_directory, mpls_network, essence_state, inet_stopped_event, monitor_stopped_event, conf))
+            monitor_output_process.start()
 
             while not monitor_stopped_event.is_set():
                 time.sleep(1)
