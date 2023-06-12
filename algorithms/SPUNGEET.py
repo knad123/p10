@@ -70,9 +70,11 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
         population = create_population(loads, population_size, weight_range)
     else:
         new_population = create_population(loads, int(population_size * (1 - conf['keep_percentage'])), weight_range)
-        filtered_current_population = filter_individuals(essence_state.current_population, loads, weight_range)
-        population = filtered_current_population + new_population
-
+        if conf['big_flows']:
+            filtered_current_population = filter_individuals(essence_state.current_population, loads, weight_range)
+            population = filtered_current_population + new_population
+        else:
+            population = essence_state.current_population + new_population
 
     # Run the genetic algorithm
     #for generation in range(generations):
