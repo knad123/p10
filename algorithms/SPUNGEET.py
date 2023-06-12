@@ -84,53 +84,29 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
     iterations = 0
     # Run the genetic algorithm
     #for generation in range(generations):
-    if not first_run:
-        while time.time() < end_time:
-            # Select parents
-            if failed_network_links != []:
-                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state, failed_network_links)
-            else:
-                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
-            #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
-            # Generate the children
-            # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
-            children = a_class  # + random_solutions
-            while len(children) < population_size:
-                parent1 = random.choice(a_class)
-                parent2 = random.choice(b_class + c_class)
-                child = crossover(parent1, parent2)
-                child = mutation(child, weight_range)
-                children.extend([child])
+    for _ in range(conf['generations']):
+        iteration_start_time = time.time()
+        # Select parents
+        if failed_network_links != []:
+            a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state,
+                                                  failed_network_links)
+        else:
+            a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
+        # print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
+        # Generate the children
+        # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
+        children = a_class  # + random_solutions
+        while len(children) < population_size:
+            parent1 = random.choice(a_class)
+            parent2 = random.choice(b_class + c_class)
+            child = crossover(parent1, parent2)
+            child = mutation(child, weight_range)
+            children.extend([child])
 
-            # Replace the population with the children
-            population = children
-            iterations += 1
-
-        print("number of iteration: " + str(iterations))
-    else:
-        for _ in range(100):
-            iteration_start_time = time.time()
-            # Select parents
-            if failed_network_links != []:
-                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state,
-                                                      failed_network_links)
-            else:
-                a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
-            # print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
-            # Generate the children
-            # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
-            children = a_class  # + random_solutions
-            while len(children) < population_size:
-                parent1 = random.choice(a_class)
-                parent2 = random.choice(b_class + c_class)
-                child = crossover(parent1, parent2)
-                child = mutation(child, weight_range)
-                children.extend([child])
-
-            # Replace the population with the children
-            population = children
-            iterations += 1
-            print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
+        # Replace the population with the children
+        population = children
+        iterations += 1
+        print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
 
     # Sort the population by fitness
     if failed_network_links != []:

@@ -53,7 +53,7 @@ def monitor_omnet(simulation_dir: str, mpls_network: MPLS_Network, essence_state
             total_iteration_time = time.time() - start_time
             path = conf["iteration_time_path"]
             with open(path, 'w') as iteration_time_file:
-                iteration_time_file.write(str(total_iteration_time))
+                iteration_time_file.write(str(conf['update_interval']))
             print(f"Essence iteration time: {time.time() - start_time}")
         time.sleep(1)
     os.chdir(ROOT)
@@ -196,6 +196,8 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             pickle.dump(mpls_network, outp, pickle.HIGHEST_PROTOCOL)
 
 def main(confs):
+    num_cores = multiprocessing.cpu_count()
+    print("Number of CPU cores used:", num_cores)
     with open(conf["topology"]) as f:
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]
@@ -352,7 +354,8 @@ if __name__ == "__main__":
     p.add_argument("--keep_percentage", type=float, default=0.2, help="What percentage of the population to keep")
     p.add_argument("--combined_paths", action="store_true", help="Combine the paths of semi disjoint paths and shortest paths")
     p.add_argument("--big_flows", action="store_true", help="Only take the big flows")
-
+    p.add_argument("--generations", type=int, default=200, help="iterations")
+    p.add_argument("--fix_update_time", action="store_true", help="lol")
 
     conf = vars(p.parse_args())
 
