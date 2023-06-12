@@ -196,8 +196,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
             pickle.dump(mpls_network, outp, pickle.HIGHEST_PROTOCOL)
 
 def main(confs):
-    num_cores = multiprocessing.cpu_count()
-    print("Number of CPU cores used:", num_cores)
+    num_cores = multiprocessing.cpu_count() if 'SLURM_CPUS_PER_TASK' not in os.environ else int(os.environ['SLURM_CPUS_PER_TASK'])
     with open(conf["topology"]) as f:
         topology_data = json.load(f)
     network_name = topology_data["network"]["name"]

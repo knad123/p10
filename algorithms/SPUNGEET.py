@@ -186,7 +186,8 @@ def selection(population, capacities, loads, topology, essence_state, failed_net
     return a_class, b_class, c_class
 
 def calculate_fitness_parallel(population, capacities, loads, topology, essence_state, failed_network_links=[]):
-    with multiprocessing.Pool() as pool:
+    num_cores = multiprocessing.cpu_count() if 'SLURM_CPUS_PER_TASK' not in os.environ else int(os.environ['SLURM_CPUS_PER_TASK'])
+    with multiprocessing.Pool(num_cores) as pool:
         if failed_network_links:
             result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state, failed_network_links) for individual in population])
         else:
