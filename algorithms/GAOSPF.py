@@ -1,6 +1,7 @@
 import concurrent.futures
 import itertools
 import math
+import multiprocessing
 import timeit
 
 import networkx.exception
@@ -35,7 +36,9 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, generations=
 
     # Run the genetic algorithm
     #for generation in range(generations):
+    iterations = 0
     while time.time() < end_time:
+        iteration_start_time = time.time()
         # Select parents
         a_class, b_class, c_class = selection(population, capacities, loads, network.topology)
         #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
@@ -50,6 +53,8 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, generations=
 
         # Replace the population with the children
         population = children
+        iterations += 1
+        print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
 
     # Sort the population by fitness
     a_class, b_class, c_class = selection(population, capacities, loads, network.topology)
@@ -77,13 +82,23 @@ def create_population(network, population_size, weight_range):
         population.append(individual)
     return population
 
+def crossover(p1, p2, K=0.7, pg = 0.01):
+    c = {}
+    for gene in p1:
+        rand_num = random.random()
+        if rand_num < pg:
+            c[gene] = random.randint(1, 65535)
+        elif rand_num < K:
+            c[gene] = p1[gene]
+        else:
+            c[gene] = p2[gene]
+    return c
 
 def selection(population, capacities, loads, topology):
-    congestion = [calculate_fitness(individual, capacities, loads, topology) for individual in
-                  population]
+    fitness_values = calculate_fitness_parallel(population, capacities, loads, topology)
 
     # Zip the fitness values and the population together
-    fitness_population = zip(congestion, population)
+    fitness_population = zip(fitness_values, population)
 
     # Sort the list of tuples by the fitness values
     sorted_fitness_population = sorted(fitness_population, key=lambda x: x[0])
@@ -97,18 +112,13 @@ def selection(population, capacities, loads, topology):
 
     return a_class, b_class, c_class
 
-def crossover(p1, p2, K=0.7, pg = 0.01):
-    c = {}
-    for gene in p1:
-        rand_num = random.random()
-        if rand_num < pg:
-            c[gene] = random.randint(1, 65535)
-        elif rand_num < K:
-            c[gene] = p1[gene]
-        else:
-            c[gene] = p2[gene]
-    return c
+def calculate_fitness_parallel(population, capacities, loads, topology):
+    num_cores = multiprocessing.cpu_count() if 'SLURM_CPUS_PER_TASK' not in os.environ else int(
+        os.environ['SLURM_CPUS_PER_TASK'])
+    with multiprocessing.Pool(num_cores - 2) as pool:
+        result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology) for individual in population])
 
+    return result
 
 def calculate_fitness(individual, capacities, loads, topology):
     # Initialize the utilization of each link to 0
