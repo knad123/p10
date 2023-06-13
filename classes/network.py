@@ -280,6 +280,9 @@ class MPLS_Network:
                             router_rule_to_xml(router_name=router_name, priority=1, in_label=split_label,
                                                out_label=split_label, out_router=next_hop))
 
+        for path in paths_for_flow:
+            self.add_protection(path, split_label)
+
         # Add demand information for the LSP to the DataFrame
         load = self.demands[(src, tgt)]
         new_row = {'source': src, 'target': tgt, 'label': split_label, 'split_path': paths_for_flow, 'load': load}
