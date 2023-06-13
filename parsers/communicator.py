@@ -71,7 +71,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
             time.sleep(5)
     # Start timer
     start_time = time.time()
-    demands: Dict[(str, str), float] = import_demands(demands_data, network.demands)
+    demands: Dict[(str, str), float] = import_demands(demands_data, network.demands, conf)
     network.demands.update(demands)
 
     # Update the demand dataframe
@@ -475,7 +475,7 @@ def create_xml_element(name, text=None, attrib=None):
     return elem
 
 
-def import_demands(demands: Dict[str, Dict[str, float]], old_demands):
+def import_demands(demands: Dict[str, Dict[str, float]], old_demands, conf):
     new_demands = {}
     for src in demands.keys():
         if src != "timestamp":
@@ -483,10 +483,10 @@ def import_demands(demands: Dict[str, Dict[str, float]], old_demands):
                 if demands[src][tgt] == 0:
                     new_demands[src, tgt] = old_demands[src,tgt]
                 else:
-                    new_demands[src, tgt] = sendinterval_to_load(demands[src][tgt])
+                    new_demands[src, tgt] = sendinterval_to_load(demands[src][tgt], conf)
 
     return new_demands
 
 
-def sendinterval_to_load(send_interval):
-    return int(64 / send_interval)
+def sendinterval_to_load(send_interval, conf):
+    return int(conf['packet_size'] / send_interval)
