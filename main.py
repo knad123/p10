@@ -202,8 +202,8 @@ def main(confs):
     network_name = topology_data["network"]["name"]
     if conf['algorithm'] in ["essence_split", "essence_learn_paths_learn_weights"]:
         conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + "_numpaths" + str(conf['split_num']).replace(".","_") + "_pathstretch" + str(conf['stretch_amount']).replace(".","_") + (f"_cp" if conf['combined_paths'] else "") + (f"_kp{str(conf['keep_percentage']).replace('.', '_')}" if conf['keep_percentage'] is not None else "") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "")
-    elif conf['algorithm'] not in ["fbr", "shortest_path", "split_shortest_path", "GAOSPF"]:
-        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "") + (f"_kp{str(conf['keep_percentage']).replace('.','_')}") + (f'_bf' if conf['big_flows'] else "")
+    elif conf['algorithm'] not in ["fbr", "shortest_path"]:
+        conf['algorithm_and_parameters'] = conf['algorithm'] + "_p" + str(conf['population']).replace(".","_") + "_c" + str(conf['crossover']).replace(".","_") + "_m" + str(conf['mutation']).replace(".","_") + (f"_ui{conf['update_interval']}" if conf['update_interval'] is not None else "") + (f"_kp{str(conf['keep_percentage']).replace('.','_')}") + (f'_bf' if conf['big_flows'] else "") + f"_FPR{str(conf['failure_probability']).replace('.', '_')}"
     else:
         conf['algorithm_and_parameters'] = conf['algorithm']
     if conf["bugged"]:
@@ -353,7 +353,7 @@ if __name__ == "__main__":
     p.add_argument("--keep_percentage", type=float, default=0.2, help="What percentage of the population to keep")
     p.add_argument("--combined_paths", action="store_true", help="Combine the paths of semi disjoint paths and shortest paths")
     p.add_argument("--big_flows", action="store_true", help="Only take the big flows")
-    p.add_argument("--failure_probability", type=float, default=0, help="Chance of failure")
+    p.add_argument("--failure_probability", type=float, default=0.0, help="Chance of failure")
 
 
     conf = vars(p.parse_args())
