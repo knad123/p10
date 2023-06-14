@@ -353,6 +353,7 @@ if __name__ == "__main__":
     p.add_argument("--keep_percentage", type=float, default=0.2, help="What percentage of the population to keep")
     p.add_argument("--combined_paths", action="store_true", help="Combine the paths of semi disjoint paths and shortest paths")
     p.add_argument("--big_flows", action="store_true", help="Only take the big flows")
+    p.add_argument("--failure_probability", type=float, default=0, help="Chance of failure")
 
 
     conf = vars(p.parse_args())
