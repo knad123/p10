@@ -108,7 +108,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
 
         print("number of iteration: " + str(iterations))
     else:
-        for _ in range(100):
+        for _ in range(20):
             iteration_start_time = time.time()
             # Select parents
             if failed_network_links != []:
@@ -131,6 +131,8 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
             population = children
             iterations += 1
             print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
+            print(str(iterations) + ": " + str(
+                calculate_fitness(a_class[0], capacities, loads, network.topology, essence_state)))
 
     # Sort the population by fitness
     if failed_network_links != []:
@@ -230,10 +232,12 @@ def calculate_fitness(individual, capacities, loads, topology, essence_state, fa
     link_caps = capacities.copy()
     inverse_graph = essence_state.inverse_capacity_graph.to_directed().copy()
 
-    if failed_network_links != []:
+    if failed_network_links:
         for (fail_v1, fail_v2) in failed_network_links:
-            inverse_graph.remove_edge(fail_v1, fail_v2)
-            inverse_graph.remove_edge(fail_v1, fail_v2)
+            if inverse_graph.has_edge(fail_v1, fail_v2):
+                inverse_graph.remove_edge(fail_v1, fail_v2)
+            if inverse_graph.has_edge(fail_v2, fail_v1):  # Remove the inverse edge as well
+                inverse_graph.remove_edge(fail_v2, fail_v1)
 
     pathdict = {}
 

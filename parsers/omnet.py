@@ -449,7 +449,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     for scenario in range(conf["failure_scenarios"]):
         file.write(f'[Config scenario_{scenario}]\n')
         file.write(f'**.scenarioManager.script = xmldoc("failure_scenarios/scenario_{scenario}.xml")\n')
-        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights"]:
+        if conf["algorithm"] in ['essence', 'essence_stateless', 'essence_split', 'essence_big_flows', "essence_weight_setting", "essence_split_multiple_labels", "GAOSPF", "essence_learn_paths_learn_weights", "SPUNGEET"]:
             file.write(f'**.measureWriter.demandPath = "{os.path.join(conf["sync_dir"], f"demands-scenario_{scenario}.json")}"\n')
             file.write(
                 f'**.measureWriter.utilizationPath = "{os.path.join(conf["sync_dir"], f"utilization-scenario_{scenario}.json")}"\n')

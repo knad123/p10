@@ -134,6 +134,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         essence_state.path_weights = essence_split_multiple_labels(mpls_network, essence_state, conf, time.time())
         for fbr_paths in essence_state.pathdict.values():
             mpls_network.install_fbr(fbr_paths, algorithm="fbr")
+
     elif conf['algorithm'] == "essence_learn_paths_learn_weights":
         essence_state = EssenceState(mpls_network)
         if conf["combined_paths"]:
@@ -155,7 +156,7 @@ def generate_files(conf, network_name, topology_data, simulation_directory, pkl_
         for src, tgt in temporal_demands.keys():
             paths[src,tgt] = list(nx.all_shortest_paths(mpls_network.topology, src, tgt, weight=None))
         for p in paths.values():
-            mpls_network.install_split_path_essence(p)
+            mpls_network.install_essence_learn_paths_learn_weights(p)
     elif conf["algorithm"] == "fbr":
         essence_state = EssenceState(mpls_network)
         essence_state.create_pathdict(mpls_network)

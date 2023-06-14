@@ -74,6 +74,9 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
     demands: Dict[(str, str), float] = import_demands(demands_data, network.demands, conf)
     network.demands.update(demands)
 
+    print(link_failures_data)
+
+
     # Update the demand dataframe
     for (src, tgt), load in demands.items():
         network.demand_dict[src, tgt]['load'] = load
@@ -309,7 +312,7 @@ def update_demands_and_paths(simulation_dir: str, network: MPLS_Network, essence
         os.rename(conf["temp_2pc_path"], conf["2pc_path"])
     elif conf['algorithm'] == "SPUNGEET":
         root = ET.Element('twoPhaseCommit')
-        paths = SPUNGEET(network, conf, start_time, essence_state)
+        paths = SPUNGEET(network, conf, start_time, essence_state, link_failures_data)
         for (src,tgt), path in paths.items():
             if network.demand_dict[src, tgt]['split_path'] != paths:
                 split_path_label = network.demand_dict[src, tgt]['label']
