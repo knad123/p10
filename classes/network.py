@@ -536,8 +536,6 @@ class MPLS_Network:
 
     def add_protection(self, path, label):
         if len(path) == 2:
-            return
-            '''
             backup_label = self.backup_path_label_dict[path[0]][
                 path[0], path[1]]
             if label is None:
@@ -545,7 +543,7 @@ class MPLS_Network:
             self.routers[path[0]].add_rule(incoming_label=label, outgoing_label=backup_label,
                                                next_hop=path[0],
                                                priority=2, protection=True)
-            return'''
+            return
 
         for router_index, router_name in enumerate(path):
             if router_index == 0:
