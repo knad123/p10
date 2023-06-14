@@ -535,7 +535,9 @@ class MPLS_Network:
                 self.backup_path_label_dict[router][v1,v2] = label
 
     def add_protection(self, path, label):
-        '''if len(path) == 2:
+        if len(path) == 2:
+            return
+            '''
             backup_label = self.backup_path_label_dict[path[0]][
                 path[0], path[1]]
             if label is None:
