@@ -336,8 +336,8 @@ class MPLS_Network:
         # Add demand information for the LSP to the DataFrame
         load = self.demands[(src, tgt)]
         new_row = {'source': src, 'target': tgt, 'label': split_label, 'split_path': paths_for_flow, 'load': load}
-        for path in paths_for_flow:
-            self.add_protection(path, split_label)
+        #for path in paths_for_flow:
+        #    self.add_protection(path, split_label)
         self.demand_dict[src, tgt] = new_row
 
         # Omnet++ two phase commit details
