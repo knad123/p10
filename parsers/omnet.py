@@ -654,7 +654,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
 
                 if conf['short_experiment']:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
-                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(0, 3)
                 else:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
                     time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
@@ -668,7 +668,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 failed_edges = [(src, tgt)]
                 if conf['short_experiment']:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
-                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(0, 3)
                 else:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
                     time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
@@ -683,7 +683,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 failed_nodes.extend(network_undirected.edges(node))
                 if conf['short_experiment']:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
-                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(0, 3)
                 else:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
                     time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
@@ -693,7 +693,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
                 failed_edges = [(src, tgt)]
                 if conf['short_experiment']:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
-                    time_stamp = conf["time_scale"] * 3600 * random.randint(16, 19)
+                    time_stamp = conf["time_scale"] * 3600 * random.randint(0, 3)
                 else:
                     downtime = random.randint(1800, 10800) * conf["time_scale"]
                     time_stamp = conf["time_scale"] * 3600 * random.randint(1, 23)
