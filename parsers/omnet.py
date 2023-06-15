@@ -633,7 +633,7 @@ def generate_scenarios(num_scenarios, sim_duration, dir, link_to_ppp, conf, netw
     network_undirected = network.topology.to_undirected()
     random.seed(100)
 
-    node_failure_probability, edge_failure_probability = compute_failure_probabilities(network_undirected, node_failure_probability=conf['failure_probability'], edge_failure_probability=conf['failure_probability']/2)
+    node_failure_probability, edge_failure_probability = compute_failure_probabilities(network_undirected, node_failure_probability=conf['failure_probability']*0.429, edge_failure_probability=conf['failure_probability'])
 
     for i in range(num_scenarios):
         failed_links = []
