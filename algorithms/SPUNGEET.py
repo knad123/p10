@@ -109,8 +109,6 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
             population = children
             iterations += 1
 
-        print("number of iteration: " + str(iterations))
-        print(selection_time)
     else:
         for _ in range(20):
             iteration_start_time = time.time()
@@ -134,9 +132,6 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
             # Replace the population with the children
             population = children
             iterations += 1
-            print("iteration " + str(iterations) + " runtime: " + str(time.time() - iteration_start_time) + " seconds")
-            print(str(iterations) + ": " + str(
-                calculate_fitness(a_class[0], capacities, loads, network.topology, essence_state)))
 
     # Sort the population by fitness
     if failed_network_links != []:
@@ -225,7 +220,6 @@ def calculate_fitness_parallel(population, capacities, loads, topology, essence_
     for src, tgt in src_tgt_pairs:
         estimate[(src,tgt)] = len(nx.shortest_path(network, src, tgt, weight="weight"))
 
-    print(f"Time to make heuristic function: {time.time() - before_time}")
     with multiprocessing.Pool(len(population)) as pool:
         if failed_network_links:
             result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state, failed_network_links) for individual in population])

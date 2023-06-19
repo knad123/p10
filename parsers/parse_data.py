@@ -50,15 +50,15 @@ def parse_results(csv_path, network_name, algorithm, output_dir, ini_conf):
     row = df[df['name'].astype(str).str.contains('packetDropReasonIsNoRouteFoundCount')].iloc[[0]]
     results["packets_dropped_blackhole"] = int(row["value"])
     row = df[df['name'].astype(str).str.contains('blackhole')].iloc[[0]]
-    results["packets_dropped_blackhole_2"] = int(row["value"])
+    #results["packets_dropped_blackhole_2"] = int(row["value"])
 
     # Get number of packets that were either dropped or delivered. I.e. all packets created subtracted by the packets that are still in the network at when sim ends
-    results["packets_accounted_for"] = results["packets_delivered"] + results["packets_dropped_queue_overflow"] + results["packets_dropped_blackhole"] + results["packets_dropped_blackhole_2"]
+    results["packets_accounted_for"] = results["packets_delivered"] + results["packets_dropped_queue_overflow"] + results["packets_dropped_blackhole"]
 
 
     # Get connectivity
-    results["connectivity"] = results["packets_delivered"] / results["packets_accounted_for"]
-    results["connectivity_better"] = results["packets_delivered"] / results["packets_created"]
+    results["delivered_packet_percentage"] = results["packets_delivered"] / results["packets_accounted_for"]
+    #results["connectivity_better"] = results["packets_delivered"] / results["packets_created"]
 
     # Get queue overflow percentage of packets
     results["packets_dropped_queue_overflow_percentage"] = results["packets_dropped_queue_overflow"] / results["packets_accounted_for"]
