@@ -84,13 +84,16 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
     iterations = 0
     # Run the genetic algorithm
     #for generation in range(generations):
-    if not first_run:
+    if True:
+        selection_time = 0
         while time.time() < end_time:
             # Select parents
+            selection_start = time.time()
             if failed_network_links != []:
                 a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state, failed_network_links)
             else:
                 a_class, b_class, c_class = selection(population, capacities, loads, network.topology, essence_state)
+            selection_time += time.time() - selection_start
             #print(str(generation) + ": " + str(calculate_fitness(a_class[0], capacities, loads, network.topology)))
             # Generate the children
             # random_solutions = [{k: random.choice(v) for k, v in viable_paths.items()} for _ in range(int(population_size * 0.1))]
@@ -107,6 +110,7 @@ def genetic_algorithm(network, loads, capacities, conf, start_time, essence_stat
             iterations += 1
 
         print("number of iteration: " + str(iterations))
+        print(selection_time)
     else:
         for _ in range(20):
             iteration_start_time = time.time()
@@ -214,17 +218,30 @@ def selection(population, capacities, loads, topology, essence_state, failed_net
 def calculate_fitness_parallel(population, capacities, loads, topology, essence_state, failed_network_links=[]):
     num_cores = multiprocessing.cpu_count() if 'SLURM_CPUS_PER_TASK' not in os.environ else int(
         os.environ['SLURM_CPUS_PER_TASK'])
-    with multiprocessing.Pool(num_cores - 2) as pool:
+    before_time = time.time()
+    network = essence_state.inverse_capacity_graph.to_directed()
+    src_tgt_pairs = itertools.product(network.nodes, network.nodes)
+    estimate = {}
+    for src, tgt in src_tgt_pairs:
+        estimate[(src,tgt)] = len(nx.shortest_path(network, src, tgt, weight="weight"))
+
+    print(f"Time to make heuristic function: {time.time() - before_time}")
+    with multiprocessing.Pool(len(population)) as pool:
         if failed_network_links:
             result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state, failed_network_links) for individual in population])
         else:
-            result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state) for individual in population])
+            result = pool.starmap(calculate_fitness, [(individual, capacities.copy(), loads, topology, essence_state, estimate) for individual in population])
 
     return result
 
 
-def calculate_fitness(individual, capacities, loads, topology, essence_state, failed_network_links = []):
+def calculate_fitness(individual, capacities, loads, topology, essence_state, estimate = None, failed_network_links = []):
     # Initialize the utilization of each link to 0
+
+    if estimate:
+        h = lambda a,b: estimate[(a,b)]
+    else:
+        h = lambda a,b: 0
     link_loads = {link: 0 for link in capacities.keys()}
 
     demands_ordered = sorted(individual, key=lambda weights: individual[weights], reverse=True)
@@ -240,10 +257,9 @@ def calculate_fitness(individual, capacities, loads, topology, essence_state, fa
                 inverse_graph.remove_edge(fail_v2, fail_v1)
 
     pathdict = {}
-
     for (src,tgt) in demands_ordered:
         try:
-            path = nx.dijkstra_path(inverse_graph, src, tgt, weight='weight')
+            path = nx.astar_path(inverse_graph, src, tgt, heuristic=h, weight='weight')
         except:
             continue
         pathdict[src,tgt] = path
