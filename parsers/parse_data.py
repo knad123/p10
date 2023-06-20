@@ -49,8 +49,12 @@ def parse_results(csv_path, network_name, algorithm, output_dir, ini_conf):
     # Get Dropped packages from blackhole
     row = df[df['name'].astype(str).str.contains('packetDropReasonIsNoRouteFoundCount')].iloc[[0]]
     results["packets_dropped_blackhole"] = int(row["value"])
-    row = df[df['name'].astype(str).str.contains('blackhole')].iloc[[0]]
+    #row = df[df['name'].astype(str).str.contains('blackhole')].iloc[[0]]
     #results["packets_dropped_blackhole_2"] = int(row["value"])
+
+    # Get average hopcount
+    row = df[df['name'].astype(str).str.contains('hopCount')].iloc[[0]]
+    results["hop_count"] = float(row["value"])
 
     # Get number of packets that were either dropped or delivered. I.e. all packets created subtracted by the packets that are still in the network at when sim ends
     results["packets_accounted_for"] = results["packets_delivered"] + results["packets_dropped_queue_overflow"] + results["packets_dropped_blackhole"]

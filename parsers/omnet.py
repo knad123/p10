@@ -174,6 +174,8 @@ def to_omnetpp_ned(network, export_flows, conf, name, interface_dict, file, band
         ('        @statistic[packetDropReasonIsNoRouteFoundCount](source="packetDropReasonIsNoRouteFound(packetDropped)"; record=count;);\n')
     file.write \
         ('        @statistic[blackhole](source="blackhole"; record=count;);\n')
+    file.write \
+        ('        @statistic[hopCount](source="hops"; record=mean;);\n')
     file.write('\n')
     file.write("    submodules:\n")
     file.write('        configurator: Ipv4NetworkConfigurator;\n')
@@ -345,6 +347,7 @@ def to_omnetpp_ini(conf, network, export_flows, temporal_demands: Dict[Tuple[str
     file.write(f"**.packetDropReasonIsQueueOverflowVector.statistic-recording = true\n")
     file.write(f"**.packetDropReasonIsNoRouteFoundVector.statistic-recording = true\n")
     file.write(f"**.blackhole.statistic-recording = true\n")
+    file.write(f"**.hopCount.statistic-recording = true\n")
     file.write(f"**.statistic-recording = false\n")
     for router_name, router in network.routers.items():
         # file.write(f"**.{router_name}.classifier.config = xmldoc(\"{router_name}_fec.xml\")\n")
